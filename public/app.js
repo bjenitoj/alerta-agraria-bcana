@@ -12,6 +12,17 @@ const readAllBtn = document.getElementById("readAll");
 
 let state = { categories: [], items: [], archive: [], sources: {}, lastCollectAt: null, collecting: false };
 let active = "todas";
+let token = sessionStorage.getItem("alerta_token") || "";
+
+function cleanKey(value) {
+  return String(value || "").replace(/[\s\u200b\u200c\u200d\ufeff]/g, "");
+}
+
+async function api(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  if (token) headers.set("Authorization", "Bearer " + token);
+  return fetch(url, { ...options, headers });
+}
 
 function fmtDate(value) {
   if (!value) return "Fecha no indicada";
@@ -243,7 +254,7 @@ function hideGate() {
 }
 
 async function load() {
-  const res = await fetch("/api/state");
+  const res = await api("/api/state");
   if (res.status === 401) {
     showGate();
     throw new Error("clave");
@@ -257,7 +268,7 @@ async function load() {
 async function refresh() {
   refreshBtn.disabled = true;
   stampEl.textContent = "Consultando fuentes oficiales…";
-  const res = await fetch("/api/refresh", { method: "POST" });
+  const res = await api("/api/refresh", { method: "POST" });
   const data = await res.json();
   if (data.ok === false) {
     stampEl.textContent = `Error: ${data.error}`;
@@ -281,7 +292,7 @@ tabsEl.addEventListener("click", (ev) => {
 });
 
 async function archiveById(id) {
-  const res = await fetch(`/api/items/${id}/archive`, { method: "POST" });
+  const res = await api(`/api/items/${id}/archive`, { method: "POST" });
   const data = await res.json();
   if (!data.ok) return;
   state.items = (state.items || []).filter((it) => it.id !== id);
@@ -301,7 +312,7 @@ async function markCardRead(id, card) {
   renderTabs();
   renderSummary();
   if (onlyNewEl.checked) renderFeed();
-  await fetch(`/api/items/${id}/read`, { method: "POST" });
+  await api(`/api/items/${id}/read`, { method: "POST" });
 }
 
 feedEl.addEventListener("change", async (ev) => {
@@ -313,7 +324,7 @@ feedEl.addEventListener("change", async (ev) => {
 });
 
 async function deleteArchivedById(id) {
-  const res = await fetch(`/api/archive/${id}/delete`, { method: "POST" });
+  const res = await api(`/api/archive/${id}/delete`, { method: "POST" });
   const data = await res.json();
   if (!data.ok) return;
   state.archive = Array.isArray(data.archive)
@@ -338,12 +349,7 @@ feedEl.addEventListener("click", async (ev) => {
 });
 
 function purgeReadOnClose() {
-  const payload = new Blob(["{}"], { type: "application/json" });
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon("/api/purge-read", payload);
-    return;
-  }
-  fetch("/api/purge-read", {
+  api("/api/purge-read", {
     method: "POST",
     body: "{}",
     headers: { "Content-Type": "application/json" },
@@ -361,7 +367,7 @@ sectorEl.addEventListener("change", render);
 refreshBtn.addEventListener("click", refresh);
 readAllBtn.addEventListener("click", async () => {
   const target = active === "archivadas" ? "archive" : "items";
-  const res = await fetch("/api/delete-all", {
+  const res = await api("/api/delete-all", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ target }),
@@ -378,7 +384,7 @@ if (Notification.permission === "default") {
 
 async function showAccess() {
   try {
-    const res = await fetch("/api/access");
+    const res = await api("/api/access");
     const data = await res.json();
     const box = document.getElementById("mobileAccess");
     if (!box) return;
@@ -398,8 +404,8 @@ async function showAccess() {
 
 document.getElementById("loginForm").addEventListener("submit", async (ev) => {
   ev.preventDefault();
-  const key = document.getElementById("keyInput").value;
-  const res = await fetch("/api/login", {
+  const key = cleanKey(document.getElementById("keyInput").value);
+  const res = await api("/api/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ key }),
@@ -409,6 +415,8 @@ document.getElementById("loginForm").addEventListener("submit", async (ev) => {
     showGate(data.error || "Clave incorrecta.");
     return;
   }
+  token = data.token || "";
+  if (token) sessionStorage.setItem("alerta_token", token);
   hideGate();
   boot().catch((err) => {
     if (err.message !== "clave") stampEl.textContent = `No se pudo cargar el panel: ${err.message}`;

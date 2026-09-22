@@ -55,16 +55,17 @@ app.post("/api/login", (req, res) => {
     res.status(429).json({ ok: false, error: "Demasiados intentos. Espera unos minutos." });
     return;
   }
-  const key = String((req.body && req.body.key) || "");
+  const key = String((req.body && req.body.key) || "").replace(/[\s\u200b\u200c\u200d\ufeff]/g, "");
   if (!verifyKey(key)) {
     loginAttempts.set(ip, [...(loginAttempts.get(ip) || []), Date.now()]);
     res.status(401).json({ ok: false, error: "Clave incorrecta." });
     return;
   }
   loginAttempts.delete(ip);
+  const token = createSession();
   const secure = req.secure || req.headers["x-forwarded-proto"] === "https";
-  res.setHeader("Set-Cookie", sessionCookie(createSession(), secure));
-  res.json({ ok: true });
+  res.setHeader("Set-Cookie", sessionCookie(token, secure));
+  res.json({ ok: true, token });
 });
 
 app.use("/api", (req, res, next) => {
