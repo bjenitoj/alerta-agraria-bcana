@@ -12,16 +12,30 @@ const readAllBtn = document.getElementById("readAll");
 
 let state = { categories: [], items: [], archive: [], sources: {}, lastCollectAt: null, collecting: false };
 let active = "todas";
-let token = sessionStorage.getItem("alerta_token") || "";
+function storageGet(key) {
+  try {
+    return localStorage.getItem(key) || sessionStorage.getItem(key) || "";
+  } catch {
+    return "";
+  }
+}
+
+function storageSet(key, value) {
+  try { localStorage.setItem(key, value); } catch {}
+  try { sessionStorage.setItem(key, value); } catch {}
+}
+
+let token = storageGet("alerta_token");
 
 function cleanKey(value) {
-  return String(value || "").replace(/[\s\u200b\u200c\u200d\ufeff]/g, "");
+  return String(value || "").normalize("NFKC").replace(/[\s\u200b\u200c\u200d\ufeff]/g, "");
 }
 
 async function api(url, options = {}) {
   const headers = new Headers(options.headers || {});
   if (token) headers.set("Authorization", "Bearer " + token);
-  return fetch(url, { ...options, headers });
+  const target = token ? url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(token) : url;
+  return fetch(target, { ...options, headers, cache: "no-store" });
 }
 
 function fmtDate(value) {
@@ -416,7 +430,7 @@ document.getElementById("loginForm").addEventListener("submit", async (ev) => {
     return;
   }
   token = data.token || "";
-  if (token) sessionStorage.setItem("alerta_token", token);
+  if (token) storageSet("alerta_token", token);
   hideGate();
   boot().catch((err) => {
     if (err.message !== "clave") stampEl.textContent = `No se pudo cargar el panel: ${err.message}`;

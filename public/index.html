@@ -15,12 +15,13 @@
 </head>
 <body class="locked">
   <div id="gate" class="gate">
-    <form id="loginForm" class="gate-card">
+    <form id="loginForm" class="gate-card" autocomplete="off" action="javascript:void(0)">
       <p class="eyebrow">Alerta Agraria CyL</p>
       <h2>Clave de entrada</h2>
+      <p class="gate-version">Versión 3</p>
       <label>
-        <span>Introduce la clave de 8 caracteres</span>
-        <input id="keyInput" type="password" maxlength="16" autocomplete="current-password" required />
+        <span>Pega la clave. Tiene que verse escrita, con el símbolo #.</span>
+        <input id="keyInput" type="text" name="clave-entrada" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required />
       </label>
       <button type="submit">Entrar</button>
       <p id="loginError" class="gate-error" hidden></p>
@@ -73,6 +74,6 @@
     <p id="mobileAccess" class="mobile-access"></p>
     <p>La aplicación consulta webs oficiales (Junta de Castilla y León, MAPA, FEGA, BOE y BDNS). No sustituye al texto publicado en el boletín o en la sede electrónica. Ábrela cada día o déjala en marcha para la consulta automática de las 07:00.</p>
   </footer>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=3"></script>
 </body>
 </html>

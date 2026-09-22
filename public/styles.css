@@ -274,13 +274,14 @@ body.locked footer { visibility: hidden; }
   gap: 12px;
 }
 .gate-card h2 { margin: 0; }
+.gate-version { margin: 0; font-size: 13px; color: var(--muted); }
 .gate-card label { display: grid; gap: 6px; color: var(--muted); font-size: 14px; }
 .gate-card input {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 18px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
 }
 .gate-error { color: var(--err); margin: 0; }
 

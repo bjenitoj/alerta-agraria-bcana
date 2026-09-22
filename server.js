@@ -39,29 +39,27 @@ function lanUrls() {
 
 app.set("trust proxy", 1);
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    etag: false,
+    lastModified: false,
+    setHeaders(res) {
+      res.setHeader("Cache-Control", "no-store");
+    },
+  })
+);
 
-const loginAttempts = new Map();
-function tooManyTries(ip) {
-  const now = Date.now();
-  const list = (loginAttempts.get(ip) || []).filter((t) => now - t < 10 * 60 * 1000);
-  loginAttempts.set(ip, list);
-  return list.length >= 8;
+function keyCandidates(raw) {
+  const text = String(raw || "").normalize("NFKC");
+  return [...new Set([text, ...text.split(/\r?\n/)].map((part) => part.replace(/[\s\u200b\u200c\u200d\ufeff]/g, "")).filter(Boolean))];
 }
 
 app.post("/api/login", (req, res) => {
-  const ip = req.ip || req.socket.remoteAddress || "local";
-  if (tooManyTries(ip)) {
-    res.status(429).json({ ok: false, error: "Demasiados intentos. Espera unos minutos." });
+  const key = String((req.body && req.body.key) || "");
+  if (!keyCandidates(key).some((candidate) => verifyKey(candidate))) {
+    res.status(401).json({ ok: false, error: "Clave incorrecta. Tiene que verse entera, con el símbolo #." });
     return;
   }
-  const key = String((req.body && req.body.key) || "").replace(/[\s\u200b\u200c\u200d\ufeff]/g, "");
-  if (!verifyKey(key)) {
-    loginAttempts.set(ip, [...(loginAttempts.get(ip) || []), Date.now()]);
-    res.status(401).json({ ok: false, error: "Clave incorrecta." });
-    return;
-  }
-  loginAttempts.delete(ip);
   const token = createSession();
   const secure = req.secure || req.headers["x-forwarded-proto"] === "https";
   res.setHeader("Set-Cookie", sessionCookie(token, secure));
