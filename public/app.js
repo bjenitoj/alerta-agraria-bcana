@@ -31,6 +31,7 @@ try {
   const entrada = params.get("entrada");
   if (entrada) {
     token = entrada;
+    document.body.classList.remove("locked");
     storageSet("alerta_token", token);
     params.delete("entrada");
     const rest = params.toString();
@@ -307,7 +308,7 @@ async function refresh() {
   }
   state = { ...state, ...data };
   render();
-  if (data.added > 0 && Notification.permission === "granted") {
+  if (data.added > 0 && typeof Notification === "function" && Notification.permission === "granted") {
     new Notification("Alerta Agraria CyL", {
       body: `Hay ${data.added} novedades nuevas.`,
     });
@@ -408,9 +409,6 @@ readAllBtn.addEventListener("click", async () => {
   render();
 });
 
-if (Notification.permission === "default") {
-  Notification.requestPermission().catch(() => {});
-}
 
 async function showAccess() {
   try {
