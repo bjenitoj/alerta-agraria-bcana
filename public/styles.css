@@ -274,7 +274,8 @@ body.locked footer { visibility: hidden; }
   gap: 12px;
 }
 .gate-card h2 { margin: 0; }
-.gate-version { margin: 0; font-size: 13px; color: var(--muted); }
+.gate-version { margin: 0; font-size: 28px; font-weight: 800; color: #1d5c38; }
+.gate-wait { margin: 0; font-size: 15px; color: var(--muted); }
 .gate-card label { display: grid; gap: 6px; color: var(--muted); font-size: 14px; }
 .gate-card input {
   border: 1px solid var(--line);

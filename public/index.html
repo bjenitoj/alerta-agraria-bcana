@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Alerta Agraria" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>Alerta Agraria Castilla y León</title>
+  <title>Alerta Agraria 4</title>
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
@@ -15,15 +15,16 @@
 </head>
 <body class="locked">
   <div id="gate" class="gate">
-    <form id="loginForm" class="gate-card" autocomplete="off" action="javascript:void(0)">
+    <form id="loginForm" class="gate-card" method="post" action="/entrar" autocomplete="off">
       <p class="eyebrow">Alerta Agraria CyL</p>
       <h2>Clave de entrada</h2>
-      <p class="gate-version">Versión 3</p>
+      <p class="gate-version">Versión 4</p>
       <label>
         <span>Pega la clave. Tiene que verse escrita, con el símbolo #.</span>
-        <input id="keyInput" type="text" name="clave-entrada" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required />
+        <input id="keyInput" type="text" name="key" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required />
       </label>
       <button type="submit">Entrar</button>
+      <p class="gate-wait">Después de pulsar Entrar, espera en esta pantalla. Puede tardar un minuto.</p>
       <p id="loginError" class="gate-error" hidden></p>
     </form>
   </div>
@@ -74,6 +75,6 @@
     <p id="mobileAccess" class="mobile-access"></p>
     <p>La aplicación consulta webs oficiales (Junta de Castilla y León, MAPA, FEGA, BOE y BDNS). No sustituye al texto publicado en el boletín o en la sede electrónica. Ábrela cada día o déjala en marcha para la consulta automática de las 07:00.</p>
   </footer>
-  <script src="/app.js?v=3"></script>
+  <script src="/app.js?v=4"></script>
 </body>
 </html>

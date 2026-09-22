@@ -26,6 +26,17 @@ function storageSet(key, value) {
 }
 
 let token = storageGet("alerta_token");
+try {
+  const params = new URLSearchParams(location.search);
+  const entrada = params.get("entrada");
+  if (entrada) {
+    token = entrada;
+    storageSet("alerta_token", token);
+    params.delete("entrada");
+    const rest = params.toString();
+    history.replaceState(null, "", location.pathname + (rest ? "?" + rest : "") + location.hash);
+  }
+} catch {}
 
 function cleanKey(value) {
   return String(value || "").normalize("NFKC").replace(/[\s\u200b\u200c\u200d\ufeff]/g, "");
@@ -255,9 +266,14 @@ function render() {
 function showGate(message) {
   document.body.classList.add("locked");
   const err = document.getElementById("loginError");
-  if (message) {
+  const text =
+    message ||
+    (new URLSearchParams(location.search).get("aviso") === "clave"
+      ? "Clave incorrecta. Tiene que verse el símbolo #."
+      : "");
+  if (text) {
     err.hidden = false;
-    err.textContent = message;
+    err.textContent = text;
   } else {
     err.hidden = true;
   }
@@ -415,27 +431,6 @@ async function showAccess() {
     setTimeout(() => showAccess().catch(() => {}), 3000);
   }
 }
-
-document.getElementById("loginForm").addEventListener("submit", async (ev) => {
-  ev.preventDefault();
-  const key = cleanKey(document.getElementById("keyInput").value);
-  const res = await api("/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key }),
-  });
-  const data = await res.json();
-  if (!data.ok) {
-    showGate(data.error || "Clave incorrecta.");
-    return;
-  }
-  token = data.token || "";
-  if (token) storageSet("alerta_token", token);
-  hideGate();
-  boot().catch((err) => {
-    if (err.message !== "clave") stampEl.textContent = `No se pudo cargar el panel: ${err.message}`;
-  });
-});
 
 async function boot() {
   await load();

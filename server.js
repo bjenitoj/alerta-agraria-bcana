@@ -39,6 +39,7 @@ function lanUrls() {
 
 app.set("trust proxy", 1);
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(
   express.static(path.join(__dirname, "public"), {
     etag: false,
@@ -54,15 +55,33 @@ function keyCandidates(raw) {
   return [...new Set([text, ...text.split(/\r?\n/)].map((part) => part.replace(/[\s\u200b\u200c\u200d\ufeff]/g, "")).filter(Boolean))];
 }
 
+function secureRequest(req) {
+  return Boolean(req.secure || req.headers["x-forwarded-proto"] === "https");
+}
+
+function loginOk(req, res) {
+  const token = createSession();
+  res.setHeader("Set-Cookie", sessionCookie(token, secureRequest(req)));
+  return token;
+}
+
+app.post("/entrar", (req, res) => {
+  const key = String((req.body && req.body.key) || "");
+  if (!keyCandidates(key).some((candidate) => verifyKey(candidate))) {
+    res.redirect(303, "/?aviso=clave");
+    return;
+  }
+  const token = loginOk(req, res);
+  res.redirect(303, "/?entrada=" + encodeURIComponent(token));
+});
+
 app.post("/api/login", (req, res) => {
   const key = String((req.body && req.body.key) || "");
   if (!keyCandidates(key).some((candidate) => verifyKey(candidate))) {
     res.status(401).json({ ok: false, error: "Clave incorrecta. Tiene que verse entera, con el símbolo #." });
     return;
   }
-  const token = createSession();
-  const secure = req.secure || req.headers["x-forwarded-proto"] === "https";
-  res.setHeader("Set-Cookie", sessionCookie(token, secure));
+  const token = loginOk(req, res);
   res.json({ ok: true, token });
 });
 
