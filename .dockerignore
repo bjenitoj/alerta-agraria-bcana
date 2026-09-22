@@ -1,0 +1,6 @@
+node_modules
+assets
+*.txt
+.git
+Dockerfile
+.dockerignore
