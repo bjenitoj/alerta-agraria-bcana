@@ -198,7 +198,7 @@ cron.schedule(
   { timezone: "Europe/Madrid" }
 );
 
-const hosted = Boolean(process.env.FLY_APP_NAME || process.env.RENDER || process.env.RAILWAY_ENVIRONMENT);
+const hosted = Boolean(process.env.RENDER || process.env.RAILWAY_ENVIRONMENT);
 app.listen(PORT, HOST, () => {
   console.log(`Alerta Agraria CyL en http://localhost:${PORT}`);
   for (const url of lanUrls()) console.log(`Móvil (misma Wi-Fi): ${url}`);
