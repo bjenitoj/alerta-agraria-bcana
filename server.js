@@ -22,7 +22,6 @@ import {
   sharedState,
   applyShared,
 } from "./lib/store.js";
-import { pushToPhone } from "./lib/sync-remote.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3847);
@@ -122,11 +121,6 @@ app.get("/api/access", (_req, res) => {
   });
 });
 
-function shareWithPhone() {
-  if (process.env.RENDER) return;
-  pushToPhone().catch((err) => console.error("[alerta] No se pudo copiar al iPhone:", err.message));
-}
-
 function hiddenKeys(store) {
   return (store.dismissedIds || []).filter((key) => String(key).startsWith("u:") || String(key).startsWith("t:"));
 }
@@ -185,7 +179,6 @@ app.post("/api/items/:id/read", (req, res) => {
 app.post("/api/items/:id/archive", (req, res) => {
   const item = archiveItem(req.params.id);
   const store = getStore();
-  shareWithPhone();
   res.json({ ok: Boolean(item), item, archive: store.archive, items: store.items });
 });
 
@@ -197,20 +190,17 @@ app.post("/api/read-all", (_req, res) => {
 app.post("/api/archive/:id/delete", (req, res) => {
   const item = deleteArchived(req.params.id);
   const store = getStore();
-  shareWithPhone();
   res.json({ ok: Boolean(item), item, archive: store.archive, hidden: hiddenKeys(store) });
 });
 
 app.post("/api/delete-all", (req, res) => {
   const target = req.body && req.body.target === "archive" ? "archive" : "items";
   const store = target === "archive" ? deleteAllArchived() : deleteAllItems();
-  shareWithPhone();
   res.json({ ok: true, items: store.items, archive: store.archive, hidden: hiddenKeys(store) });
 });
 
 app.post("/api/purge-read", (_req, res) => {
   const store = purgeRead();
-  shareWithPhone();
   res.json({ ok: true, items: store.items, hidden: hiddenKeys(store) });
 });
 
@@ -235,6 +225,5 @@ app.listen(PORT, HOST, () => {
   console.log(`Alerta Agraria CyL en http://localhost:${PORT}`);
   for (const url of lanUrls()) console.log(`Móvil (misma Wi-Fi): ${url}`);
   if (!hosted) startPublicTunnel(PORT);
-  shareWithPhone();
   runCollect("arranque").catch((err) => console.error(err));
 });
