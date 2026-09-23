@@ -505,7 +505,6 @@ window.addEventListener("beforeunload", purgeReadOnClose);
 onlyTodayBtn.addEventListener("click", () => {
   onlyToday = !onlyToday;
   onlyTodayBtn.classList.toggle("active", onlyToday);
-  onlyTodayBtn.textContent = onlyToday ? "Ver los últimos 15 días" : "Solo las de hoy";
   render();
 });
 qEl.addEventListener("input", render);

@@ -38,12 +38,14 @@
       <p class="stamp" id="stamp">Cargando…</p>
       <button id="refresh" type="button">Actualizar ahora</button>
       <button id="clearRead" class="ghost" type="button">Borrar leídas</button>
-      <button id="readAll" class="ghost" type="button">Borrar todas</button>
+      <div class="action-row">
+        <button id="onlyToday" type="button" class="today-toggle">HOY</button>
+        <button id="readAll" class="ghost" type="button">Borrar todas</button>
+      </div>
     </div>
   </header>
 
   <section class="filters">
-    <button id="onlyToday" type="button" class="today-toggle">Solo las de hoy</button>
     <label class="search">
       <span>Buscar</span>
       <input id="q" type="search" placeholder="PAC, jóvenes, viñedo, FEGA…" />
@@ -77,6 +79,6 @@
     <p id="mobileAccess" class="mobile-access"></p>
     <p>La aplicación consulta webs oficiales (Junta de Castilla y León, MAPA, FEGA, BOE y BDNS). No sustituye al texto publicado en el boletín o en la sede electrónica. Ábrela cada día o déjala en marcha para la consulta automática de las 07:00.</p>
   </footer>
-  <script src="/app.js?v=10"></script>
+  <script src="/app.js?v=11"></script>
 </body>
 </html>

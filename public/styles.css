@@ -51,6 +51,18 @@ h1 {
 .lead, .stamp, footer { color: var(--muted); }
 .lead { max-width: 62ch; margin: 0; }
 .actions { display: grid; gap: 10px; align-content: start; min-width: 220px; }
+.action-row { display: flex; align-items: center; gap: 8px; }
+.action-row .ghost { flex: 1; }
+.today-toggle {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1;
+  background: transparent;
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+.today-toggle.active { background: var(--green); color: #f8f4ea; }
 button {
   border: 0;
   background: var(--green);
@@ -78,13 +90,6 @@ button:disabled { opacity: 0.6; cursor: wait; }
   align-items: end;
   padding: 8px 0 18px;
 }
-.today-toggle {
-  flex: 1 0 100%;
-  background: transparent;
-  color: var(--green);
-  border: 1px solid var(--green);
-}
-.today-toggle.active { background: var(--green); color: #f8f4ea; }
 .search { display: grid; gap: 6px; flex: 1; min-width: 240px; }
 .search span, .check { font-size: 13px; color: var(--muted); }
 input[type="search"],
