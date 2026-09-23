@@ -19,7 +19,10 @@ import {
   deleteArchived,
   deleteAllArchived,
   deleteAllItems,
+  sharedState,
+  applyShared,
 } from "./lib/store.js";
+import { pushToPhone } from "./lib/sync-remote.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3847);
@@ -119,6 +122,15 @@ app.get("/api/access", (_req, res) => {
   });
 });
 
+function shareWithPhone() {
+  if (process.env.RENDER) return;
+  pushToPhone().catch((err) => console.error("[alerta] No se pudo copiar al iPhone:", err.message));
+}
+
+function hiddenKeys(store) {
+  return (store.dismissedIds || []).filter((key) => String(key).startsWith("u:") || String(key).startsWith("t:"));
+}
+
 app.get("/api/state", (_req, res) => {
   const store = markOpened();
   res.json({
@@ -128,6 +140,21 @@ app.get("/api/state", (_req, res) => {
     sources: store.sources || {},
     items: store.items,
     archive: store.archive || [],
+    hidden: hiddenKeys(store),
+  });
+});
+
+app.post("/api/sync", (req, res) => {
+  const body = req.body || {};
+  const store = applyShared({
+    hidden: Array.isArray(body.hidden) ? body.hidden : [],
+    archive: Array.isArray(body.archive) ? body.archive : [],
+  });
+  res.json({
+    ok: true,
+    items: store.items,
+    archive: store.archive || [],
+    hidden: hiddenKeys(store),
   });
 });
 
@@ -143,6 +170,7 @@ app.post("/api/refresh", async (_req, res) => {
       archive: store.archive || [],
       sources: store.sources,
       categories: CATEGORIES,
+      hidden: hiddenKeys(store),
     });
   } catch (err) {
     res.status(500).json({ ok: false, error: String(err.message || err) });
@@ -157,6 +185,7 @@ app.post("/api/items/:id/read", (req, res) => {
 app.post("/api/items/:id/archive", (req, res) => {
   const item = archiveItem(req.params.id);
   const store = getStore();
+  shareWithPhone();
   res.json({ ok: Boolean(item), item, archive: store.archive, items: store.items });
 });
 
@@ -168,18 +197,21 @@ app.post("/api/read-all", (_req, res) => {
 app.post("/api/archive/:id/delete", (req, res) => {
   const item = deleteArchived(req.params.id);
   const store = getStore();
-  res.json({ ok: Boolean(item), item, archive: store.archive });
+  shareWithPhone();
+  res.json({ ok: Boolean(item), item, archive: store.archive, hidden: hiddenKeys(store) });
 });
 
 app.post("/api/delete-all", (req, res) => {
   const target = req.body && req.body.target === "archive" ? "archive" : "items";
   const store = target === "archive" ? deleteAllArchived() : deleteAllItems();
-  res.json({ ok: true, items: store.items, archive: store.archive });
+  shareWithPhone();
+  res.json({ ok: true, items: store.items, archive: store.archive, hidden: hiddenKeys(store) });
 });
 
 app.post("/api/purge-read", (_req, res) => {
   const store = purgeRead();
-  res.json({ ok: true, items: store.items });
+  shareWithPhone();
+  res.json({ ok: true, items: store.items, hidden: hiddenKeys(store) });
 });
 
 cron.schedule(
@@ -203,5 +235,6 @@ app.listen(PORT, HOST, () => {
   console.log(`Alerta Agraria CyL en http://localhost:${PORT}`);
   for (const url of lanUrls()) console.log(`Móvil (misma Wi-Fi): ${url}`);
   if (!hosted) startPublicTunnel(PORT);
+  shareWithPhone();
   runCollect("arranque").catch((err) => console.error(err));
 });

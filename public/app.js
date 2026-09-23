@@ -127,6 +127,14 @@ function writeSet(name, values) {
   } catch {}
 }
 
+function absorbHidden(list) {
+  const set = readSet("alerta_ocultas");
+  for (const key of list || []) {
+    if (String(key).startsWith("u:") || String(key).startsWith("t:")) set.add(key);
+  }
+  writeSet("alerta_ocultas", set);
+}
+
 function remember(item, bucket) {
   const set = readSet(bucket);
   for (const key of storyKeys(item)) set.add(key);
@@ -392,6 +400,7 @@ async function load() {
     throw new Error("clave");
   }
   state = await res.json();
+  absorbHidden(state.hidden);
   if (!active) active = "todas";
   hideGate();
   render();
@@ -408,6 +417,7 @@ async function refresh() {
     return;
   }
   state = { ...state, ...data };
+  absorbHidden(data.hidden);
   render();
   if (data.added > 0 && typeof Notification === "function" && Notification.permission === "granted") {
     new Notification("Alerta Agraria CyL", {
