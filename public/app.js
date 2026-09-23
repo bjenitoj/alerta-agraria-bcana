@@ -9,6 +9,7 @@ const onlyCylEl = document.getElementById("onlyCyl");
 const sectorEl = document.getElementById("sector");
 const refreshBtn = document.getElementById("refresh");
 const readAllBtn = document.getElementById("readAll");
+const clearReadBtn = document.getElementById("clearRead");
 
 let state = { categories: [], items: [], archive: [], sources: {}, lastCollectAt: null, collecting: false };
 let active = "todas";
@@ -139,7 +140,7 @@ function isRecent(item) {
   const today = madridDay(new Date());
   if (!day || day > today) return false;
   const age = (Date.parse(`${today}T00:00:00Z`) - Date.parse(`${day}T00:00:00Z`)) / 86400000;
-  return age <= 7;
+  return age <= 15;
 }
 
 function unseen(items, bucket) {
@@ -275,7 +276,7 @@ function renderFeed() {
 
   const items = filtered();
   if (!items.length) {
-      feedEl.innerHTML = `<div class="empty">No hay noticias publicadas en los últimos 7 días con estos filtros. Pulsa «Actualizar ahora».</div>`;
+      feedEl.innerHTML = `<div class="empty">No hay noticias publicadas en los últimos 15 días con estos filtros. Pulsa «Actualizar ahora».</div>`;
     return;
   }
   feedEl.innerHTML = items
@@ -342,6 +343,7 @@ function render() {
       ? `Última consulta: ${fmtDate(state.lastCollectAt)}`
       : "Todavía no hay consulta";
   refreshBtn.disabled = Boolean(state.collecting);
+  if (clearReadBtn) clearReadBtn.hidden = active === "archivadas";
   renderTabs();
   renderSummary();
   renderFeed();
@@ -421,7 +423,6 @@ async function markCardRead(id, card) {
   const item = (state.items || []).find((it) => it.id === id);
   if (!item || item.read) return;
   item.read = true;
-  remember(item, "alerta_ocultas");
   if (card) {
     card.classList.add("read");
     card.classList.remove("new");
@@ -491,6 +492,20 @@ onlyNewEl.addEventListener("change", render);
 onlyCylEl.addEventListener("change", render);
 sectorEl.addEventListener("change", render);
 refreshBtn.addEventListener("click", refresh);
+clearReadBtn.addEventListener("click", async () => {
+  const read = (state.items || []).filter((item) => item.read);
+  for (const item of read) remember(item, "alerta_ocultas");
+  const res = await api("/api/purge-read", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: "{}",
+  });
+  const data = await res.json();
+  if (data.items) state.items = data.items;
+  else state.items = (state.items || []).filter((item) => !item.read);
+  render();
+});
+
 readAllBtn.addEventListener("click", async () => {
   const target = active === "archivadas" ? "archive" : "items";
   const batch = target === "archive" ? state.archive : state.items;
