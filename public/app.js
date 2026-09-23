@@ -73,9 +73,92 @@ function madridDay(value) {
 }
 
 function isAfterToday(item) {
-  const when = item?.publishedAt || item?.firstSeenAt;
-  if (!when) return false;
+  const when = item?.publishedAt;
+  if (!when) return true;
   return madridDay(when) > madridDay(new Date());
+}
+
+function canonicalUrl(url) {
+  try {
+    const parsed = new URL(String(url || ""));
+    parsed.hash = "";
+    const pathname = parsed.pathname.replace(/\/+$/, "") || "/";
+    return `${parsed.hostname.replace(/^www\./, "")}${pathname}${parsed.search}`.toLowerCase();
+  } catch {
+    return String(url || "").split("#")[0].trim().toLowerCase();
+  }
+}
+
+function titleKey(title) {
+  return String(title || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+}
+
+function storyKeys(item) {
+  const keys = [];
+  const url = canonicalUrl(item?.url);
+  const title = titleKey(item?.title);
+  if (url) keys.push(`u:${url}`);
+  if (title.length >= 40) keys.push(`t:${title}`);
+  return keys;
+}
+
+function readSet(name) {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(name) || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+function writeSet(name, values) {
+  try {
+    localStorage.setItem(name, JSON.stringify([...values].slice(-2000)));
+  } catch {}
+}
+
+function remember(item, bucket) {
+  const set = readSet(bucket);
+  for (const key of storyKeys(item)) set.add(key);
+  writeSet(bucket, set);
+}
+
+function isRecent(item) {
+  const when = item?.publishedAt;
+  if (!when) return false;
+  const parsed = new Date(when);
+  if (Number.isNaN(parsed.getTime())) return false;
+  if (item.dateSource !== "meta" && parsed.getMilliseconds() !== 0) return false;
+  const day = madridDay(when);
+  const today = madridDay(new Date());
+  if (!day || day > today) return false;
+  const age = (Date.parse(`${today}T00:00:00Z`) - Date.parse(`${day}T00:00:00Z`)) / 86400000;
+  return age <= 7;
+}
+
+function unseen(items, bucket) {
+  const hidden = readSet(bucket);
+  const seenUrl = new Set();
+  const seenTitle = new Set();
+  const out = [];
+  for (const item of items || []) {
+    const keys = storyKeys(item);
+    if (keys.some((key) => hidden.has(key))) continue;
+    const url = canonicalUrl(item.url);
+    const title = titleKey(item.title);
+    if (url && seenUrl.has(url)) continue;
+    if (title.length >= 40 && seenTitle.has(title)) continue;
+    if (url) seenUrl.add(url);
+    if (title.length >= 40) seenTitle.add(title);
+    out.push(item);
+  }
+  return out;
 }
 
 function isNew(item) {
@@ -92,8 +175,9 @@ function matchesSector(item) {
 }
 
 function visibleItems() {
-  return (state.items || []).filter(
-    (item) => item.topic !== "pesca" && matchesSector(item) && !isAfterToday(item)
+  return unseen(
+    (state.items || []).filter((item) => item.topic !== "pesca" && matchesSector(item) && isRecent(item)),
+    "alerta_ocultas"
   );
 }
 
@@ -113,7 +197,7 @@ function filtered() {
 
 function filteredArchive() {
   const q = qEl.value.trim().toLowerCase();
-  return (state.archive || []).filter((item) => {
+  return unseen(state.archive || [], "alerta_borradas").filter((item) => {
     if (!q) return true;
     return `${item.title} ${item.url} ${item.sourceName}`.toLowerCase().includes(q);
   });
@@ -133,7 +217,7 @@ function renderTabs() {
   const buttons = [
     { id: "todas", title: "Todas", count: c.todas || 0 },
     ...state.categories.map((tab) => ({ ...tab, count: c[tab.id] || 0 })),
-    { id: "archivadas", title: "Archivadas", count: (state.archive || []).length },
+    { id: "archivadas", title: "Archivadas", count: filteredArchive().length },
   ];
   tabsEl.innerHTML = buttons
     .map(
@@ -191,7 +275,7 @@ function renderFeed() {
 
   const items = filtered();
   if (!items.length) {
-    feedEl.innerHTML = `<div class="empty">No hay novedades con estos filtros. Pulsa «Actualizar ahora» o espera a la consulta diaria de las 07:00.</div>`;
+      feedEl.innerHTML = `<div class="empty">No hay noticias publicadas en los últimos 7 días con estos filtros. Pulsa «Actualizar ahora».</div>`;
     return;
   }
   feedEl.innerHTML = items
@@ -323,6 +407,8 @@ tabsEl.addEventListener("click", (ev) => {
 });
 
 async function archiveById(id) {
+  const item = (state.items || []).find((it) => it.id === id);
+  if (item) remember(item, "alerta_ocultas");
   const res = await api(`/api/items/${id}/archive`, { method: "POST" });
   const data = await res.json();
   if (!data.ok) return;
@@ -335,6 +421,7 @@ async function markCardRead(id, card) {
   const item = (state.items || []).find((it) => it.id === id);
   if (!item || item.read) return;
   item.read = true;
+  remember(item, "alerta_ocultas");
   if (card) {
     card.classList.add("read");
     card.classList.remove("new");
@@ -355,6 +442,11 @@ feedEl.addEventListener("change", async (ev) => {
 });
 
 async function deleteArchivedById(id) {
+  const item = (state.archive || []).find((it) => it.id === id);
+  if (item) {
+    remember(item, "alerta_ocultas");
+    remember(item, "alerta_borradas");
+  }
   const res = await api(`/api/archive/${id}/delete`, { method: "POST" });
   const data = await res.json();
   if (!data.ok) return;
@@ -380,6 +472,9 @@ feedEl.addEventListener("click", async (ev) => {
 });
 
 function purgeReadOnClose() {
+  for (const item of state.items || []) {
+    if (item.read) remember(item, "alerta_ocultas");
+  }
   api("/api/purge-read", {
     method: "POST",
     body: "{}",
@@ -398,6 +493,11 @@ sectorEl.addEventListener("change", render);
 refreshBtn.addEventListener("click", refresh);
 readAllBtn.addEventListener("click", async () => {
   const target = active === "archivadas" ? "archive" : "items";
+  const batch = target === "archive" ? state.archive : state.items;
+  for (const item of batch || []) {
+    remember(item, "alerta_ocultas");
+    if (target === "archive") remember(item, "alerta_borradas");
+  }
   const res = await api("/api/delete-all", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
