@@ -7,6 +7,7 @@ const qEl = document.getElementById("q");
 const onlyNewEl = document.getElementById("onlyNew");
 const onlyCylEl = document.getElementById("onlyCyl");
 const sectorEl = document.getElementById("sector");
+sectorEl.value = "agricultura";
 const refreshBtn = document.getElementById("refresh");
 const readAllBtn = document.getElementById("readAll");
 const clearReadBtn = document.getElementById("clearRead");
