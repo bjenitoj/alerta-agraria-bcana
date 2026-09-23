@@ -166,6 +166,15 @@ function isNew(item) {
   return !item.read;
 }
 
+function ambitoPermitido(item) {
+  const text = `${item?.title || ""} ${item?.summary || ""} ${item?.sourceName || ""}`;
+  if (/castilla y le[oó]n|junta de castilla|\bjcyl\b|\bbocyl\b|\bcyl\b/i.test(text)) return true;
+  if (/andaluc[ií]a|arag[oó]n|\basturias\b|baleares|\bcanarias\b|\bcantabria\b|castilla[-\s]la mancha|catalu[nñ]a|catalunya|generalitat|comunidad valenciana|valencian[oa]|extremadura|\bgalicia\b|comunidad de madrid|regi[oó]n de murcia|\bmurcia\b|\bnavarra\b|pa[ií]s vasco|euskadi|\bla rioja\b|\bceuta\b|\bmelilla\b/i.test(text)) {
+    return false;
+  }
+  return true;
+}
+
 function matchesSector(item) {
   const topic = item.topic || "ambos";
   if (topic === "pesca") return false;
@@ -177,7 +186,7 @@ function matchesSector(item) {
 
 function visibleItems() {
   return unseen(
-    (state.items || []).filter((item) => item.topic !== "pesca" && matchesSector(item) && isRecent(item)),
+    (state.items || []).filter((item) => item.topic !== "pesca" && matchesSector(item) && isRecent(item) && ambitoPermitido(item)),
     "alerta_ocultas"
   );
 }
