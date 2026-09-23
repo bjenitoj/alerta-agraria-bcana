@@ -78,6 +78,13 @@ button:disabled { opacity: 0.6; cursor: wait; }
   align-items: end;
   padding: 8px 0 18px;
 }
+.today-toggle {
+  flex: 1 0 100%;
+  background: transparent;
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+.today-toggle.active { background: var(--green); color: #f8f4ea; }
 .search { display: grid; gap: 6px; flex: 1; min-width: 240px; }
 .search span, .check { font-size: 13px; color: var(--muted); }
 input[type="search"],

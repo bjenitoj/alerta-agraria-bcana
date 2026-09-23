@@ -7,6 +7,8 @@ const qEl = document.getElementById("q");
 const onlyNewEl = document.getElementById("onlyNew");
 const onlyCylEl = document.getElementById("onlyCyl");
 const sectorEl = document.getElementById("sector");
+const onlyTodayBtn = document.getElementById("onlyToday");
+let onlyToday = false;
 sectorEl.value = "agricultura";
 const refreshBtn = document.getElementById("refresh");
 const readAllBtn = document.getElementById("readAll");
@@ -196,6 +198,7 @@ function matchingItems() {
   const q = qEl.value.trim().toLowerCase();
   return visibleItems().filter((item) => {
     if (onlyNewEl.checked && !isNew(item)) return false;
+    if (onlyToday && madridDay(item.publishedAt) !== madridDay(new Date())) return false;
     if (onlyCylEl.checked && item.region !== "Castilla y León") return false;
     if (!q) return true;
     return `${item.title} ${item.summary} ${item.sourceName}`.toLowerCase().includes(q);
@@ -286,7 +289,9 @@ function renderFeed() {
 
   const items = filtered();
   if (!items.length) {
-      feedEl.innerHTML = `<div class="empty">No hay noticias publicadas en los últimos 15 días con estos filtros. Pulsa «Actualizar ahora».</div>`;
+      feedEl.innerHTML = onlyToday
+        ? `<div class="empty">Hoy no hay noticias publicadas con estos filtros.</div>`
+        : `<div class="empty">No hay noticias publicadas en los últimos 15 días con estos filtros. Pulsa «Actualizar ahora».</div>`;
     return;
   }
   feedEl.innerHTML = items
@@ -497,6 +502,12 @@ function purgeReadOnClose() {
 window.addEventListener("pagehide", purgeReadOnClose);
 window.addEventListener("beforeunload", purgeReadOnClose);
 
+onlyTodayBtn.addEventListener("click", () => {
+  onlyToday = !onlyToday;
+  onlyTodayBtn.classList.toggle("active", onlyToday);
+  onlyTodayBtn.textContent = onlyToday ? "Ver los últimos 15 días" : "Solo las de hoy";
+  render();
+});
 qEl.addEventListener("input", render);
 onlyNewEl.addEventListener("change", render);
 onlyCylEl.addEventListener("change", render);
