@@ -19,9 +19,10 @@ import {
   deleteArchived,
   deleteAllArchived,
   deleteAllItems,
-  sharedState,
   applyShared,
+  sharedKeys,
 } from "./lib/store.js";
+import { syncWithPhone } from "./lib/sync-remote.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3847);
@@ -93,6 +94,25 @@ app.use("/api", (req, res, next) => {
 });
 
 let collecting = false;
+let syncing = false;
+let syncQueued = false;
+
+function shareWithPhone() {
+  if (process.env.RENDER) return;
+  if (collecting || syncing) {
+    syncQueued = true;
+    return;
+  }
+  syncing = true;
+  syncWithPhone()
+    .catch((err) => console.error("[alerta] No se pudo sincronizar:", err.message))
+    .finally(() => {
+      syncing = false;
+      if (!syncQueued) return;
+      syncQueued = false;
+      shareWithPhone();
+    });
+}
 
 async function runCollect(reason = "manual") {
   if (collecting) return { skipped: true, reason: "already-running" };
@@ -110,6 +130,7 @@ async function runCollect(reason = "manual") {
     throw err;
   } finally {
     collecting = false;
+    shareWithPhone();
   }
 }
 
@@ -122,7 +143,7 @@ app.get("/api/access", (_req, res) => {
 });
 
 function hiddenKeys(store) {
-  return (store.dismissedIds || []).filter((key) => String(key).startsWith("u:") || String(key).startsWith("t:"));
+  return sharedKeys(store);
 }
 
 app.get("/api/state", (_req, res) => {
@@ -173,12 +194,14 @@ app.post("/api/refresh", async (_req, res) => {
 
 app.post("/api/items/:id/read", (req, res) => {
   const item = markRead(req.params.id);
+  shareWithPhone();
   res.json({ ok: Boolean(item), item });
 });
 
 app.post("/api/items/:id/archive", (req, res) => {
   const item = archiveItem(req.params.id);
   const store = getStore();
+  shareWithPhone();
   res.json({ ok: Boolean(item), item, archive: store.archive, items: store.items });
 });
 
@@ -190,17 +213,20 @@ app.post("/api/read-all", (_req, res) => {
 app.post("/api/archive/:id/delete", (req, res) => {
   const item = deleteArchived(req.params.id);
   const store = getStore();
+  shareWithPhone();
   res.json({ ok: Boolean(item), item, archive: store.archive, hidden: hiddenKeys(store) });
 });
 
 app.post("/api/delete-all", (req, res) => {
   const target = req.body && req.body.target === "archive" ? "archive" : "items";
   const store = target === "archive" ? deleteAllArchived() : deleteAllItems();
+  shareWithPhone();
   res.json({ ok: true, items: store.items, archive: store.archive, hidden: hiddenKeys(store) });
 });
 
 app.post("/api/purge-read", (_req, res) => {
   const store = purgeRead();
+  shareWithPhone();
   res.json({ ok: true, items: store.items, hidden: hiddenKeys(store) });
 });
 
@@ -224,6 +250,9 @@ const hosted = Boolean(process.env.RENDER || process.env.RAILWAY_ENVIRONMENT);
 app.listen(PORT, HOST, () => {
   console.log(`Alerta Agraria CyL en http://localhost:${PORT}`);
   for (const url of lanUrls()) console.log(`Móvil (misma Wi-Fi): ${url}`);
-  if (!hosted) startPublicTunnel(PORT);
+  if (!hosted) {
+    startPublicTunnel(PORT);
+    setInterval(shareWithPhone, 30000);
+  }
   runCollect("arranque").catch((err) => console.error(err));
 });

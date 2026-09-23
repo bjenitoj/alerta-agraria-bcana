@@ -130,9 +130,30 @@ function writeSet(name, values) {
 function absorbHidden(list) {
   const set = readSet("alerta_ocultas");
   for (const key of list || []) {
-    if (String(key).startsWith("u:") || String(key).startsWith("t:")) set.add(key);
+    if (/^(u|t|x|r):/.test(String(key))) set.add(key);
   }
   writeSet("alerta_ocultas", set);
+}
+
+function rememberMark(item, prefix) {
+  const url = canonicalUrl(item?.url);
+  if (!url) return;
+  const set = readSet("alerta_ocultas");
+  set.add(prefix + url);
+  writeSet("alerta_ocultas", set);
+}
+
+async function pushLocalHidden() {
+  if (!token) return;
+  const hidden = [...readSet("alerta_ocultas"), ...readSet("alerta_borradas")].filter((key) => /^(u|t|x|r):/.test(String(key)));
+  if (!hidden.length) return;
+  try {
+    await api("/api/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hidden, archive: [] }),
+    });
+  } catch {}
 }
 
 function remember(item, bucket) {
@@ -393,17 +414,28 @@ function hideGate() {
   document.body.classList.remove("locked");
 }
 
-async function load() {
-  const res = await api("/api/state");
-  if (res.status === 401) {
-    showGate();
-    throw new Error("clave");
+let loading = false;
+
+async function load(options = {}) {
+  if (loading) return;
+  loading = true;
+  const y = options.keepScroll ? window.scrollY : 0;
+  try {
+    await pushLocalHidden();
+    const res = await api("/api/state");
+    if (res.status === 401) {
+      showGate();
+      throw new Error("clave");
+    }
+    state = await res.json();
+    absorbHidden(state.hidden);
+    if (!active) active = "todas";
+    hideGate();
+    render();
+    if (options.keepScroll) window.scrollTo(0, y);
+  } finally {
+    loading = false;
   }
-  state = await res.json();
-  absorbHidden(state.hidden);
-  if (!active) active = "todas";
-  hideGate();
-  render();
 }
 
 async function refresh() {
@@ -456,6 +488,7 @@ async function markCardRead(id, card) {
   renderTabs();
   renderSummary();
   if (onlyNewEl.checked) renderFeed();
+  rememberMark(item, "r:");
   await api(`/api/items/${id}/read`, { method: "POST" });
 }
 
@@ -472,6 +505,7 @@ async function deleteArchivedById(id) {
   if (item) {
     remember(item, "alerta_ocultas");
     remember(item, "alerta_borradas");
+    rememberMark(item, "x:");
   }
   const res = await api(`/api/archive/${id}/delete`, { method: "POST" });
   const data = await res.json();
@@ -541,7 +575,10 @@ readAllBtn.addEventListener("click", async () => {
   const batch = target === "archive" ? state.archive : state.items;
   for (const item of batch || []) {
     remember(item, "alerta_ocultas");
-    if (target === "archive") remember(item, "alerta_borradas");
+    if (target === "archive") {
+      remember(item, "alerta_borradas");
+      rememberMark(item, "x:");
+    }
   }
   const res = await api("/api/delete-all", {
     method: "POST",
@@ -589,3 +626,8 @@ boot().catch((err) => {
   if (err.message === "clave") return;
   stampEl.textContent = `No se pudo cargar el panel: ${err.message}`;
 });
+
+setInterval(() => {
+  if (!token || document.body.classList.contains("locked")) return;
+  load({ keepScroll: true }).catch(() => {});
+}, 30000);
