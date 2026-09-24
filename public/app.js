@@ -130,7 +130,7 @@ function writeSet(name, values) {
 function absorbHidden(list) {
   const set = readSet("alerta_ocultas");
   for (const key of list || []) {
-    if (/^(u|t|x|r):/.test(String(key))) set.add(key);
+    if (/^(u|t|x|r|p):/.test(String(key))) set.add(key);
   }
   writeSet("alerta_ocultas", set);
 }
@@ -143,9 +143,17 @@ function rememberMark(item, prefix) {
   writeSet("alerta_ocultas", set);
 }
 
+function forgetMark(item, prefix) {
+  const url = canonicalUrl(item?.url);
+  if (!url) return;
+  const set = readSet("alerta_ocultas");
+  set.delete(prefix + url);
+  writeSet("alerta_ocultas", set);
+}
+
 async function pushLocalHidden() {
   if (!token) return;
-  const hidden = [...readSet("alerta_ocultas"), ...readSet("alerta_borradas")].filter((key) => /^(u|t|x|r):/.test(String(key)));
+  const hidden = [...readSet("alerta_ocultas"), ...readSet("alerta_borradas")].filter((key) => /^(u|t|x|r|p):/.test(String(key)));
   if (!hidden.length) return;
   try {
     await api("/api/sync", {
@@ -478,17 +486,31 @@ async function archiveById(id) {
 
 async function markCardRead(id, card) {
   const item = (state.items || []).find((it) => it.id === id);
-  if (!item || item.read) return;
-  item.read = true;
+  if (!item) return;
+  item.read = !item.read;
+  if (item.read) {
+    rememberMark(item, "r:");
+    forgetMark(item, "p:");
+  } else {
+    forgetMark(item, "r:");
+    rememberMark(item, "p:");
+  }
   if (card) {
-    card.classList.add("read");
-    card.classList.remove("new");
-    card.querySelector(".badge.new")?.remove();
+    card.classList.toggle("read", item.read);
+    card.classList.toggle("new", !item.read);
+    const meta = card.querySelector(".meta");
+    const badge = card.querySelector(".badge.new");
+    if (item.read) badge?.remove();
+    else if (meta && !badge) {
+      const mark = document.createElement("span");
+      mark.className = "badge new";
+      mark.textContent = "Nueva";
+      meta.insertBefore(mark, meta.lastElementChild);
+    }
   }
   renderTabs();
   renderSummary();
   if (onlyNewEl.checked) renderFeed();
-  rememberMark(item, "r:");
   await api(`/api/items/${id}/read`, { method: "POST" });
 }
 
