@@ -135,11 +135,12 @@ async function syncWithPhone() {
     "Content-Type": "application/json",
   };
   const estado = await fetch(PHONE_URL + "/api/state", { headers });
-  const remoto = await estado.json();
+  const remoto = await readBody(estado);
   if (!estado.ok) throw new Error(remoto.error || "No se pudo leer el movil");
   applyShared({
     hidden: Array.isArray(remoto.hidden) ? remoto.hidden : [],
     archive: Array.isArray(remoto.archive) ? remoto.archive : [],
+    items: Array.isArray(remoto.items) ? remoto.items : [],
   });
   const local = sharedState();
   const res = await fetch(PHONE_URL + "/api/sync", {
@@ -147,7 +148,7 @@ async function syncWithPhone() {
     headers,
     body: JSON.stringify(local),
   });
-  const data = await res.json();
+  const data = await readBody(res);
   if (!res.ok || data.ok === false) throw new Error(data.error || "No se copiaron los cambios");
   console.log("[alerta] Sincronizado con el movil");
 }
@@ -214,11 +215,22 @@ app.get("/api/state", (_req, res) => {
   });
 });
 
+async function readBody(res) {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("Respuesta invalida del movil");
+  }
+}
+
 app.post("/api/sync", (req, res) => {
   const body = req.body || {};
   const store = applyShared({
     hidden: Array.isArray(body.hidden) ? body.hidden : [],
     archive: Array.isArray(body.archive) ? body.archive : [],
+    items: Array.isArray(body.items) ? body.items : [],
   });
   res.json({
     ok: true,
