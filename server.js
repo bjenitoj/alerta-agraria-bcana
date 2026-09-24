@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,8 +22,8 @@ import {
   deleteAllItems,
   applyShared,
   sharedKeys,
+  sharedState,
 } from "./lib/store.js";
-import { syncWithPhone } from "./lib/sync-remote.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT || 3847);
@@ -96,6 +97,60 @@ app.use("/api", (req, res, next) => {
 let collecting = false;
 let syncing = false;
 let syncQueued = false;
+const PHONE_URL = "https://alerta-agraria-bcana.onrender.com";
+
+function readAccessKey() {
+  const files = [
+    path.join(__dirname, "Clave de entrada.txt"),
+    "C:\\Users\\bcana\\Desktop\\Clave de entrada Alerta Agraria.txt",
+  ];
+  for (const file of files) {
+    try {
+      const line = fs
+        .readFileSync(file, "utf8")
+        .split(/\r?\n/)
+        .map((part) => part.trim())
+        .find((part) => part.includes("#") && part.length <= 20);
+      if (line) return line;
+    } catch {
+      /* el archivo puede no estar */
+    }
+  }
+  return "";
+}
+
+async function syncWithPhone() {
+  if (process.env.RENDER) return;
+  const key = readAccessKey();
+  if (!key) throw new Error("No encuentro la clave de entrada");
+  const loginRes = await fetch(PHONE_URL + "/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key }),
+  });
+  const loginData = await loginRes.json();
+  if (!loginRes.ok || !loginData.token) throw new Error(loginData.error || "No se pudo entrar");
+  const headers = {
+    Authorization: "Bearer " + loginData.token,
+    "Content-Type": "application/json",
+  };
+  const estado = await fetch(PHONE_URL + "/api/state", { headers });
+  const remoto = await estado.json();
+  if (!estado.ok) throw new Error(remoto.error || "No se pudo leer el movil");
+  applyShared({
+    hidden: Array.isArray(remoto.hidden) ? remoto.hidden : [],
+    archive: Array.isArray(remoto.archive) ? remoto.archive : [],
+  });
+  const local = sharedState();
+  const res = await fetch(PHONE_URL + "/api/sync", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(local),
+  });
+  const data = await res.json();
+  if (!res.ok || data.ok === false) throw new Error(data.error || "No se copiaron los cambios");
+  console.log("[alerta] Sincronizado con el movil");
+}
 
 function shareWithPhone() {
   if (process.env.RENDER) return;
@@ -251,7 +306,11 @@ app.listen(PORT, HOST, () => {
   console.log(`Alerta Agraria CyL en http://localhost:${PORT}`);
   for (const url of lanUrls()) console.log(`Móvil (misma Wi-Fi): ${url}`);
   if (!hosted) {
-    startPublicTunnel(PORT);
+    try {
+      startPublicTunnel(PORT);
+    } catch (err) {
+      console.error("[alerta] Tunel no disponible:", err.message);
+    }
     setInterval(shareWithPhone, 30000);
   }
   runCollect("arranque").catch((err) => console.error(err));
