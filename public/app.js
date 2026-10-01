@@ -128,7 +128,7 @@ function writeSet(name, values) {
 }
 
 function absorbHidden(list) {
-  const set = readSet("alerta_ocultas");
+  const set = new Set();
   for (const key of list || []) {
     if (/^(u|t|x|r|p):/.test(String(key))) set.add(key);
   }
@@ -429,7 +429,6 @@ async function load(options = {}) {
   loading = true;
   const y = options.keepScroll ? window.scrollY : 0;
   try {
-    await pushLocalHidden();
     const res = await api("/api/state");
     if (res.status === 401) {
       showGate();
