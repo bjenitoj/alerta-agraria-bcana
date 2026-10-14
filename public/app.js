@@ -86,11 +86,33 @@ function canonicalUrl(url) {
   try {
     const parsed = new URL(String(url || ""));
     parsed.hash = "";
+    for (const key of [...parsed.searchParams.keys()]) {
+      if (/^(utm_|fbclid|mc_|blobheader|blobnocache)/i.test(key)) parsed.searchParams.delete(key);
+    }
     const pathname = parsed.pathname.replace(/\/+$/, "") || "/";
-    return `${parsed.hostname.replace(/^www\./, "")}${pathname}${parsed.search}`.toLowerCase();
+    const query = parsed.searchParams.toString();
+    return `${parsed.hostname.replace(/^www\./, "")}${pathname}${query ? `?${query}` : ""}`.toLowerCase();
   } catch {
     return String(url || "").split("#")[0].trim().toLowerCase();
   }
+}
+
+function documentKeys(url, title = "") {
+  const found = new Set();
+  let host = "";
+  try {
+    const parsed = new URL(String(url || ""));
+    host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+    const id = parsed.searchParams.get("id");
+    if (host && id && id.trim().length >= 6) found.add(`d:${host}:${id.trim().toLowerCase()}`);
+  } catch {}
+  const blob = `${url || ""} ${title || ""}`;
+  for (const match of blob.matchAll(/\b((?:boe|doue|bocyl)[-–][a-z0-9]+(?:[-–][a-z0-9]+){2,6})\b/gi)) {
+    found.add(`d:${match[1].replace(/–/g, "-").toLowerCase()}`);
+  }
+  const uuid = blob.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  if (uuid) found.add(`d:${uuid[0].toLowerCase()}`);
+  return [...found];
 }
 
 function titleKey(title) {
@@ -110,6 +132,7 @@ function storyKeys(item) {
   const title = titleKey(item?.title);
   if (url) keys.push(`u:${url}`);
   if (title.length >= 40) keys.push(`t:${title}`);
+  for (const key of documentKeys(item?.url, item?.title)) keys.push(key);
   return keys;
 }
 
@@ -123,16 +146,33 @@ function readSet(name) {
 
 function writeSet(name, values) {
   try {
-    localStorage.setItem(name, JSON.stringify([...values].slice(-2000)));
+    localStorage.setItem(name, JSON.stringify([...values].slice(-4000)));
   } catch {}
 }
 
 function absorbHidden(list) {
   const set = new Set();
+  const gone = readSet("alerta_suprimidas");
   for (const key of list || []) {
-    if (/^(u|t|x|r|p):/.test(String(key))) set.add(key);
+    const text = String(key);
+    if (/^(u|t|x|r|p|d):/.test(text)) set.add(text);
+    if (/^(u|t|x|d):/.test(text)) gone.add(text);
   }
   writeSet("alerta_ocultas", set);
+  writeSet("alerta_suprimidas", gone);
+}
+
+async function pushSuppressed() {
+  if (!token) return;
+  const hidden = [...readSet("alerta_suprimidas")].filter((key) => /^(u|t|x|d):/.test(String(key)));
+  if (!hidden.length) return;
+  try {
+    await api("/api/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hidden, archive: [], items: [] }),
+    });
+  } catch {}
 }
 
 function rememberMark(item, prefix) {
@@ -153,7 +193,7 @@ function forgetMark(item, prefix) {
 
 async function pushLocalHidden() {
   if (!token) return;
-  const hidden = [...readSet("alerta_ocultas"), ...readSet("alerta_borradas")].filter((key) => /^(u|t|x|r|p):/.test(String(key)));
+  const hidden = [...readSet("alerta_ocultas"), ...readSet("alerta_borradas"), ...readSet("alerta_suprimidas")].filter((key) => /^(u|t|x|r|p|d):/.test(String(key)));
   if (!hidden.length) return;
   try {
     await api("/api/sync", {
@@ -170,6 +210,10 @@ function remember(item, bucket) {
   writeSet(bucket, set);
 }
 
+function suppress(item) {
+  remember(item, "alerta_suprimidas");
+}
+
 function isRecent(item) {
   const when = item?.publishedAt;
   if (!when) return false;
@@ -183,14 +227,15 @@ function isRecent(item) {
   return age <= 15;
 }
 
-function unseen(items, bucket) {
+function unseen(items, bucket, options = {}) {
   const hidden = readSet(bucket);
+  const gone = options.keepArchived ? new Set() : readSet("alerta_suprimidas");
   const seenUrl = new Set();
   const seenTitle = new Set();
   const out = [];
   for (const item of items || []) {
     const keys = storyKeys(item);
-    if (keys.some((key) => hidden.has(key))) continue;
+    if (keys.some((key) => hidden.has(key) || gone.has(key))) continue;
     const url = canonicalUrl(item.url);
     const title = titleKey(item.title);
     if (url && seenUrl.has(url)) continue;
@@ -248,7 +293,7 @@ function filtered() {
 
 function filteredArchive() {
   const q = qEl.value.trim().toLowerCase();
-  return unseen(state.archive || [], "alerta_borradas").filter((item) => {
+  return unseen(state.archive || [], "alerta_borradas", { keepArchived: true }).filter((item) => {
     if (!q) return true;
     return `${item.title} ${item.url} ${item.sourceName}`.toLowerCase().includes(q);
   });
@@ -429,6 +474,7 @@ async function load(options = {}) {
   loading = true;
   const y = options.keepScroll ? window.scrollY : 0;
   try {
+    await pushSuppressed();
     const res = await api("/api/state");
     if (res.status === 401) {
       showGate();
@@ -526,11 +572,13 @@ async function deleteArchivedById(id) {
   if (item) {
     remember(item, "alerta_ocultas");
     remember(item, "alerta_borradas");
+    suppress(item);
     rememberMark(item, "x:");
   }
   const res = await api(`/api/archive/${id}/delete`, { method: "POST" });
   const data = await res.json();
   if (!data.ok) return;
+  if (data.hidden) absorbHidden(data.hidden);
   state.archive = Array.isArray(data.archive)
     ? data.archive
     : (state.archive || []).filter((it) => it.id !== id);
@@ -554,7 +602,10 @@ feedEl.addEventListener("click", async (ev) => {
 
 function purgeReadOnClose() {
   for (const item of state.items || []) {
-    if (item.read) remember(item, "alerta_ocultas");
+    if (item.read) {
+      remember(item, "alerta_ocultas");
+      suppress(item);
+    }
   }
   api("/api/purge-read", {
     method: "POST",
@@ -579,13 +630,17 @@ sectorEl.addEventListener("change", render);
 refreshBtn.addEventListener("click", refresh);
 clearReadBtn.addEventListener("click", async () => {
   const read = (state.items || []).filter((item) => item.read);
-  for (const item of read) remember(item, "alerta_ocultas");
+  for (const item of read) {
+    remember(item, "alerta_ocultas");
+    suppress(item);
+  }
   const res = await api("/api/purge-read", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: "{}",
   });
   const data = await res.json();
+  if (data.hidden) absorbHidden(data.hidden);
   if (data.items) state.items = data.items;
   else state.items = (state.items || []).filter((item) => !item.read);
   render();
@@ -596,6 +651,7 @@ readAllBtn.addEventListener("click", async () => {
   const batch = target === "archive" ? state.archive : state.items;
   for (const item of batch || []) {
     remember(item, "alerta_ocultas");
+    suppress(item);
     if (target === "archive") {
       remember(item, "alerta_borradas");
       rememberMark(item, "x:");
@@ -607,6 +663,7 @@ readAllBtn.addEventListener("click", async () => {
     body: JSON.stringify({ target }),
   });
   const data = await res.json();
+  if (data.hidden) absorbHidden(data.hidden);
   if (data.items) state.items = data.items;
   if (data.archive) state.archive = data.archive;
   render();
