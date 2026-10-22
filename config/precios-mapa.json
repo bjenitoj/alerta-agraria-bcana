@@ -1,0 +1,17 @@
+{
+  "pagina": "https://www.mapa.gob.es/es/estadistica/temas/estadisticas-agrarias/economia/precios-medios-nacionales/",
+  "fuente": "Ministerio de Agricultura, Pesca y Alimentación · Precios medios nacionales (semanales)",
+  "horasCache": 12,
+  "productos": [
+    { "id": "trigo_blando", "nombre": "Trigo blando", "grupo": "Cereales", "patron": "^Trigo blando" },
+    { "id": "cebada_pienso", "nombre": "Cebada pienso", "grupo": "Cereales", "patron": "^Cebada pienso" },
+    { "id": "cebada_malta", "nombre": "Cebada malta", "grupo": "Cereales", "patron": "^Cebada malta" },
+    { "id": "maiz", "nombre": "Maíz grano", "grupo": "Cereales", "patron": "^Ma[ií]z grano" },
+    { "id": "girasol", "nombre": "Girasol convencional", "grupo": "Girasol", "patron": "^Pipa de girasol convencional" },
+    { "id": "girasol_ao", "nombre": "Girasol alto oleico", "grupo": "Girasol", "patron": "^Pipa de girasol alto oleico" },
+    { "id": "guisantes", "nombre": "Guisantes secos", "grupo": "Leguminosas", "patron": "^Guisantes secos" },
+    { "id": "lentejas", "nombre": "Lentejas", "grupo": "Leguminosas", "patron": "^Lentejas" },
+    { "id": "habas", "nombre": "Habas secas", "grupo": "Leguminosas", "patron": "^Habas secas" },
+    { "id": "garbanzos", "nombre": "Garbanzos", "grupo": "Leguminosas", "patron": "^Garbanzos" }
+  ]
+}

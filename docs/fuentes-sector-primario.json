@@ -1,0 +1,1723 @@
+[
+  {
+    "name": "BDNS / SNPSAP – API de convocatorias (filtrada por finalidad Agricultura, Pesca y Alimentación)",
+    "url": "https://www.infosubvenciones.es/bdnstrans/GE/es/inicio",
+    "feed_url": "https://www.infosubvenciones.es/bdnstrans/api/convocatorias/busqueda?vpd=GE&finalidad=12&page=0&pageSize=50&order=fechaRecepcion&direccion=desc",
+    "access": "API JSON (OpenAPI: https://www.infosubvenciones.es/bdnstrans/estaticos/doc/snpsap-api.json)",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca",
+      "alimentacion"
+    ],
+    "types": [
+      "ayudas"
+    ],
+    "scope": "nacional+CCAA+local",
+    "region": "España",
+    "notes": "Ya en la app, pero conviene: (1) filtrar finalidad=12 (AGRICULTURA, PESCA Y ALIMENTACIÓN); (2) regiones=29 (CyL) o 34 (Salamanca), códigos NUTS de /api/regiones; (3) pedir la ficha /api/convocatorias?vpd=GE&numConv=<código> que trae abierto, fechaInicioSolicitud, fechaFinSolicitud, presupuestoTotal, sectores y beneficiarios. Probado: finalidad=12&regiones=29 devuelve 492 convocatorias. Diaria.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": true,
+    "section": "Nacional"
+  },
+  {
+    "name": "BOE – canal RSS Ganadería y animales",
+    "url": "https://www.boe.es/rss/",
+    "feed_url": "https://www.boe.es/rss/canal_leg.php?l=l&c=117",
+    "access": "RSS",
+    "sectors": [
+      "ganaderia"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "nacional+UE",
+    "region": "España",
+    "notes": "55 elementos el 21/10/2026. Diaria. La app ya lee Agricultura (c=101) y Alimentación (c=102).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "BOE – canal RSS Pesca",
+    "url": "https://www.boe.es/rss/",
+    "feed_url": "https://www.boe.es/rss/canal_leg.php?l=l&c=122",
+    "access": "RSS",
+    "sectors": [
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "nacional+UE",
+    "region": "España",
+    "notes": "Resoluciones de la Secretaría General de Pesca, vedas, cuotas. Diaria.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "BOE – canal RSS Medio ambiente",
+    "url": "https://www.boe.es/rss/",
+    "feed_url": "https://www.boe.es/rss/canal_leg.php?l=l&c=119",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "desarrollo_rural"
+    ],
+    "types": [
+      "normativa"
+    ],
+    "scope": "nacional+UE",
+    "region": "España",
+    "notes": "Útil para nitratos, agua, fitosanitarios. Mucho ruido: filtrar por palabras clave.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "BOE – canal RSS Unión Europea",
+    "url": "https://www.boe.es/rss/",
+    "feed_url": "https://www.boe.es/rss/canal_leg.php?l=l&c=134",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "PAC"
+    ],
+    "scope": "UE (reseñado en BOE)",
+    "region": "España",
+    "notes": "141 elementos; recoge Reglamentos de ejecución UE. Filtrar por palabras clave PAC/agrícola.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "BOE – canales Agricultura, Alimentación y Ayudas",
+    "url": "https://www.boe.es/rss/",
+    "feed_url": "https://www.boe.es/rss/canal_leg.php?l=l&c=101 | https://www.boe.es/rss/canal_leg.php?l=l&c=102 | https://www.boe.es/rss/canal.php?c=ayudas",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "alimentacion"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Ya usados por la app. Verificados.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": true,
+    "section": "Nacional"
+  },
+  {
+    "name": "BOE – API de datos abiertos (sumario diario)",
+    "url": "https://www.boe.es/datosabiertos/api/api.php",
+    "feed_url": "https://www.boe.es/datosabiertos/api/boe/sumario/AAAAMMDD",
+    "access": "API JSON/XML",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Requiere cabecera 'Accept: application/json' (sin ella devuelve 400). Alternativa más estructurada que los RSS.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – RSS de noticias",
+    "url": "https://www.mapa.gob.es/es/prensa/ultimas-noticias/",
+    "feed_url": "https://www.mapa.gob.es/es/prensa/noticiasRss",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca",
+      "alimentacion"
+    ],
+    "types": [
+      "noticias",
+      "ayudas",
+      "PAC"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Feed general (incluye pesca). Ya en la app (prensa/RSS).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": true,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – RSS de agenda",
+    "url": "https://www.mapa.gob.es/es/prensa/ultimas-noticias/",
+    "feed_url": "https://www.mapa.gob.es/es/prensa/agendarss",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "agenda"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Reuniones, conferencias sectoriales (reparto de fondos a CCAA).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – Pesca (Secretaría General de Pesca)",
+    "url": "https://www.mapa.gob.es/es/pesca/temas/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "pesca"
+    ],
+    "types": [
+      "ayudas",
+      "normativa",
+      "noticias"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "No se encontró RSS propio de pesca; usar BOE c=122 + RSS de noticias MAPA.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – FEMPA (Fondo Europeo Marítimo, de Pesca y Acuicultura)",
+    "url": "https://www.mapa.gob.es/es/pesca/temas/fondos-europeos/fempa/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "pesca"
+    ],
+    "types": [
+      "ayudas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Programa y convocatorias del FEMPA 2021-2027.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "FEGA – Noticias y circulares PAC",
+    "url": "https://www.fega.gob.es/es/noticias",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC",
+      "ayudas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Ya en la app. Circulares de coordinación, importes de ecorregímenes, pagos FEAGA/FEADER. Desde la red de este servidor da error TLS; por WebFetch sí carga. Comprobar desde Render.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": true,
+    "section": "Nacional"
+  },
+  {
+    "name": "Red PAC (Red Rural Nacional) – RSS con convocatorias PEPAC de todas las CCAA",
+    "url": "https://www.redpac.es/",
+    "feed_url": "https://www.redpac.es/rss.xml",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "desarrollo_rural"
+    ],
+    "types": [
+      "ayudas",
+      "PAC"
+    ],
+    "scope": "nacional (todas las CCAA)",
+    "region": "España",
+    "notes": "Publica 'Convocatoria de ayuda-2026-PEPAC <CCAA>-nnnn' por cada convocatoria del Plan Estratégico PAC en cada comunidad. Ideal para escalar a toda España. Fechas del 05/10/2026.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – PAC 2023-2027 (PEPAC)",
+    "url": "https://www.mapa.gob.es/es/pac/pac-2023-2027",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Documentación oficial del Plan Estratégico.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – RASVE: últimos focos de enfermedades animales",
+    "url": "https://servicio.mapa.gob.es/rasve/Publico/Publico/ultimosfocos.aspx",
+    "feed_url": "",
+    "access": "HTML (tabla ASP.NET)",
+    "sectors": [
+      "ganaderia"
+    ],
+    "types": [
+      "alertas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "15 últimos focos (enfermedad, fecha, CCAA, provincia, municipio). Ej.: Newcastle 16/10/2026 en Castilla-La Mancha. Buscador: https://servicio.mapa.gob.es/rasve/Publico/Publico/BuscadorFocos.aspx",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – Situación sanitaria / consulta de focos",
+    "url": "https://www.mapa.gob.es/es/ganaderia/temas/sanidad-animal-higiene-ganadera/sanidad-animal/consulta-focos",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "ganaderia"
+    ],
+    "types": [
+      "alertas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Página de entrada a lengua azul, gripe aviar, DNC, etc.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – Sanidad vegetal / organismos nocivos",
+    "url": "https://www.mapa.gob.es/es/agricultura/temas/sanidad-vegetal/organismos-nocivos/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura"
+    ],
+    "types": [
+      "alertas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Plagas de cuarentena y planes de contingencia.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – Precios medios nacionales (semanal)",
+    "url": "https://www.mapa.gob.es/es/estadistica/temas/estadisticas-agrarias/economia/precios-medios-nacionales/",
+    "feed_url": "https://www.mapa.gob.es/dam/mapa/contenido/estadisticas/temas/estadisticas-agrarias/1.economicas/precios-medios/precios_medios_nacionales_2026-s36.xlsx",
+    "access": "XLSX (URL cambia por semana: ..._AAAA-sNN.xlsx)",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "precios"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Cereales, ganado, leche, frutas… El último fichero enlazado era la semana 36 de 2026: va con retraso.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "MAPA – Observatorio de la cadena alimentaria",
+    "url": "https://www.mapa.gob.es/es/alimentacion/temas/observatorio-cadena/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "alimentacion"
+    ],
+    "types": [
+      "precios"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Costes y márgenes por producto.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "ENESA – Seguros agrarios (MAPA)",
+    "url": "https://www.mapa.gob.es/es/enesa/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "ayudas",
+      "seguros"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Subvenciones al seguro agrario y plazos de contratación por línea.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "Agroseguro",
+    "url": "https://agroseguro.es/",
+    "feed_url": "",
+    "access": "HTML (WordPress; /feed/ y /rss dan 403)",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "seguros",
+      "alertas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Novedades de líneas de seguro y siniestros (p. ej. DANA). Bloquea curl (403); WebFetch sí carga la portada.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "AICA – Agencia de Información y Control Alimentarios",
+    "url": "https://www.aica.gob.es/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "alimentacion"
+    ],
+    "types": [
+      "normativa",
+      "precios"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Ley de la cadena, contratos alimentarios. Tiene API del Registro de Contratos (no de noticias).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "SAECA – Avales y financiación agraria",
+    "url": "https://saeca.es/",
+    "feed_url": "https://saeca.es/feed/",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "ayudas",
+      "financiacion"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Líneas de préstamos avalados (p. ej. ayudas extraordinarias). Poca frecuencia (último 30/06/2026).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "Mercasa – noticias de la red de Mercas",
+    "url": "https://www.mercasa.es/",
+    "feed_url": "https://www.mercasa.es/feed/",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "pesca",
+      "alimentacion"
+    ],
+    "types": [
+      "noticias",
+      "precios"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Útil sobre todo para mercados mayoristas; poco sobre ayudas.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "AEMET – Avisos meteorológicos (CAP) por CCAA",
+    "url": "https://www.aemet.es/es/rss_info/avisos/esp",
+    "feed_url": "https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAC67_RSS.xml",
+    "access": "RSS/Atom (CAP)",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "alertas",
+      "clima"
+    ],
+    "scope": "nacional/CCAA",
+    "region": "España",
+    "notes": "Castilla y León = AFAC67 (verificado); España = CAP_AFAE_RSS.xml. Códigos: 61 Andalucía, 62 Aragón, 63 Asturias, 64 Baleares, 65 Canarias, 66 Cantabria, 67 CyL, 68 CLM, 69 Cataluña, 70 Extremadura, 71 Galicia, 72 Madrid, 73 Murcia, 74 Navarra, 75 País Vasco, 76 La Rioja, 77 C. Valenciana (63 y 67 comprobados por título, resto según el índice de AEMET). También hay _ATOM.xml.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "AEMET OpenData (API)",
+    "url": "https://opendata.aemet.es/centrodedescargas/inicio",
+    "feed_url": "https://opendata.aemet.es/centrodedescargas/productosAEMET",
+    "access": "API REST (requiere API key gratuita)",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "clima"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Predicciones por municipio, observación, productos climatológicos (balance hídrico, etc.).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "SiAR – Sistema de Información Agroclimática para el Regadío",
+    "url": "https://observatorioregadio.gob.es/recursos-de-interes/siar/",
+    "feed_url": "",
+    "access": "HTML (descargas de datos de estaciones)",
+    "sectors": [
+      "agricultura"
+    ],
+    "types": [
+      "clima"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Datos agroclimáticos de estaciones y necesidades de riego. La antigua URL servicio.mapa.gob.es/websiar/ da 404.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "datos.gob.es – catálogo 'Medio rural y pesca' (API)",
+    "url": "https://datos.gob.es/",
+    "feed_url": "https://datos.gob.es/apidata/catalog/dataset/theme/medio-rural-pesca",
+    "access": "API JSON",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "datos"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Para descubrir datasets de todas las administraciones.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "Fundación Biodiversidad – convocatorias (economía azul / FEMPA)",
+    "url": "https://fundacion-biodiversidad.es/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "pesca"
+    ],
+    "types": [
+      "ayudas"
+    ],
+    "scope": "nacional",
+    "region": "España",
+    "notes": "Organismo intermedio de fondos (FEMPA, PRTR). Relevancia media para pescadores.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Nacional"
+  },
+  {
+    "name": "Junta CyL – Datos abiertos: Convocatorias de Ayudas y Subvenciones (API)",
+    "url": "https://datosabiertos.jcyl.es/web/es/datos-abiertos-castilla-leon.html",
+    "feed_url": "https://analisis.datosabiertos.jcyl.es/api/explore/v2.1/catalog/datasets/ayudas-y-subvenciones/records?where=materia%3D%22Agricultura%20y%20Ganader%C3%ADa%22&order_by=-fecha_publicacion&limit=100",
+    "access": "API JSON (Opendatasoft v2.1), también CSV/JSON export",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "ayudas",
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla y León",
+    "notes": "695 convocatorias, 121 de 'Agricultura y Ganadería'. Campos: titulo, fecha_publicacion, fecha_apertura, fecha_limite, plazo_presentacion, cuantia, destinatarios, codigo_bdns, enlace_contenido. Ojo: la más reciente indexada era del 30/01/2026, así que puede ir con retraso: usarla junto a la BDNS.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "Junta CyL – Datos abiertos: Solicitud Única PAC (superficies, solicitudes por SAC)",
+    "url": "https://datosabiertos.jcyl.es/",
+    "feed_url": "https://analisis.datosabiertos.jcyl.es/api/explore/v2.1/catalog/datasets?where=search(%22ayudas%22)",
+    "access": "API JSON",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC",
+      "datos"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla y León",
+    "notes": "Datasets 'solicitudes-sac', 'solicitudes-regimen-ayuda-sac', 'solicitudes-superficie-cultivo-provincia' (actualizados en jul-ago 2026).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "BOCyL",
+    "url": "https://bocyl.jcyl.es/",
+    "feed_url": "",
+    "access": "RSS + búsqueda (ya en la app)",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla y León",
+    "notes": "Ya en la app. Bloquea curl desde este servidor (TLS), WebFetch OK.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": true,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "Junta CyL – PAC, Agricultura y Ganadería, Comunicación, ITACyL",
+    "url": "https://pac.jcyl.es/",
+    "feed_url": "",
+    "access": "HTML (ya en la app)",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC",
+      "ayudas",
+      "noticias"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla y León",
+    "notes": "Ya en la app: pac.jcyl.es, agriculturaganaderia.jcyl.es, comunicacion.jcyl.es, itacyl.es (todas 200).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": true,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "ITACyL – Portal de Plagas",
+    "url": "https://plagas.itacyl.es/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura"
+    ],
+    "types": [
+      "alertas"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla y León",
+    "notes": "Avisos fitosanitarios y seguimiento de plagas (topillo, etc.).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "ITACyL – Portal de APIs (Sativum, etc.)",
+    "url": "https://portal.api.itacyl.es/portal/",
+    "feed_url": "https://portal.api.itacyl.es/portal/apis/",
+    "access": "API REST (con token)",
+    "sectors": [
+      "agricultura"
+    ],
+    "types": [
+      "clima",
+      "datos"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla y León",
+    "notes": "Sativum: parcelas, clima, suelo, recomendaciones de abonado (convenio FEGA-ITACyL). Útil para funciones avanzadas.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "InfoRiego (ITACyL) – estaciones agrometeorológicas",
+    "url": "https://www.inforiego.org/opencms/opencms/estaciones/index.html",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura"
+    ],
+    "types": [
+      "clima"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla y León",
+    "notes": "Datos agroclimáticos de unas 54 estaciones. http://www.inforiego.org/ (raíz) da error 500/timeout; usar la ruta https indicada.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "BOP de Salamanca (Diputación)",
+    "url": "https://sede.diputaciondesalamanca.gob.es/opencms/opencms/sede/BOP/",
+    "feed_url": "",
+    "access": "HTML + PDF (BOP-SA-AAAAMMDD-NNN.pdf); sin RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "ayudas",
+      "normativa"
+    ],
+    "scope": "provincia",
+    "region": "Salamanca",
+    "notes": "Sumario diario con extractos BDNS de ayuntamientos y Diputación. Bloquea curl (TLS) desde este servidor; WebFetch OK. Mucho contenido no agrario: filtrar.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "Diputación de Salamanca – Subvenciones de Agricultura y Ganadería",
+    "url": "https://www.lasalina.es/economiayhacienda/agriculturayganaderia/subvenciones/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "ayudas"
+    ],
+    "scope": "provincia",
+    "region": "Salamanca",
+    "notes": "Reposición de ovino/caprino, ferias, OPAs, reproductores selectos… con plazos.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "Lonja Agropecuaria de Salamanca – cotizaciones semanales",
+    "url": "https://www.lasalina.es/economiayhacienda/agriculturayganaderia/mercado/lonja/",
+    "feed_url": "http://www.lasalina.es/Aplicaciones/lonja/Cotizaciones.jsp",
+    "access": "HTML/PDF semanal (los lunes)",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "precios"
+    ],
+    "scope": "provincia",
+    "region": "Salamanca",
+    "notes": "Cereales y ganado (lechazo, terneros, añojo…). Referencia de precios en Salamanca. La app de cotizaciones carga lenta. Existe además un dataset en datosabiertossalamanca.es ('cotizaciones-semanales-de-la-lonja-de-salamanca'), pero está tras Cloudflare (403) desde curl.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Castilla y León / Salamanca"
+  },
+  {
+    "name": "BOJA – Atom (boletín completo y por secciones)",
+    "url": "https://www.juntadeandalucia.es/eboja/",
+    "feed_url": "https://www.juntadeandalucia.es/boja/distribucion/boja.xml",
+    "access": "Atom",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Andalucía",
+    "notes": "Secciones: s51.xml (1. Disposiciones generales), s53.xml (2.2), etc. (índice: https://www.juntadeandalucia.es/informacion/fuentesweb.html). boja.xml y s51.xml verificados por curl.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Consejería de Agricultura, Pesca, Agua y Desarrollo Rural – Solicitud Única PAC 2026",
+    "url": "https://www.juntadeandalucia.es/organismos/agriculturapescaaguaydesarrollorural/areas/politica-agraria-comun/ayudas-pac/paginas/solicitud-unica-2026.html",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "PAC",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Andalucía",
+    "notes": "El dominio bloquea curl desde este servidor; WebFetch OK.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOA – Boletín Oficial de Aragón",
+    "url": "https://www.boa.aragon.es/",
+    "feed_url": "",
+    "access": "HTML; suscripción por email (aplicaciones.aragon.es/sus_publico), con tema 'Ayudas y subvenciones'",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Aragón",
+    "notes": "No se localizó una URL RSS pública verificable.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Gobierno de Aragón – PAC 2026 y Novedades",
+    "url": "https://www.aragon.es/pac-2026",
+    "feed_url": "https://www.aragon.es/pac-2026/novedades",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Aragón",
+    "notes": "También https://www.aragon.es/temas/agricultura-ganaderia-medio-rural/politica-agraria-comun-pac",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOPA",
+    "url": "https://sede.asturias.es/ultimos-boletines",
+    "feed_url": "",
+    "access": "HTML; alertas por email (miBOPA); sin RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Principado de Asturias",
+    "notes": "Bloquea curl; WebFetch OK.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Asturias – Ayudas de la PAC 2023-2027",
+    "url": "https://www.asturias.es/temas/agricultura-gestion-forestal/ayudas-agrarias/ayudas-pac",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Principado de Asturias",
+    "notes": "Fichas de cada línea, avisos (fuerza mayor, monitorización).",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOIB – RSS",
+    "url": "https://www.caib.es/eboibfront/",
+    "feed_url": "https://www.caib.es/eboibfront/indexrss.do?lang=es",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Illes Balears",
+    "notes": "Boletín diario.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "FOGAIBA – Ayudas directas PAC 2026 (sede)",
+    "url": "https://www.caib.es/seucaib/es/200/persones/tramites/tramite/6451166",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Illes Balears",
+    "notes": "El portal https://www.caib.es/sites/fogaiba/ redirige a un login de intranet.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOC Canarias – RSS (índice de feeds)",
+    "url": "https://www.gobiernodecanarias.org/boc/",
+    "feed_url": "https://www.gobiernodecanarias.org/boc/feeds/",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Canarias",
+    "notes": "Hay feeds por capítulo, cabildo y consejería. El de consejería/agricultura.rss responde pero estaba vacío (0 elementos): mejor por capítulo (capitulo/otras_resoluciones.rss, etc.) y filtrar.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Consejería de Agricultura, Ganadería, Pesca y Soberanía Alimentaria (POSEI)",
+    "url": "https://www.gobiernodecanarias.org/agpsa/",
+    "feed_url": "https://www.gobiernodecanarias.org/agpsa/viceconsejeria/temas/posei/",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Canarias",
+    "notes": "POSEI sustituye a buena parte de los pagos directos en Canarias.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOC Cantabria",
+    "url": "https://boc.cantabria.es/boces/inicioAvisos.do",
+    "feed_url": "",
+    "access": "HTML; avisos por email (avisosboc.cantabria.es)",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Cantabria",
+    "notes": "Bloquea curl; WebFetch OK. No se encontró RSS verificable.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Cantabria – Solicitud Única 2026 (sede)",
+    "url": "https://sede.cantabria.es/sede/catalogo-de-tramites/convocatoria/orden-des-37-2025-solicitud-unica-2026/2458",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Cantabria",
+    "notes": "Solo encontrada por búsqueda; curl bloqueado. Pendiente de verificar con navegador.",
+    "verified": "NO VERIFICADO (curl bloqueado)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "DOCM",
+    "url": "https://docm.jccm.es/docm/",
+    "feed_url": "",
+    "access": "HTML; alertas por email (docm.jccm.es/docm/alertas.do)",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla-La Mancha",
+    "notes": "Sin RSS localizado.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Aplicaciones de Agricultura CLM – PAC",
+    "url": "https://apliagri.castillalamancha.es/pac",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Castilla-La Mancha",
+    "notes": "Portal de la Consejería de Agricultura para la PAC.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "DOGC",
+    "url": "https://dogc.gencat.cat/",
+    "feed_url": "",
+    "access": "HTML + XML/RDF por documento; alertas por email; sin RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Cataluña",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Govern.cat – RSS de notas de prensa (todos los departamentos)",
+    "url": "https://govern.cat/salapremsa/",
+    "feed_url": "https://govern.cat/salapremsa/api/v1/rss/search?objectType=1",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "noticias",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Cataluña",
+    "notes": "Incluye el Departament d'Agricultura, Ramaderia, Pesca i Alimentació; filtrar por palabras clave.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "DARPA – Declaració Única Agrària (DUN)",
+    "url": "https://agricultura.gencat.cat/ca/ambits/desenvolupament-rural/declaracio-unica-agraria/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Cataluña",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Ruralcat",
+    "url": "https://ruralcat.gencat.cat/",
+    "feed_url": "https://ruralcat.gencat.cat/web/guest/rss_ruralcat",
+    "access": "HTML (la página de RSS no devolvió un feed XML)",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "noticias",
+      "formacion"
+    ],
+    "scope": "CCAA",
+    "region": "Cataluña",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "DOE – RSS por secciones",
+    "url": "https://doe.juntaex.es/",
+    "feed_url": "https://doe.juntaex.es/rss/rss.php?seccion=1",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Extremadura",
+    "notes": "seccion=0..5 (1 Disposiciones generales, 3 Otras resoluciones). Índice: https://doe.juntaex.es/rss/index.php",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Juntaex – PAC (noticias de plazos)",
+    "url": "https://www.juntaex.es/w/ampliacion-plazo-solicitud-unica-pac-1",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Extremadura",
+    "notes": "Gestión en sga.juntaex.es.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "DOG – RSS por sección",
+    "url": "https://www.xunta.gal/diario-oficial-galicia",
+    "feed_url": "https://www.xunta.gal/diario-oficial-galicia/rss/Sumario_gl.rss",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Galicia",
+    "notes": "Seccion6_gl.rss = III. Outras disposicións (donde salen las ayudas). Índice: /diario-oficial-galicia/suscricionsRSS.do",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Consellería do Medio Rural – novas",
+    "url": "https://mediorural.xunta.gal/gl/recursos/novas",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "noticias",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Galicia",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "FOGGA (organismo pagador PAC)",
+    "url": "https://fogga.xunta.gal/gl",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Galicia",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Consellería do Mar / Pesca de Galicia",
+    "url": "https://mar.xunta.gal/gl",
+    "feed_url": "https://www.pescadegalicia.gal/",
+    "access": "HTML",
+    "sectors": [
+      "pesca"
+    ],
+    "types": [
+      "ayudas",
+      "normativa",
+      "precios"
+    ],
+    "scope": "CCAA",
+    "region": "Galicia",
+    "notes": "Clave para pesca y marisqueo (pescadegalicia.gal incluye datos de lonjas).",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOR – Boletín Oficial de La Rioja",
+    "url": "https://www.larioja.org/bor",
+    "feed_url": "",
+    "access": "HTML tras Cloudflare; 'BOR a la carta' por email",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "La Rioja",
+    "notes": "Cloudflare bloquea curl y WebFetch: requiere navegador.",
+    "verified": "BLOQUEADO (Cloudflare)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "La Rioja – Agricultura y Ganadería",
+    "url": "https://web.larioja.org/agricultura-y-ganaderia",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "La Rioja",
+    "notes": "Redirección verificada desde www.larioja.org/agricultura/es; contenido bloqueado por Cloudflare.",
+    "verified": "BLOQUEADO (Cloudflare)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOCM – RSS de sumarios",
+    "url": "https://www.bocm.es/",
+    "feed_url": "https://www.bocm.es/sumarios.rss",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Comunidad de Madrid",
+    "notes": "También /boletines.rss y /ultimo-boletin.xml. Nota: un elemento traía el año mal ('3026').",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Comunidad de Madrid – PAC ayudas directas",
+    "url": "https://www.comunidad.madrid/agricultura-ganaderia-medio-rural/politica-agricola-comun-pac-ayudas-directas",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Comunidad de Madrid",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BORM",
+    "url": "https://www.borm.es/",
+    "feed_url": "https://www.borm.es/services/boletin/ultimo",
+    "access": "HTML (SPA Angular); canales RSS dentro de la app (#/home/rss), sin URL de feed estable localizada",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Región de Murcia",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "CARM – Sede: Ayudas PAC (solicitud única)",
+    "url": "https://sede.carm.es/web/pagina?IDCONTENIDO=2154&IDTIPO=240&RASTRO=c%24m40293",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Región de Murcia",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BON – Boletín Oficial de Navarra",
+    "url": "https://bon.navarra.es/es/",
+    "feed_url": "",
+    "access": "HTML; alertas MiBON por email",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Comunidad Foral de Navarra",
+    "notes": "Bloquea curl; WebFetch OK.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Navarra – Política Agraria Común",
+    "url": "https://www.navarra.es/es/agricultura-y-ganaderia/pac",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Comunidad Foral de Navarra",
+    "notes": "Bloquea curl; WebFetch OK.",
+    "verified": "OK 2026-10-21 (WebFetch; bloqueado desde curl del servidor)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOPV – último boletín (XML)",
+    "url": "https://www.euskadi.eus/bopv",
+    "feed_url": "https://www.euskadi.eus/bopv2/datos/Ultimo.xml",
+    "access": "XML/RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "País Vasco",
+    "notes": "Boletín del día en XML.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Gobierno Vasco – Agricultura, Pesca e Industria Alimentaria",
+    "url": "https://www.euskadi.eus/eusko-jaurlaritza/nekazaritza-arrantza-elikagai-industria/hasiera/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "ayudas",
+      "noticias"
+    ],
+    "scope": "CCAA",
+    "region": "País Vasco",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "DOGV",
+    "url": "https://dogv.gva.es/",
+    "feed_url": "",
+    "access": "HTML; alertas por email (dogv.gva.es/es/alertas-del-diari-oficial)",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa",
+      "ayudas"
+    ],
+    "scope": "CCAA",
+    "region": "Comunitat Valenciana",
+    "notes": "Sin RSS localizado.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Portal Agrari GVA – PAC",
+    "url": "https://portalagrari.gva.es/va/pac",
+    "feed_url": "https://agricultura.gva.es/va/pac1",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "CCAA",
+    "region": "Comunitat Valenciana",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "BOME – Boletín Oficial de Melilla",
+    "url": "https://bomemelilla.es/",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [],
+    "types": [
+      "normativa"
+    ],
+    "scope": "ciudad autónoma",
+    "region": "Ceuta y Melilla",
+    "notes": "Relevancia agraria mínima. Web del BOCCE (Ceuta) no respondió a curl.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Comunidades autónomas"
+  },
+  {
+    "name": "Comisión Europea – DG AGRI: noticias",
+    "url": "https://agriculture.ec.europa.eu/media/news_en",
+    "feed_url": "https://agriculture.ec.europa.eu/node/2/rss_en",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "PAC",
+      "noticias"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "30 elementos; último 20/10/2026.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "Comisión Europea – DG MARE: noticias de pesca",
+    "url": "https://oceans-and-fisheries.ec.europa.eu/news_en",
+    "feed_url": "https://oceans-and-fisheries.ec.europa.eu/node/2/rss_en",
+    "access": "RSS",
+    "sectors": [
+      "pesca"
+    ],
+    "types": [
+      "noticias",
+      "normativa"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "EUR-Lex – Actos del DOUE serie L (RSS)",
+    "url": "https://eur-lex.europa.eu/oj/daily-view/L-series/default.html",
+    "feed_url": "https://eur-lex.europa.eu/ES/display-feed.rss?rssId=222",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "normativa"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "En español. Sin filtro temático: filtrar por palabras clave o crear un RSS propio con cuenta en EUR-Lex. rssId=162 = toda la legislación del Parlamento y el Consejo.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "EU Agri-food Data Portal – API de precios",
+    "url": "https://agridata.ec.europa.eu/extensions/DataPortal/agricultural_markets.html",
+    "feed_url": "https://api.tech.ec.europa.eu/agrifood/api/beef/prices?memberStateCodes=ES&years=2026",
+    "access": "API JSON",
+    "sectors": [
+      "agricultura",
+      "ganaderia"
+    ],
+    "types": [
+      "precios"
+    ],
+    "scope": "UE (por Estado miembro)",
+    "region": "UE",
+    "notes": "Precios semanales por país (vacuno, cereales, leche, porcino, etc.). Ideal para la expansión europea.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "Comisión Europea – Press corner RSS",
+    "url": "https://ec.europa.eu/commission/presscorner/",
+    "feed_url": "https://ec.europa.eu/commission/presscorner/api/rss?language=es&pagesize=10",
+    "access": "RSS",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "noticias"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "General; filtrar por palabras clave.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "EFSA – todas las novedades",
+    "url": "https://www.efsa.europa.eu/en/news",
+    "feed_url": "https://www.efsa.europa.eu/en/all/rss",
+    "access": "RSS",
+    "sectors": [
+      "ganaderia",
+      "alimentacion"
+    ],
+    "types": [
+      "alertas"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "Gripe aviar, seguridad alimentaria.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "EU CAP Network",
+    "url": "https://eu-cap-network.ec.europa.eu/index_en",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "desarrollo_rural"
+    ],
+    "types": [
+      "PAC"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "ADIS – Animal Disease Information System",
+    "url": "https://food.ec.europa.eu/animals/animal-diseases/animal-disease-information-system-adis_en",
+    "feed_url": "",
+    "access": "HTML",
+    "sectors": [
+      "ganaderia"
+    ],
+    "types": [
+      "alertas"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "Funding & Tenders Portal (UE)",
+    "url": "https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home",
+    "feed_url": "",
+    "access": "HTML/SPA",
+    "sectors": [
+      "agricultura",
+      "ganaderia",
+      "pesca"
+    ],
+    "types": [
+      "ayudas"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "Convocatorias directas de la UE (Horizon, LIFE…), no de la PAC.",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "WOAH WAHIS (sanidad animal mundial)",
+    "url": "https://wahis.woah.org/",
+    "feed_url": "",
+    "access": "SPA",
+    "sectors": [
+      "ganaderia"
+    ],
+    "types": [
+      "alertas"
+    ],
+    "scope": "internacional",
+    "region": "Mundo",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  },
+  {
+    "name": "RASFF Window (alertas alimentarias UE)",
+    "url": "https://webgate.ec.europa.eu/rasff-window/screen/search",
+    "feed_url": "",
+    "access": "SPA",
+    "sectors": [
+      "alimentacion"
+    ],
+    "types": [
+      "alertas"
+    ],
+    "scope": "UE",
+    "region": "UE",
+    "notes": "",
+    "verified": "OK 2026-10-21 (curl 200)",
+    "in_app": false,
+    "section": "Unión Europea"
+  }
+]
