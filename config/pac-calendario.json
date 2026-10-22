@@ -1,0 +1,83 @@
+{
+  "campana": "2026",
+  "titulo": "Calendario de pagos de la PAC · campaña 2026",
+  "actualizado": "2026-10-22",
+  "aviso": {
+    "texto": "corresponde a las autoridades competentes de éstas realizarlo, el momento de hacerlo y las líneas de ayuda a abonar",
+    "contexto": "Sobre el pago por las comunidades autónomas, la nota del MAPA dice:",
+    "fuente": 0
+  },
+  "fuentes": [
+    {
+      "nombre": "MAPA · Nota de prensa del 16/10/2026 sobre los pagos anticipados de la PAC",
+      "organismo": "Ministerio de Agricultura, Pesca y Alimentación",
+      "url": "https://www.mapa.gob.es/es/prensa/ultimas-noticias/detalle_noticias/los-agricultores-y-ganaderos-espa-oles-percibir-n-2.691-millones-de-euros-en-pagos-anticipados-de-las-ayudas-directas-de-la-pac/2a822cc7-444e-4491-b71a-1782de651523",
+      "pdf": "https://www.mapa.gob.es/dam/mapa/contenido/prensa/notas-de-prensa/documentos/documentos-2026/26-10-16-pago-anticipado-pac.pdf",
+      "fecha": "2026-10-16"
+    },
+    {
+      "nombre": "FEGA · Díptico PAC 2026 (copia publicada en La Moncloa, 06/02/2026)",
+      "organismo": "Fondo Español de Garantía Agraria",
+      "url": "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/agricultura/Documents/2026/060226-diptico-pac-2026-fega.pdf",
+      "fecha": "2026-02-06"
+    },
+    {
+      "nombre": "FEGA · Información de campañas PAC",
+      "organismo": "Fondo Español de Garantía Agraria",
+      "url": "https://www.fega.gob.es/es/pepac-2023-2027/ayudas-directas/informacion-campanas-pac"
+    }
+  ],
+  "hitos": [
+    {
+      "id": "anticipo",
+      "titulo": "Anticipo",
+      "desde": "2026-10-16",
+      "hasta": "2026-11-30",
+      "fuente": 0,
+      "citas": [
+        { "fuente": 0, "texto": "adelanta a partir de hoy -y hasta el 30 de noviembre-" },
+        { "fuente": 0, "texto": "El pago anticipado puede llegar en esta campaña hasta el 75 % del total de las ayudas directas" },
+        { "fuente": 1, "texto": "Anticipo: entre el 16 de octubre y el 30 de noviembre, … podrás recibir hasta el 70% de las ayudas directas y el 85% de las medidas de desarrollo rural solicitadas. Ten cuenta que cada comunidad autónoma decide qué líneas de ayuda se incluyen en este anticipo." }
+      ],
+      "nota": "Las dos fuentes dan porcentajes distintos para las ayudas directas (75 % en la nota del MAPA del 16/10/2026; 70 % en el díptico del FEGA del 06/02/2026). Se muestran las dos citas."
+    },
+    {
+      "id": "saldo",
+      "titulo": "Plazo ordinario de pagos (primer saldo)",
+      "desde": "2026-12-01",
+      "hasta": "2027-06-30",
+      "fuente": 0,
+      "citas": [
+        { "fuente": 0, "texto": "El plazo ordinario de pagos de las ayudas directas comenzará el 1 de diciembre, fecha a partir de la cual las comunidades autónomas podrán pagar hasta el 90 % del importe." },
+        { "fuente": 0, "texto": "Este plazo ordinario finalizará el 30 de junio de 2027" },
+        { "fuente": 1, "texto": "Primer saldo: a partir del 1 de diciembre, se completa hasta el 90% con importes provisionales" }
+      ]
+    },
+    {
+      "id": "final",
+      "titulo": "Pago completo (100 %)",
+      "desde": "2027-05",
+      "desdeTexto": "mayo de 2027",
+      "desdeOrientativa": true,
+      "hasta": "2027-06-30",
+      "fuente": 0,
+      "citas": [
+        { "fuente": 0, "texto": "El pago completo de la ayuda se autorizará una vez calculados los importes unitarios definitivos de las ayudas directas, en el mes de mayo." },
+        { "fuente": 1, "texto": "Saldo final: a mediados de mayo se comienza a abonar el 100% definitivo tras los controles, cerrándose el periodo de pago el 30 de junio." }
+      ],
+      "nota": "Las fuentes no dan un día de inicio: solo «en el mes de mayo» y «a mediados de mayo». Por eso no hay cuenta atrás de días."
+    },
+    {
+      "id": "residual",
+      "titulo": "Pagos residuales",
+      "desde": "2027-07-01",
+      "desdeTexto": "después del 30 de junio de 2027",
+      "desdeOrientativa": true,
+      "hasta": "2027-10-15",
+      "fuente": 0,
+      "citas": [
+        { "fuente": 0, "texto": "Este plazo ordinario finalizará el 30 de junio de 2027 aunque se podrán realizar pagos residuales hasta el 15 de octubre, fecha en la que finaliza el ejercicio del Fondo Europeo Agrícola de Garantía Agraria (FEAGA)" }
+      ]
+    }
+  ]
+}

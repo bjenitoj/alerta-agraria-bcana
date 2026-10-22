@@ -1,0 +1,36 @@
+{
+  "actualizado": "2026-10-22",
+  "nota": "Cada herramienta lleva su nombre, el organismo y el enlace oficial. Cuando hay descripción, es una cita literal de la página oficial enlazada (consultada el 22/10/2026).",
+  "grupos": [
+    {
+      "titulo": "Parcelas y mapas",
+      "enlaces": [
+        { "nombre": "Visor SIGPAC (FEGA)", "url": "https://sigpac.mapa.gob.es/fega/visor/", "organismo": "FEGA · Ministerio de Agricultura, Pesca y Alimentación" },
+        { "nombre": "SIGPAC en Castilla y León", "url": "https://pac.jcyl.es/web/es/sigpac.html", "organismo": "Junta de Castilla y León", "cita": "La siguiente lista muestra los municipios cuyo catastro renovado se ha incorporado al SIGPAC" }
+      ]
+    },
+    {
+      "titulo": "Apps del móvil para la PAC",
+      "enlaces": [
+        { "nombre": "GeoFotos (Castilla y León)", "url": "https://pac.jcyl.es/web/es/1285138357703.html", "organismo": "Junta de Castilla y León", "cita": "La Consejería de Agricultura, Ganadería y Desarrollo Rural pone a disposición de los agricultores la aplicación móvil Geofotos." },
+        { "nombre": "Sga@pp", "url": "https://play.google.com/store/apps/details?id=es.pac.sga.sgaapp", "organismo": "FEGA", "cita": "En la versión actual se podrá trabajar con las CC.AA. de: Andalucía, Aragón, Asturias, Baleares, Cantabria, Castilla-La Mancha, Extremadura, Galicia, Madrid, Murcia, Navarra, La Rioja y C. Valenciana." },
+        { "nombre": "Oficina Virtual de la PAC (Castilla y León)", "url": "https://pac.jcyl.es/web/es/oficina-virtual.html", "organismo": "Junta de Castilla y León", "cita": "Esta página de consultas está formada por un conjunto de aplicaciones informáticas, cuyo objetivo es permitir a los agricultores y ganaderos de Castilla y León realizar, a través de Internet, consultas sobre sus explotaciones, reduciendo el número de desplazamientos a su Sección Agraria Comarcal." }
+      ]
+    },
+    {
+      "titulo": "Datos del campo",
+      "enlaces": [
+        { "nombre": "Sativum (ITACyL)", "url": "https://www.sativum.es", "organismo": "ITACyL · Junta de Castilla y León", "cita": "Sativum es un desarrollo informático del Instituto Tecnológico Agrario de Castilla y León para agricultores y asesores que permite acceder y gestionar información de parcelas agrícolas de todo el territorio nacional." }
+      ]
+    },
+    {
+      "titulo": "Buscar ayudas y recibir avisos oficiales",
+      "enlaces": [
+        { "nombre": "Buscador de ayudas de la Red PAC", "url": "https://redpac.es/buscador-ayudas", "organismo": "Red PAC · Ministerio de Agricultura, Pesca y Alimentación", "cita": "En el siguiente buscador se pueden consultar las convocatorias de ayudas publicadas tanto en el marco del PEPAC 2023-2027 como de los PDR 2014-2022." },
+        { "nombre": "Alertas de la BDNS", "url": "https://www.infosubvenciones.gob.es/bdnstrans/A07/es/alertas", "organismo": "Sistema Nacional de Publicidad de Subvenciones y Ayudas Públicas", "cita": "Permite la suscripción de avisos de subvenciones personalizados." },
+        { "nombre": "Mi BOE", "url": "https://www.boe.es/mi_boe/", "organismo": "Agencia Estatal BOE", "cita": "Con Mi BOE, puede suscribirse de manera gratuita a nuestros servicios de alerta y recibir puntualmente información por correo electrónico sobre las novedades publicadas en materias de su interés." },
+        { "nombre": "Avisos del BOCYL", "url": "https://bocyl.jcyl.es/menuSuscripcion.do", "organismo": "Junta de Castilla y León", "cita": "Servicio de envío de de avisos de publicación al correo electrónico del solicitante." }
+      ]
+    }
+  ]
+}

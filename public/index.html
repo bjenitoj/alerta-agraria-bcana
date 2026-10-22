@@ -2,85 +2,176 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Alerta Agraria" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>Alerta Agraria 5</title>
+  <meta name="apple-mobile-web-app-title" content="Alerta Agraria" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#1b4332" />
+  <title>Alerta Agraria</title>
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=25" />
+  <script>
+    try {
+      const saved = localStorage.getItem("alerta_theme");
+      if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
+    } catch { /* el tema sigue el del sistema */ }
+  </script>
 </head>
-<body class="locked">
+<body>
+  <script>
+    const path = location.pathname.replace(/\/$/, "") || "/";
+    const quiet = ["/fuentes", "/quienes-somos", "/aviso-legal", "/privacidad", "/cookies", "/planes", "/herramientas"];
+    if (quiet.includes(path)) document.body.classList.add("public-page");
+    if (path === "/admin") document.body.classList.add("locked");
+  </script>
   <div id="gate" class="gate">
     <form id="loginForm" class="gate-card" method="post" action="/entrar" autocomplete="off">
-      <p class="eyebrow">Alerta Agraria CyL</p>
-      <h2>Clave de entrada</h2>
-      <p class="gate-version">Versión 5</p>
+      <div class="brand-lockup">
+        <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#1b4332"/><circle cx="24" cy="17" r="7" fill="#e8b84a"/><path d="M6 34c7-9 12-8 18 1 6-11 13-10 18 0v8H6z" fill="#f4e7c4"/><path d="M24 24v11" stroke="#e8b84a" stroke-width="2" stroke-linecap="round"/></svg>
+        <p class="eyebrow">Alerta Agraria</p>
+      </div>
+      <h2>Administración</h2>
       <label>
-        <span>Pega la clave. Tiene que verse escrita, con el símbolo #.</span>
+        <span>Clave del titular. Tiene que verse entera, con el símbolo #.</span>
         <input id="keyInput" type="text" name="key" inputmode="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required />
       </label>
-      <button type="submit">Entrar</button>
-      <p class="gate-wait">Después de pulsar Entrar, espera en esta pantalla. Puede tardar un minuto.</p>
+      <button type="submit">Entrar en administración</button>
+      <p class="gate-wait">Sirve para forzar la recogida, sincronizar el ordenador con el móvil y gestionar el archivo. La consulta de ayudas, PAC y resumen es pública.</p>
       <p id="loginError" class="gate-error" hidden></p>
+      <p class="motto">Hecha por agricultores, para agricultores.</p>
+      <p class="gate-links">
+        <a href="/">Volver a la consulta</a>
+        <a href="/fuentes">Fuentes oficiales</a>
+        <a href="/quienes-somos">Quiénes somos</a>
+      </p>
     </form>
   </div>
+
   <header class="top">
-    <div class="brand">
-      <p class="eyebrow">Consulta diaria de fuentes oficiales</p>
-      <h1>Alerta Agraria Castilla y León</h1>
-      <p class="lead">Novedades de ayudas y subvenciones, normativa, PAC, jóvenes, noticias y BOE, en bloques independientes.</p>
-    </div>
-    <div class="actions">
+    <a class="brand" href="/">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#1b4332"/><circle cx="24" cy="17" r="7" fill="#e8b84a"/><path d="M6 34c7-9 12-8 18 1 6-11 13-10 18 0v8H6z" fill="#f4e7c4"/><path d="M24 24v11" stroke="#e8b84a" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>
+        <strong>Alerta Agraria</strong>
+        <small>Ayudas, PAC y tu explotación</small>
+      </span>
+    </a>
+    <div class="top-tools">
+      <button id="themeToggle" type="button" class="ghost icon-btn" aria-label="Cambiar entre claro y oscuro">Tema</button>
       <p class="stamp" id="stamp">Cargando…</p>
-      <button id="refresh" type="button">Actualizar ahora</button>
-      <div class="action-row">
-        <button id="onlyToday" type="button" class="today-toggle">HOY</button>
-        <div class="borrar-stack">
-          <button id="clearRead" class="ghost" type="button">Borrar leídas</button>
-          <button id="readAll" class="ghost" type="button">Borrar todas</button>
-        </div>
-      </div>
+      <button id="refresh" type="button" class="admin-only">Actualizar</button>
     </div>
   </header>
 
-  <section class="filters">
+  <div class="quick private">
     <label class="search">
-      <span>Buscar</span>
-      <input id="q" type="search" placeholder="PAC, jóvenes, viñedo, FEGA…" />
+      <span class="sr-only">Buscar</span>
+      <input id="q" type="search" placeholder="Buscar PAC, viñedo, vacuno, plazo…" />
     </label>
-    <label class="check">
-      <input id="onlyNew" type="checkbox" />
-      Solo no leídas
-    </label>
-    <label class="check">
-      <input id="onlyCyl" type="checkbox" />
-      Priorizar Castilla y León
-    </label>
-    <label class="search sector">
-      <span>Sector</span>
-      <select id="sector">
-        <option value="campo">Agricultura y ganadería</option>
-        <option value="agricultura" selected>Solo agricultura</option>
-        <option value="ganaderia">Solo ganadería</option>
-      </select>
-    </label>
-  </section>
+    <button type="button" class="prefs-bar" id="prefsBar" aria-expanded="false" aria-controls="prefSheet"></button>
+  </div>
 
-  <nav class="tabs" id="tabs"></nav>
-  <section class="summary" id="summary"></section>
-  <main id="feed" class="feed"></main>
-  <section class="sources">
+  <div id="prefSheet" class="pref-sheet private" hidden>
+    <div class="sheet-card" role="dialog" aria-labelledby="sheetTitle">
+      <div class="sheet-head">
+        <h2 id="sheetTitle">Preferencias</h2>
+        <button type="button" id="closeSheet" class="ghost">Cerrar</button>
+      </div>
+      <section class="filters" id="filters">
+        <p id="prefsAccountNote" class="note"></p>
+        <div class="choice-block">
+          <p>Sector</p>
+          <div class="choices" id="sectorChoices"></div>
+        </div>
+        <div class="choice-block">
+          <p>Zona</p>
+          <div class="choices" id="zoneChoices"></div>
+        </div>
+        <div class="choice-block">
+          <p>Explotación</p>
+          <div class="choices" id="waterChoices"></div>
+        </div>
+        <label class="check">
+          <input id="onlyNew" type="checkbox" />
+          Solo no leídas
+        </label>
+        <button id="onlyToday" type="button" class="today-toggle">Solo hoy</button>
+        <div class="sheet-actions admin-only">
+          <button id="clearRead" class="ghost" type="button">Borrar leídas</button>
+          <button id="readAll" class="ghost" type="button">Borrar todas</button>
+        </div>
+      </section>
+      <details class="crops-box" id="cropsBox" open>
+        <summary>Cultivos y actividades</summary>
+        <div class="choices" id="cropChoices"></div>
+      </details>
+      <button id="openPrefs" type="button" class="text-btn">Abrir el asistente</button>
+    </div>
+  </div>
+
+  <nav class="tabs private" id="tabs" aria-label="Apartados"></nav>
+  <main id="app" class="app"></main>
+
+  <section class="sources private">
     <h2>Estado de las fuentes</h2>
     <div id="sources" class="source-grid"></div>
   </section>
   <footer>
+    <p class="motto">Hecha por agricultores, para agricultores.</p>
+    <nav class="site-nav" aria-label="Pie">
+      <a href="/">Inicio</a>
+      <a href="/fuentes">Fuentes oficiales</a>
+      <a href="/herramientas">Herramientas oficiales</a>
+      <a href="/quienes-somos">Quiénes somos</a>
+      <a href="/planes">Planes</a>
+      <a href="/aviso-legal">Aviso legal</a>
+      <a href="/privacidad">Privacidad</a>
+      <a href="/cookies">Cookies</a>
+      <a href="/admin">Administración</a>
+    </nav>
     <p id="mobileAccess" class="mobile-access"></p>
-    <p>La aplicación consulta webs oficiales (Junta de Castilla y León, MAPA, FEGA, BOE y BDNS). No sustituye al texto publicado en el boletín o en la sede electrónica. Ábrela cada día o déjala en marcha para la consulta automática de las 07:00.</p>
+    <p class="orientativo">Información orientativa. Consulta siempre la publicación oficial.</p>
   </footer>
-  <script src="/app.js?v=17"></script>
+
+  <nav class="dock private" aria-label="Principal">
+    <button type="button" data-dock="inicio">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M7 10.5V20h10v-9.5"/></svg>
+      Inicio
+    </button>
+    <button type="button" data-dock="ayudas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.6-1 1.4-1.5 2.5-1.5 1.6 0 2.5.9 2.5 2s-.8 1.8-2.5 2-2.6.8-2.6 2 1 2 2.6 2c1.1 0 2-.5 2.5-1.4"/></svg>
+      Ayudas
+    </button>
+    <button type="button" data-dock="pac">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V9"/><path d="M12 13c-2.2-1.2-4.2-1-6.2.2 0-3.2 1.6-5.4 6.2-6.2 4.6.8 6.2 3 6.2 6.2-2-.2-4-.4-6.2-.2z"/></svg>
+      PAC
+    </button>
+    <button type="button" data-dock="resumen">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/></svg>
+      Resumen
+    </button>
+    <button type="button" data-dock="preferencias">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M18 6l-1.6 1.6M7.6 16.4 6 18"/></svg>
+      Preferencias
+    </button>
+  </nav>
+
+  <div id="wizard" class="wizard" hidden>
+    <form class="wizard-card" id="wizardForm">
+      <p class="eyebrow" id="wizardStep">Paso 1 de 3</p>
+      <h2 id="wizardTitle">Qué quieres ver primero</h2>
+      <p id="wizardLead" class="lead"></p>
+      <div id="wizardBody"></div>
+      <div class="wizard-actions">
+        <button type="button" id="wizardBack" class="ghost">Atrás</button>
+        <button type="button" id="wizardNext">Siguiente</button>
+      </div>
+      <button type="button" id="wizardDefault" class="text-btn">Empezar con lo recomendado para esta explotación</button>
+    </form>
+  </div>
+  <script type="module" src="/app.js?v=25"></script>
 </body>
 </html>
