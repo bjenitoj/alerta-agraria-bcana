@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=25" />
+  <link rel="stylesheet" href="/styles.css?v=29" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -77,23 +77,24 @@
   <div id="prefSheet" class="pref-sheet private" hidden>
     <div class="sheet-card" role="dialog" aria-labelledby="sheetTitle">
       <div class="sheet-head">
-        <h2 id="sheetTitle">Preferencias</h2>
+        <h2 id="sheetTitle">Mis preferencias</h2>
         <button type="button" id="closeSheet" class="ghost">Cerrar</button>
       </div>
       <section class="filters" id="filters">
-        <p id="prefsAccountNote" class="note"></p>
+        <p id="prefsAccountNote" class="hint"></p>
         <div class="choice-block">
           <p>Sector</p>
-          <div class="choices" id="sectorChoices"></div>
+          <div class="tiles" id="sectorChoices"></div>
+        </div>
+        <div class="choice-block">
+          <p>Información <span class="hint">Toca en orden de prioridad</span></p>
+          <div class="tiles" id="infoChoices"></div>
         </div>
         <div class="choice-block">
           <p>Zona</p>
-          <div class="choices" id="zoneChoices"></div>
+          <div class="tiles" id="zoneChoices"></div>
         </div>
-        <div class="choice-block">
-          <p>Explotación</p>
-          <div class="choices" id="waterChoices"></div>
-        </div>
+        <div id="sectorBlocks" class="sector-blocks"></div>
         <label class="check">
           <input id="onlyNew" type="checkbox" />
           Solo no leídas
@@ -105,10 +106,10 @@
         </div>
       </section>
       <details class="crops-box" id="cropsBox" open>
-        <summary>Cultivos y actividades</summary>
-        <div class="choices" id="cropChoices"></div>
+        <summary id="cropsTitle">Cultivos</summary>
+        <div class="crop-groups" id="cropChoices"></div>
       </details>
-      <button id="openPrefs" type="button" class="text-btn">Abrir el asistente</button>
+      <button id="openPrefs" type="button" class="text-btn">Repasar paso a paso</button>
     </div>
   </div>
 
@@ -160,18 +161,23 @@
   </nav>
 
   <div id="wizard" class="wizard" hidden>
-    <form class="wizard-card" id="wizardForm">
-      <p class="eyebrow" id="wizardStep">Paso 1 de 3</p>
-      <h2 id="wizardTitle">Qué quieres ver primero</h2>
-      <p id="wizardLead" class="lead"></p>
-      <div id="wizardBody"></div>
-      <div class="wizard-actions">
-        <button type="button" id="wizardBack" class="ghost">Atrás</button>
-        <button type="button" id="wizardNext">Siguiente</button>
+    <form class="wizard-card" id="wizardForm" aria-labelledby="wizardTitle">
+      <div class="wizard-head">
+        <div class="wizard-progress" id="wizardProgress" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="wizard-step" id="wizardStep">1 de 3</p>
+        <h2 id="wizardTitle">¿Qué te interesa?</h2>
+        <p id="wizardLead" class="hint"></p>
       </div>
-      <button type="button" id="wizardDefault" class="text-btn">Empezar con lo recomendado para esta explotación</button>
+      <div id="wizardBody" class="wizard-body"></div>
+      <div class="wizard-foot">
+        <div class="wizard-actions">
+          <button type="button" id="wizardBack" class="ghost">Atrás</button>
+          <button type="button" id="wizardNext">Siguiente</button>
+        </div>
+        <button type="button" id="wizardDefault" class="hint-link wizard-skip">Empezar con lo recomendado</button>
+      </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=25"></script>
+  <script type="module" src="/app.js?v=29"></script>
 </body>
 </html>

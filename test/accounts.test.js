@@ -61,7 +61,8 @@ test("la contraseña se guarda como hash scrypt y las preferencias vuelven con l
   const session = accounts.authenticate({ email: "ana@campo.test", password: "semilla-segura" });
   const saved = accounts.savePreferences(session.user.id, { sector: "pesca", zone: "nacional", crops: ["acuicultura"] });
   assert.equal(saved.prefs.sector, "pesca");
-  assert.equal(saved.prefs.crops.includes("acuicultura"), true);
+  // v5.3: «Acuicultura» pasa de los cultivos a la actividad de pesca; se conserva al migrar.
+  assert.equal(saved.prefs.fishing.includes("acuicultura"), true);
   assert.match(accounts.cookie(session.token, true), /HttpOnly/);
   assert.match(accounts.cookie(session.token, true), /alerta_cuenta=/);
 });

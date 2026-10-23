@@ -1,5 +1,67 @@
 # Cambios
 
+## v5.3 · 23/10/2026 · Pasos 2 y 3 según el sector
+
+### Cambiado
+- **Paso 2:** la zona sigue igual (Salamanca y CyL, Salamanca, Castilla y León, España). El segundo bloque depende del sector del paso 1:
+  - Agricultura → «Tierra»: ☀️ Secano, 💧 Regadío.
+  - Ganadería → «Tipo de explotación»: 🌳 Extensiva, 🏭 Intensiva, 🔄 Mixta, 🏡 Autoconsumo (varios a la vez).
+  - Pesca → «Actividad»: 🎣 Pesca marítima, 🦪 Marisqueo, 🐟 Acuicultura, 🏞️ Pesca continental (varios a la vez). Título «¿Dónde trabajas?».
+  - Todos → los tres bloques, cada uno con una línea pequeña («🌾 Agricultura · Tierra», …) y tarjetas más compactas.
+- **Paso 3:** solo lo del sector elegido. Agricultura «¿Qué cultivas?» (cultivos), Ganadería «¿Qué crías?» (especies de ganado), Pesca «¿Qué pescas o crías?» (🐠 Peces, 🐚 Moluscos, 🦐 Crustáceos, 🌿 Algas), Todos «¿Qué cultivas, crías o pescas?» con todo agrupado por sector.
+- **Al cambiar de sector** se quita lo que ya no aplica (cultivos, especies, tipo de explotación, actividad; la tierra vuelve a «secano y regadío», que no cambia nada). La zona se queda. La tierra solo cuenta en el orden si el sector incluye la agricultura.
+- **«Mis preferencias»** enseña los mismos bloques según el sector, y el apartado de abajo se llama «Cultivos», «Especies» o «Cultivos y especies».
+- **Preferencias guardadas** en el mismo sitio (`alerta_prefs_v1`), versión 3, con dos campos nuevos: `farm` (tipo de explotación) y `fishing` (actividad). Las preferencias de antes se leen sin problema: campos nuevos vacíos; si estaban marcadas «Pesca marítima» o «Acuicultura» como cultivo, pasan a «Actividad».
+- **El orden usa los campos nuevos solo si la palabra sale tal cual en el texto oficial** (título, resumen, objeto o beneficiarios): «extensiva», «intensiva», «explotación mixta», «explotación de autoconsumo» (no cuenta el autoconsumo eléctrico), «marisqueo», «acuicultura», «pesca marítima», «pesca continental»… No se deduce ni se inventa nada; nunca se oculta nada. «Por qué puede interesar» cita esas palabras si aparecen.
+- Versión de caché `?v=29`.
+- Pruebas: `test/prefs-v53.test.js` (bloques por sector, paso 3 por sector, limpieza al cambiar de sector, migración, palabras literales).
+
+## v5.2 · 23/10/2026 · Asistente más sencillo y vistoso
+
+### Quitado
+- La frase larga bajo los tipos de información («Por este orden: 1. Ayudas y subvenciones, 2. PAC. El Resumen del día solo enseña estos; en Inicio y en las pestañas lo demás va detrás.») ya no sale en el asistente ni en ningún otro sitio. También se quitan «Ganadería queda delante…», «Has elegido: …», «Marcados: …» y «Puedes marcar varios. El número es el orden en que salen.».
+
+### Cambiado
+- **Los 3 pasos del asistente, rediseñados para el móvil:** barra de progreso de 3 tramos en verde oscuro, «1 de 3», un título corto («¿Qué te interesa?», «¿Dónde está tu explotación?», «¿Qué cultivas o crías?») y como mucho una pista gris de pocas palabras («Lo elegido sale primero», «Opcional»).
+- **Tarjetas grandes con icono** en dos columnas: 🌾 Agricultura, 🐄 Ganadería, 🐟 Pesca, 🌐 Todos; 💶 Ayudas, 🇪🇺 PAC, 📜 Normativa, ⚠️ Alertas, 📰 Noticias; ⭐ Salamanca y CyL, 📍 Salamanca, 🏰 Castilla y León, 🇪🇸 España; ☀️ Secano, 💧 Regadío; y un icono por cultivo o ganado. Lo elegido se rellena de verde con una marca ✓; en Información la marca es el número de orden (1, 2…). Pista: «Toca en orden de prioridad».
+- **Los botones de abajo ya no quedan tapados** por la barra de pestañas: «Atrás / Siguiente» y «Empezar con lo recomendado» van en un pie fijo dentro de la ventana, con margen para la zona segura del iPhone. Si la pantalla es pequeña, solo se desplazan las tarjetas. En 390×844 los 3 pasos caben sin desplazar.
+- **«Mis preferencias»** usa las mismas tarjetas con icono. Nota corta: «Guardado solo en este dispositivo.».
+- Mismo comportamiento: varios tipos de información con orden, asistente solo la primera vez, preferencias guardadas en el dispositivo, el Resumen enseña solo lo elegido e Inicio ordena sin ocultar.
+- Versión de caché `?v=28`.
+- Pruebas: la frase quitada no puede volver a salir; hay pie fijo con zona segura, barra de progreso, tarjetas y pistas de 5 palabras como mucho.
+
+## v5.1 · 23/10/2026 · Resumen de lo seleccionado y textos de ayuda discretos
+
+### Cambiado
+- **El Resumen del día enseña solo los tipos de información elegidos** en «Mis preferencias» (por ejemplo, Ayudas y PAC; si se marca Normativa, también normativa). Lo no elegido no sale en el Resumen. Si no hay nada elegido, se usan Ayudas y PAC. Cada pieza sale una vez, en la sección del primer tipo elegido que tiene. Sigue siendo solo de piezas oficiales con su enlace.
+- Arriba del Resumen hay una línea discreta: «Mostrando: Ayudas y subvenciones, PAC · Cambiar en Mis preferencias». El enlace abre «Mis preferencias».
+- «Plazos que cierran en menos de 15 días» solo sale en el Resumen si están elegidas Ayudas o PAC.
+- **Inicio y las pestañas no cambian:** ordenan por preferencias sin ocultar nada.
+- **Textos de ayuda discretos** (clase `hint`): letra más pequeña, gris, sin negrita ni fondo. Afecta al texto bajo el título del asistente («Ganadería queda delante…», «Has elegido: …»), a las notas bajo «Tipo de información», a la nota de dónde se guardan las preferencias y a la línea «Mostrando» del Resumen.
+- Versión de caché `?v=27`.
+- Pruebas: `test/prefs-v5.test.js` con la selección del Resumen (`digestSelection`) y los textos discretos.
+
+## v5.0 · 23/10/2026 · Preferencias que se ven y se guardan
+
+### Arreglado
+- **Paso 1, sector.** El texto de arriba decía siempre «La agricultura queda delante», aunque se eligiera Ganadería o Pesca. Ahora dice el sector elegido («Ganadería queda delante…», «Todos los sectores por igual»). Además el orden ya no pone la agricultura delante a la fuerza: el sector elegido va primero.
+- **Paso 2, zona.** El texto de arriba era fijo («Salamanca y Castilla y León, con secano y regadío»). Ahora dice exactamente lo elegido («Has elegido: Castilla y León · secano y regadío»). El paso 3 tampoco tiene ya un texto fijo de cultivos.
+- **«Empezar con lo recomendado»** solo sale la primera vez. Al repasar las preferencias más tarde, el botón es «Cancelar y dejar como estaba» y ya no borra lo elegido.
+- **El asistente no tapaba bien con el cartel «En revisión»**: ahora empieza debajo del cartel y se puede desplazar en móvil.
+
+### Nuevo
+- **Varios tipos de información.** Se pueden marcar varios (Ayudas, PAC, Normativa, Alertas, Noticias). El número de cada botón es el orden en que salen. Lo no marcado no se oculta: va detrás.
+- **Orden en todas las listas:** 1) sector elegido, 2) tipos de información elegidos en su orden, 3) plazos que cierran pronto, 4) zona, agua y cultivos.
+- **Resumen del día por secciones** en el orden de tus preferencias. Además de las ayudas nuevas, enseña las demás piezas oficiales publicadas ese día (normativa, noticias…). No se quita nada por tipo; todo con enlace a la fuente oficial.
+- **Inicio: bloque «Lo que has puesto primero»** con los 3 primeros títulos oficiales de cada tipo elegido y un botón a su pestaña.
+- **«Mis preferencias»** (botón de la barra superior y botón Preferencias del móvil) incluye ya el tipo de información. Explica que se guardan solo en este dispositivo y, en la app del iPhone, aparte de Safari.
+- El navegador recibe la petición de guardar los datos de forma persistente (`navigator.storage.persist`), cuando lo permite.
+
+### Técnico
+- `lib/preferences.js`: campo `info` (lista ordenada), `PREFS_VERSION = 2` con la misma clave `alerta_prefs_v1` (las preferencias guardadas se conservan; de las antiguas se toma como elegido el primer tipo). Nuevas funciones `itemInfoTypes`, `infoRank`, `infoSection`, `prefsSummary`. `forYou` usa todos los tipos elegidos. `digestGroup`/`compareItems` sin sector fijo.
+- Versión de caché `?v=26` en `public/index.html`.
+- Pruebas: nuevo `test/prefs-v5.test.js`.
+
 ## v4.2 · 22/10/2026 · Cartel «En revisión»
 
 ### Nuevo
