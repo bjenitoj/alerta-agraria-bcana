@@ -31,6 +31,7 @@ const refreshBtn = document.getElementById("refresh");
 const readAllBtn = document.getElementById("readAll");
 const clearReadBtn = document.getElementById("clearRead");
 const settingsBtn = document.getElementById("settingsBtn");
+const prefsBtn = document.getElementById("prefsBtn");
 const digestBtn = document.getElementById("digestBtn");
 const sectorChoices = document.getElementById("sectorChoices");
 const zoneChoices = document.getElementById("zoneChoices");
@@ -506,6 +507,106 @@ function writeJson(key, value) {
 let favorites = readJson(FAV_KEY, {});
 if (!favorites || typeof favorites !== "object" || Array.isArray(favorites)) favorites = {};
 let hiddenAids = new Set(readJson(HIDE_KEY, []));
+// ── Leídas y borradas (v5.5) ─────────────────────────────────────────────────────────────
+// Como en la app original: tocar una noticia la marca como leída (se ve más apagada) y «Borrar leídas»
+// las quita de la vista. Aquí se guarda SOLO en este dispositivo (localStorage «alerta_leidas_v1»):
+// { v: 1, read: { clave: fecha }, deleted: { clave: fecha } }. Sin cuentas y sin enviar nada al servidor.
+// Cada marca caduca a los 15 días (como la app original, que guardaba lo borrado 15 días).
+const READ_KEY = "alerta_leidas_v1";
+const READ_TTL_DAYS = 15;
+const READ_MAX = 3000;
+
+function emptyReadStore() {
+  return { v: 1, read: {}, deleted: {} };
+}
+
+/** Quita lo que tenga más de 15 días y lo que no tenga una fecha válida. */
+function pruneReadStore(store, nowMs = Date.now()) {
+  const out = emptyReadStore();
+  const limit = nowMs - READ_TTL_DAYS * 86400000;
+  for (const bucket of ["read", "deleted"]) {
+    const entries = Object.entries((store && typeof store[bucket] === "object" && store[bucket]) || {})
+      .filter(([key, when]) => key && Number.isFinite(Date.parse(when)) && Date.parse(when) >= limit)
+      .sort((a, b) => Date.parse(a[1]) - Date.parse(b[1]))
+      .slice(-READ_MAX);
+    out[bucket] = Object.fromEntries(entries);
+  }
+  return out;
+}
+
+function loadReadStore(nowMs = Date.now()) {
+  let store = readJson(READ_KEY, null);
+  if (!store || typeof store !== "object" || Array.isArray(store)) {
+    store = emptyReadStore();
+    // Las marcas de antes (solo ids, «alerta_leidas_local») pasan a leídas con la fecha de hoy.
+    const old = readJson("alerta_leidas_local", []);
+    if (Array.isArray(old)) for (const id of old) if (id) store.read[`id:${id}`] = new Date(nowMs).toISOString();
+  }
+  return pruneReadStore(store, nowMs);
+}
+
+let readStore = loadReadStore();
+writeJson(READ_KEY, readStore);
+
+function readKeyOf(item) {
+  const url = canonicalUrl(item?.url);
+  return url ? `u:${url}` : item?.id ? `id:${item.id}` : "";
+}
+
+function hasMark(bucket, item) {
+  const key = readKeyOf(item);
+  if (!key) return false;
+  return Boolean(readStore[bucket][key] || (item?.id && readStore[bucket][`id:${item.id}`]));
+}
+
+function isReadItem(item) {
+  return Boolean(item?.read) || hasMark("read", item);
+}
+
+function isDeletedItem(item) {
+  return hasMark("deleted", item);
+}
+
+function setRead(item, on) {
+  const key = readKeyOf(item);
+  if (!key) return;
+  if (on) readStore.read[key] = new Date().toISOString();
+  else {
+    delete readStore.read[key];
+    if (item?.id) delete readStore.read[`id:${item.id}`];
+    if (item) item.read = false;
+  }
+  writeJson(READ_KEY, readStore);
+}
+
+/** Borra (oculta 15 días) las leídas que no están en favoritas. Devuelve las claves borradas para «Deshacer». */
+function deleteReadItems(items) {
+  const now = new Date().toISOString();
+  const keys = [];
+  for (const item of items || []) {
+    if (!isReadItem(item) || isDeletedItem(item) || isFavorite(item)) continue;
+    const key = readKeyOf(item);
+    if (!key || keys.includes(key)) continue;
+    readStore.deleted[key] = now;
+    keys.push(key);
+  }
+  writeJson(READ_KEY, readStore);
+  return keys;
+}
+
+function undeleteKeys(keys) {
+  for (const key of keys || []) delete readStore.deleted[key];
+  writeJson(READ_KEY, readStore);
+}
+
+function restoreAllDeleted() {
+  const n = Object.keys(readStore.deleted).length;
+  readStore.deleted = {};
+  writeJson(READ_KEY, readStore);
+  return n;
+}
+// ── fin leídas y borradas ──
+
 let soloAbiertas = (() => {
   try { return localStorage.getItem(OPEN_KEY) !== "0"; } catch { return true; }
 })();
@@ -671,10 +772,104 @@ function typeRow(item) {
   return `<div class="types">${bits.map(([id, label]) => `<span class="type">${GLYPH[id] || ""}${escapeHtml(label)}</span>`).join("")}</div>`;
 }
 
+function readBadge(read) {
+  return read ? `<span class="badge read-badge">✓ Leída</span>` : `<span class="badge new">Nueva</span>`;
+}
+
+/** Piezas que se pueden marcar o borrar (lista del día + resúmenes), sin repetir. */
+function readPool() {
+  const seen = new Set();
+  const out = [];
+  for (const item of [...(state.items || []), ...(state.digests || []).flatMap((entry) => entry.items || [])]) {
+    const key = readKeyOf(item);
+    if (!key || seen.has(key) || !hasSourceUrl(item)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
+}
+
+function deletableReadCount() {
+  return readPool().filter((item) => isReadItem(item) && !isDeletedItem(item) && !isFavorite(item)).length;
+}
+
+/** Barra pequeña con «Borrar leídas (N)», como en la app original. */
+function readTools() {
+  const n = deletableReadCount();
+  return `<div class="read-tools"><button type="button" class="ghost clear-read" data-clear-read="1"${n ? "" : " disabled"}>Borrar leídas (${n})</button><span class="hint">${n ? "Se quitan de la vista 15 días. Las favoritas no se borran." : "Toca una noticia para marcarla como leída."}</span></div>`;
+}
+
+function paintReadTools() {
+  const html = readTools();
+  document.querySelectorAll(".read-tools").forEach((el) => { el.outerHTML = html; });
+  paintReadSettings();
+}
+
+function paintReadSettings() {
+  const restore = document.getElementById("restoreDeleted");
+  if (restore) {
+    const n = Object.keys(readStore.deleted).length;
+    restore.textContent = `Recuperar borradas (${n})`;
+    restore.disabled = !n;
+  }
+  const unhide = document.getElementById("restoreHidden");
+  if (unhide) {
+    // Cada «Ocultar» guarda el id (y además la URL como «u:…»): se cuentan los ids.
+    const n = [...hiddenAids].filter((key) => !String(key).startsWith("u:")).length;
+    unhide.textContent = `Volver a mostrar ocultas (${n})`;
+    unhide.disabled = !hiddenAids.size;
+  }
+}
+
+function paintCardRead(id, read) {
+  document.querySelectorAll(`.card[data-id="${CSS.escape(String(id))}"]`).forEach((card) => {
+    card.classList.toggle("read", read);
+    card.classList.toggle("fresh", !read);
+    const badge = card.querySelector(".badge.new, .badge.read-badge");
+    if (badge) badge.outerHTML = readBadge(read);
+  });
+}
+
+let toastTimer = null;
+function showToast(text, onUndo) {
+  let toast = document.getElementById("toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "toast";
+    toast.className = "toast";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `<span>${escapeHtml(text)}</span>${onUndo ? `<button type="button" class="toast-undo">Deshacer</button>` : ""}`;
+  toast.hidden = false;
+  toast.querySelector(".toast-undo")?.addEventListener("click", () => {
+    onUndo();
+    toast.hidden = true;
+  }, { once: true });
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.hidden = true; }, 8000);
+}
+
+function clearRead() {
+  const keys = deleteReadItems(readPool());
+  const y = window.scrollY;
+  render();
+  window.scrollTo(0, y);
+  if (!keys.length) return;
+  showToast(`${keys.length === 1 ? "Borrada 1 leída" : `Borradas ${keys.length} leídas`}`, () => {
+    undeleteKeys(keys);
+    const back = window.scrollY;
+    render();
+    window.scrollTo(0, back);
+  });
+}
+
 function aidCard(item, options = {}) {
   // Sin enlace a la fuente oficial no se enseña la ficha.
   if (!hasSourceUrl(item)) return "";
   const aid = item.aid || {};
+  const read = isReadItem(item);
   const yours = forYou(item, prefs);
   const status = STATUS_LABEL[aid.status] || "";
   const showAid = isAidLike(item);
@@ -730,14 +925,14 @@ function aidCard(item, options = {}) {
       </section>
     </div>`;
   return `
-    <article class="card status-${escapeHtml(aid.status || "sin_plazo")} ${item.read ? "read" : "fresh"} ${yours ? "yours" : "quiet"} ${options.compact ? "compact" : ""}" data-id="${escapeHtml(item.id)}">
+    <article class="card status-${escapeHtml(aid.status || "sin_plazo")} ${read ? "read" : "fresh"} ${yours ? "yours" : "quiet"} ${options.compact ? "compact" : ""}" data-id="${escapeHtml(item.id)}">
       <div class="card-top">
         <div class="pills">
           ${showAid || aid.closesAt ? deadlinePill(aid) : ""}
           ${yours ? `<span class="badge you">En tus filtros</span>` : `<span class="badge other">Fuera de tus filtros</span>`}
           ${status && aid.status !== "cerrada" && aid.status !== "cierra_pronto" && showAid ? `<span class="badge status-${escapeHtml(aid.status || "")}">${escapeHtml(status)}</span>` : ""}
           ${item.kind === "linea" ? `<span class="badge">Línea</span>` : ""}
-          ${options.snapshot ? "" : item.read ? `<span class="badge">Leída</span>` : `<span class="badge new">Nueva</span>`}
+          ${readBadge(read)}
         </div>
         ${daysBadge(aid)}
       </div>
@@ -751,6 +946,7 @@ function aidCard(item, options = {}) {
         ${archive}
         <a class="official" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">Abrir fuente oficial</a>
         ${tramite}
+        <button type="button" class="text-btn mark-unread" data-unread="${escapeHtml(item.id)}">Marcar como no leída</button>
       </div>
     </article>`;
 }
@@ -774,7 +970,7 @@ function digestData(date) {
   const digests = [...(state.digests || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const current = digests.find((entry) => entry.date === date) || digests[0];
   if (!current) return null;
-  const shown = (item) => hasSourceUrl(item) && !isHidden(item) && !(soloAbiertas && isClosedAid(item.aid, madridTodayKey()));
+  const shown = (item) => hasSourceUrl(item) && !isHidden(item) && !isDeletedItem(item) && inSector(item) && !(soloAbiertas && isClosedAid(item.aid, madridTodayKey()));
   const aids = (current.items || []).filter(hasSourceUrl);
   const aidIds = new Set(aids.map((item) => item.id));
   const others = unseen(state.items || [], "alerta_ocultas")
@@ -855,7 +1051,8 @@ function digestCard(compact) {
       <label class="history">Día
         <select id="digestDate">${options}</select>
       </label>
-      <p class="hint digest-showing">Mostrando: ${escapeHtml(chosen.join(", "))} · <button type="button" class="hint-link" data-open-prefs="1">Cambiar en Ajustes › Mis preferencias</button></p>
+      <p class="hint digest-showing">Mostrando: ${escapeHtml(chosen.join(", "))} · <button type="button" class="hint-link" data-open-prefs="1">Cambiar en Mis preferencias</button></p>
+      ${compact ? "" : readTools()}
       ${notice}
       ${wantsDeadlines ? closingSoonSection(current.date) : ""}
       <h3 class="digest-sub">Novedades de este resumen</h3>
@@ -887,13 +1084,25 @@ function planStrip() {
   return `<p class="plan-soon">Plan Gratis. ${escapeHtml(text)} <a href="/planes">Ver los planes</a></p>`;
 }
 
+/**
+ * v5.5 · Sector elegido (chips Agricultura / Ganadería / Pesca / Todos). Filtra de verdad: listas, cuadros, pestañas
+ * y Resumen cuentan solo lo de ese sector. Se usa la clasificación que ya trae cada pieza (`sectors`, puesta por la
+ * fuente oficial o por el texto); no se deduce nada nuevo. Lo que no tiene sector conocido solo sale en «Todos».
+ */
+function inSector(item, sector = prefs.sector) {
+  if (!sector || sector === "todos" || !SECTORS.some((entry) => entry.id === sector)) return true;
+  return (item?.sectors || []).includes(sector);
+}
+
 function baseItems(options = {}) {
   const today = madridTodayKey();
   return unseen(state.items || [], "alerta_ocultas").filter((item) => {
     if (!hasSourceUrl(item)) return false;
     if (!options.keepHidden && isHidden(item)) return false;
+    if (isDeletedItem(item)) return false;
+    if (!inSector(item)) return false;
     if (!options.keepClosed && soloAbiertas && isClosedAid(item.aid, today)) return false;
-    if (onlyNewEl?.checked && item.read) return false;
+    if (onlyNewEl?.checked && isReadItem(item)) return false;
     if (onlyToday && madridDay(item.publishedAt) !== madridDay(new Date())) return false;
     const q = qEl?.value.trim().toLowerCase() || "";
     if (!q) return true;
@@ -1041,11 +1250,10 @@ function glanceCards(lists) {
   let panel = "";
   if (card) {
     const list = lists[card.id];
-    const more = list.length > GLANCE_LIMIT
-      ? `<button type="button" class="link-btn" data-goto="${card.goto}" data-status="${card.status}">Ver todas (${list.length})</button>`
-      : list.length ? `<button type="button" class="link-btn" data-goto="${card.goto}" data-status="${card.status}">Ver todas</button>` : "";
+    // Siempre con el número: es el mismo que el del cuadro y el de la lista que se abre.
+    const more = list.length ? `<button type="button" class="link-btn" data-goto="${card.goto}" data-status="${card.status}">Ver todas (${list.length})</button>` : "";
     panel = list.length
-      ? `<div class="list">${list.slice(0, GLANCE_LIMIT).map((item) => aidCard(item)).join("")}</div>${more}`
+      ? `${readTools()}<div class="list">${list.slice(0, GLANCE_LIMIT).map((item) => aidCard(item)).join("")}</div>${more}`
       : `<p class="empty">No hay ninguna ahora</p>`;
   }
   return `<section class="glance-wrap" aria-label="De un vistazo">
@@ -1098,7 +1306,7 @@ function renderList(tab) {
   const body = items.length
     ? `<div class="list">${items.map((item) => aidCard(item)).join("")}</div>`
     : `<p class="empty">No hay nada en este apartado con los criterios de ahora.${soloAbiertas ? " Las cerradas no se ven: quita «Solo abiertas» para verlas." : ""}</p>`;
-  return filterRow() + head + body;
+  return filterRow() + head + (items.length ? readTools() : "") + body;
 }
 
 function closingSoonList(dateKey) {
@@ -1108,7 +1316,7 @@ function closingSoonList(dateKey) {
   const list = [];
   for (const item of pool) {
     const key = itemKey(item);
-    if (seen.has(key) || isHidden(item) || !hasSourceUrl(item)) continue;
+    if (seen.has(key) || isHidden(item) || isDeletedItem(item) || !inSector(item) || !hasSourceUrl(item)) continue;
     seen.add(key);
     if (closesWithin(item.aid, today, 15)) list.push(item);
   }
@@ -1334,7 +1542,7 @@ function renderTabs() {
         : id === "archivadas"
           ? (state.archive || []).length
           : id === "resumen"
-            ? (state.digests || []).length
+            ? digestBadgeCount()
             : id === "favoritas"
               ? Object.keys(favorites).length
               : items.filter((item) => inTab(item, id)).length;
@@ -1556,6 +1764,7 @@ async function load(options = {}) {
     if (!res.ok) throw new Error("No se pudo leer el panel");
     state = await res.json();
     state.items = applyVisitorRead(state.items);
+    if (!isAdmin()) for (const entry of state.digests || []) entry.items = applyVisitorRead(entry.items);
     if (typeof state.reviewMode === "boolean") syncReviewBanner(state.reviewMode);
     if (isAdmin()) absorbHidden(state.hidden);
     render();
@@ -1567,8 +1776,8 @@ async function load(options = {}) {
 
 function applyVisitorRead(items) {
   if (isAdmin()) return items || [];
-  const seen = readSet("alerta_leidas_local");
-  return (items || []).map((item) => (seen.has(item.id) ? { ...item, read: true } : { ...item, read: false }));
+  // Para el público lo leído vive solo en este dispositivo (isReadItem / alerta_leidas_v1).
+  return (items || []).map((item) => ({ ...item, read: false }));
 }
 
 async function refresh() {
@@ -1612,17 +1821,41 @@ tabsEl.addEventListener("click", (event) => {
 // «Mis preferencias». Se abre con el botón del engranaje de la cabecera.
 function setSheet(open, focusPrefs = false) {
   if (!prefSheet) return;
+  // v5.5: el botón «Preferencias» abre el mismo panel solo con «Mis preferencias».
+  const onlyPrefs = Boolean(open && focusPrefs && !document.body.classList.contains("public-page"));
   prefSheet.hidden = !open;
-  settingsBtn?.setAttribute("aria-expanded", open ? "true" : "false");
+  prefSheet.classList.toggle("prefs-only", onlyPrefs);
+  const title = document.getElementById("sheetTitle");
+  if (title) title.textContent = onlyPrefs ? "Mis preferencias" : "Ajustes";
+  settingsBtn?.setAttribute("aria-expanded", open && !onlyPrefs ? "true" : "false");
+  prefsBtn?.setAttribute("aria-expanded", onlyPrefs ? "true" : "false");
   if (open) {
     paintThemeChoice();
-    const target = focusPrefs ? document.getElementById("prefsSection") : null;
-    if (target && !document.body.classList.contains("public-page")) target.scrollIntoView({ block: "start" });
-    else prefSheet.querySelector(".sheet-card")?.scrollTo(0, 0);
+    paintReadSettings();
+    prefSheet.querySelector(".sheet-card")?.scrollTo(0, 0);
   }
 }
 
-settingsBtn?.addEventListener("click", () => setSheet(prefSheet?.hidden));
+settingsBtn?.addEventListener("click", () => setSheet(prefSheet?.hidden || prefSheet.classList.contains("prefs-only")));
+// Botón «Preferencias» de la cabecera (entre «Resumen» y «Ajustes»).
+prefsBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  if (QUIET.has(PATH) || PATH === "/admin" || document.body.classList.contains("public-page")) {
+    location.href = "/#preferencias";
+    return;
+  }
+  const isOpen = !prefSheet?.hidden && prefSheet?.classList.contains("prefs-only");
+  setSheet(!isOpen, true);
+});
+// En Ajustes, «Ir a Mis preferencias» deja el panel solo con las preferencias.
+prefSheet?.querySelector(".settings-link [data-open-prefs]")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  setSheet(true, true);
+});
+if (location.hash === "#preferencias" && !QUIET.has(PATH) && PATH !== "/admin") {
+  history.replaceState(null, "", location.pathname + location.search);
+  setSheet(true, true);
+}
 // Botón «Resumen» de la cabecera: abre la vista completa del Resumen del día.
 digestBtn?.addEventListener("click", (event) => {
   event.preventDefault();
@@ -1636,6 +1869,17 @@ digestBtn?.addEventListener("click", (event) => {
   window.scrollTo(0, 0);
 });
 document.getElementById("closeSheet")?.addEventListener("click", () => setSheet(false));
+document.getElementById("restoreDeleted")?.addEventListener("click", () => {
+  const n = restoreAllDeleted();
+  paintReadSettings();
+  render();
+  if (n) showToast(n === 1 ? "Recuperada 1 noticia" : `Recuperadas ${n} noticias`);
+});
+document.getElementById("restoreHidden")?.addEventListener("click", () => {
+  showHiddenAgain();
+  paintReadSettings();
+  render();
+});
 prefSheet?.addEventListener("click", (event) => {
   if (event.target === prefSheet) setSheet(false);
 });
@@ -1704,35 +1948,24 @@ async function archiveById(id) {
   render();
 }
 
-async function markCardRead(id, card) {
-  const item = (state.items || []).find((it) => it.id === id);
+/** Tocar la noticia: leída ↔ no leída (como la app original). `force` = true la deja leída (al abrir el enlace). */
+async function markCardRead(id, card, force = null) {
+  const item = findItem(id);
   if (!item) return;
-  item.read = !item.read;
-  if (!isAdmin()) {
-    const set = readSet("alerta_leidas_local");
-    if (item.read) set.add(item.id);
-    else set.delete(item.id);
-    writeSet("alerta_leidas_local", set);
-    if (card) {
-      card.classList.toggle("read", item.read);
-      card.classList.toggle("fresh", !item.read);
-    }
-    if (onlyNewEl?.checked) render();
-    return;
+  const read = force === null ? !isReadItem(item) : force;
+  if (read === isReadItem(item) && force !== null) return;
+  setRead(item, read);
+  for (const entry of readPool()) if (readKeyOf(entry) === readKeyOf(item) && !read) entry.read = false;
+  paintCardRead(id, read);
+  paintReadTools();
+  if (onlyNewEl?.checked) render();
+  if (!isAdmin()) return;
+  // Panel del titular: además se avisa al servidor como antes.
+  if (Boolean(item.read) !== read) {
+    item.read = read;
+    if (read) { rememberMark(item, "r:"); forgetMark(item, "p:"); } else { forgetMark(item, "r:"); rememberMark(item, "p:"); }
+    await api(`/api/items/${encodeURIComponent(id)}/read`, { method: "POST" }).catch(() => {});
   }
-  if (item.read) {
-    rememberMark(item, "r:");
-    forgetMark(item, "p:");
-  } else {
-    forgetMark(item, "r:");
-    rememberMark(item, "p:");
-  }
-  if (card) {
-    card.classList.toggle("read", item.read);
-    card.classList.toggle("fresh", !item.read);
-  }
-  await api(`/api/items/${encodeURIComponent(id)}/read`, { method: "POST" });
-  if (onlyNewEl.checked) render();
 }
 
 appEl.addEventListener("change", async (event) => {
@@ -1829,7 +2062,25 @@ appEl.addEventListener("click", (event) => {
 });
 
 appEl.addEventListener("click", async (event) => {
-  if (event.target.closest("a, button, input, label, select")) {
+  const unread = event.target.closest("[data-unread]");
+  if (unread) {
+    event.preventDefault();
+    await markCardRead(unread.dataset.unread, null, false);
+    return;
+  }
+  if (event.target.closest("[data-clear-read]")) {
+    event.preventDefault();
+    clearRead();
+    return;
+  }
+  // Abrir el enlace oficial también la marca como leída (sin parar el enlace).
+  const link = event.target.closest(".card a[href]");
+  if (link && !link.matches(".whatsapp, [download]")) {
+    const card = link.closest(".card");
+    if (card?.dataset.id && active !== "archivadas") markCardRead(card.dataset.id, card, true);
+    return;
+  }
+  if (event.target.closest("a, button, input, label, select, summary")) {
     const del = event.target.closest(".delete-archived");
     if (del) {
       event.preventDefault();

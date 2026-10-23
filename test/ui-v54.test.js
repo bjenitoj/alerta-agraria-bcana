@@ -18,17 +18,17 @@ test("v5.4 cabecera: solo «Resumen» y el engranaje «Ajustes»; sin Oscuro ni 
   assert.doesNotMatch(indexHtml, /id="prefsBar"/);
   assert.doesNotMatch(appJs, /prefsBar/);
   assert.doesNotMatch(header, />\s*Oscuro\s*</);
-  assert.doesNotMatch(header, /Mis preferencias/);
+  // v5.5: se añade «Preferencias» entre «Resumen» y «Ajustes» (ver leidas-v55.test.js).
   const buttons = header.match(/<button[^>]*>/g) || [];
   const visible = buttons.filter((b) => !/admin-only/.test(b));
-  assert.equal(visible.length, 2, "solo dos botones para el público");
+  assert.equal(visible.length, 3, "Resumen, Preferencias y Ajustes");
   assert.match(header, /<button id="digestBtn"[^>]*aria-label="Resumen del día"/);
   assert.match(header, /<button id="settingsBtn"[^>]*aria-label="Ajustes"[^>]*aria-controls="prefSheet"/);
   // iconos SVG de trazo (no emoji) y texto visible en pantallas anchas
   const settings = header.slice(header.indexOf('id="settingsBtn"'));
   assert.match(settings, /<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"\/><path d="M19\.4 15/);
   assert.match(settings, /<span class="head-text">Ajustes<\/span>/);
-  const digest = header.slice(header.indexOf('id="digestBtn"'), header.indexOf('id="settingsBtn"'));
+  const digest = header.slice(header.indexOf('id="digestBtn"'), header.indexOf('id="prefsBtn"'));
   assert.match(digest, /<svg viewBox="0 0 24 24"/);
   assert.match(digest, /<span class="head-text">Resumen<\/span>/);
   assert.match(digest, /class="head-badge" hidden/);
@@ -54,7 +54,7 @@ test("v5.4 Ajustes: tema Claro/Oscuro/Automático con la misma persistencia y «
   assert.match(theme, /localStorage\.setItem\("alerta_theme", theme\)/);
   assert.match(theme, /localStorage\.removeItem\("alerta_theme"\)/, "Automático vuelve a seguir el sistema");
   assert.match(theme, /aria-checked/);
-  assert.match(appJs, /settingsBtn\?\.addEventListener\("click", \(\) => setSheet\(prefSheet\?\.hidden\)\)/);
+  assert.match(appJs, /settingsBtn\?\.addEventListener\("click", \(\) => setSheet\(prefSheet\?\.hidden/);
   // el panel se puede abrir también en las páginas sueltas (solo el tema; las preferencias son .private)
   assert.match(indexHtml, /<div id="prefSheet" class="pref-sheet" hidden>/);
 });
@@ -73,7 +73,7 @@ test("v5.4 Resumen: botón de cabecera, fuera del cuerpo de Inicio y contador so
   const data = fn("digestData", "digestBadgeCount");
   assert.match(data, /digestSelection\(/);
   assert.match(data, /hasSourceUrl/);
-  assert.match(appJs, /Cambiar en Ajustes › Mis preferencias/);
+  assert.match(appJs, /Cambiar en Mis preferencias/);
 });
 
 test("v5.4 barra de abajo: Inicio, Ayudas, PAC y Precios (sin Resumen ni Preferencias)", () => {
