@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=29" />
+  <link rel="stylesheet" href="/styles.css?v=32" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -60,7 +60,8 @@
       </span>
     </a>
     <div class="top-tools">
-      <button id="themeToggle" type="button" class="ghost icon-btn" aria-label="Cambiar entre claro y oscuro">Tema</button>
+      <button id="digestBtn" type="button" class="ghost head-btn digest-btn" aria-label="Resumen del día"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="head-text">Resumen</span><span class="head-badge" hidden></span></button>
+      <button id="settingsBtn" type="button" class="ghost head-btn settings-btn" aria-label="Ajustes" aria-haspopup="dialog" aria-controls="prefSheet" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="head-text">Ajustes</span></button>
       <p class="stamp" id="stamp">Cargando…</p>
       <button id="refresh" type="button" class="admin-only">Actualizar</button>
     </div>
@@ -71,15 +72,24 @@
       <span class="sr-only">Buscar</span>
       <input id="q" type="search" placeholder="Buscar PAC, viñedo, vacuno, plazo…" />
     </label>
-    <button type="button" class="prefs-bar" id="prefsBar" aria-expanded="false" aria-controls="prefSheet"></button>
   </div>
 
-  <div id="prefSheet" class="pref-sheet private" hidden>
-    <div class="sheet-card" role="dialog" aria-labelledby="sheetTitle">
+  <div id="prefSheet" class="pref-sheet" hidden>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
       <div class="sheet-head">
-        <h2 id="sheetTitle">Mis preferencias</h2>
+        <h2 id="sheetTitle">Ajustes</h2>
         <button type="button" id="closeSheet" class="ghost">Cerrar</button>
       </div>
+      <section class="settings-theme" aria-labelledby="themeTitle">
+        <h3 id="themeTitle" class="settings-title">Tema</h3>
+        <div class="seg" role="radiogroup" aria-labelledby="themeTitle">
+          <button type="button" role="radio" data-theme-choice="light" aria-checked="false">Claro</button>
+          <button type="button" role="radio" data-theme-choice="dark" aria-checked="false">Oscuro</button>
+          <button type="button" role="radio" data-theme-choice="auto" aria-checked="false">Automático</button>
+        </div>
+      </section>
+      <div class="settings-prefs private" id="prefsSection">
+      <h3 class="settings-title" id="prefsTitle">Mis preferencias</h3>
       <section class="filters" id="filters">
         <p id="prefsAccountNote" class="hint"></p>
         <div class="choice-block">
@@ -110,6 +120,7 @@
         <div class="crop-groups" id="cropChoices"></div>
       </details>
       <button id="openPrefs" type="button" class="text-btn">Repasar paso a paso</button>
+      </div>
     </div>
   </div>
 
@@ -150,13 +161,9 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V9"/><path d="M12 13c-2.2-1.2-4.2-1-6.2.2 0-3.2 1.6-5.4 6.2-6.2 4.6.8 6.2 3 6.2 6.2-2-.2-4-.4-6.2-.2z"/></svg>
       PAC
     </button>
-    <button type="button" data-dock="resumen">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/></svg>
-      Resumen
-    </button>
-    <button type="button" data-dock="preferencias">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M18 6l-1.6 1.6M7.6 16.4 6 18"/></svg>
-      Preferencias
+    <button type="button" data-dock="campo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/></svg>
+      Precios
     </button>
   </nav>
 
@@ -178,6 +185,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=29"></script>
+  <script type="module" src="/app.js?v=32"></script>
 </body>
 </html>

@@ -1,5 +1,30 @@
 # Cambios
 
+## v5.4 · 23/10/2026 · Precios más limpios, cabecera con «Resumen» y «Ajustes», «← Inicio», cuadros desplegables
+
+### Cambiado
+- Cabecera de «Precios medios nacionales»: solo la semana en negrita («Semana 41 · 05/10-1/10»). Se quitan «Última columna con precios en la tabla oficial:» y «(texto literal de la cabecera)».
+- Tablas de todos los grupos (cereales, girasol, leguminosas…): la columna se llama «Producto», sin «(tal como figura en la tabla)»; «Frente a la semana anterior publicada» pasa a «Variación».
+- Se quita la línea «Posición comercial (n): …» bajo cada producto y la llamada «(n)». Se mantiene la unidad («Trigo blando (€/t)»).
+- Se mantienen la fuente y los enlaces a la página oficial del MAPA y al Excel oficial.
+- **Cabecera:** solo dos botones con icono SVG de trazo (como los de la barra de abajo): «Resumen» (periódico) y «Ajustes» (engranaje). En pantallas anchas se ve el texto; en móvil estrecho solo el icono, con `aria-label`. Se quitan el botón «Oscuro» y la barra «Mis preferencias» de la parte de arriba. El administrador sigue viendo «Actualizar».
+- **Ajustes** (engranaje): panel con «Tema» (Claro / Oscuro / Automático) y, debajo, «Mis preferencias» completas. El tema se guarda igual que antes (`alerta_theme` en este dispositivo); «Automático» borra lo guardado y sigue el modo del sistema. En las páginas sueltas (/fuentes, /planes…) el panel solo enseña el tema.
+- **Resumen del día:** se abre desde el botón «Resumen» de la cabecera (vista completa; desde las páginas sueltas lleva a `/#resumen`). El número pequeño del botón es lo que trae el último resumen en los tipos elegidos; si es 0 no sale. Se quita el bloque del resumen del cuerpo de Inicio. La línea «Mostrando: … · Cambiar en Ajustes › Mis preferencias» abre Ajustes en «Mis preferencias».
+- **Barra de abajo (móvil):** Inicio, Ayudas, PAC y Precios. Se quitan «Resumen» y «Preferencias» porque ya están en la cabecera.
+- **«← Inicio»:** botón pequeño arriba de cada vista que no es Inicio (Hoy en el campo/precios, Resumen, Calendario PAC, Favoritas, listas…) y en las páginas sueltas sin barra de abajo: /fuentes, /herramientas, /aviso-legal, /privacidad, /cookies, /quienes-somos, /planes.
+- **Textos sobre cuentas y planes, discretos:** «Plan Gratis. Próximamente: plan Pro…» en Inicio, «Todavía no se contrata ni se cobra.» en /planes y «no hay cuenta ni se envía nada» en Favoritas pasan a letra pequeña gris, sin caja ni negrita.
+- /fuentes: los textos largos ya no desbordan a 320 px.
+- **Inicio sin textos repetidos:** «Abiertas», «Cierran pronto», «Próximas» y «Líneas PAC» salían dos veces (en los cuadros de colores y otra vez en las columnas «Abiertas ahora / Próximas / Cierran pronto» y el bloque «PAC» de más abajo). Ahora solo quedan los cuadros de colores.
+- **Cuadros desplegables:** al tocar un cuadro se despliega debajo su lista (las mismas tarjetas de siempre, con enlace a la fuente oficial y la etiqueta del plazo), hasta 10, con «Ver todas (N)» que lleva a la lista completa con ese mismo filtro («Mostrando solo: … · Ver todo el apartado»). Tocar otra vez lo cierra; solo uno abierto a la vez. Botones con `aria-expanded` y `aria-controls`, flecha pequeña que gira y animación corta (sin animación si el móvil lo pide). Sin piezas: «No hay ninguna ahora».
+- Los números de los cuadros son la cuenta real; «Líneas PAC» antes se cortaba en 8 y ahora cuenta todas.
+- «Abiertas» ahora incluye también las que cierran pronto (antes, y ya en v5.3, solo contaba las de estado «abierta» y salía 0 aunque hubiera 3 cerrando pronto). Las próximas y las que no tienen fecha conocida no cuentan como abiertas. «Cierran pronto» es siempre parte de «Abiertas».
+- Versión de caché `?v=32`.
+
+### Comprobado
+- Fechas de la semana: la app no corta nada. En el Excel oficial `precios_medios_nacionales_2026-s36.xlsx` la cabecera de la semana 41 dice literalmente «05/10-1/10» (la semana 40 dice «28/09-04/10»). Se enseña tal cual; no se corrige ni se inventa.
+- Pruebas: `test/prices-v54.test.js` con la cabecera real y `test/ui-v54.test.js` (cabecera, Ajustes, tema, Resumen, barra de abajo, «← Inicio», textos de cuentas) y `test/inicio-cuadros-v54.test.js` (sin nombres repetidos, cuadros desplegables, lista, vacío).
+- Sin desbordamiento horizontal a 320, 390 y 1024 px.
+
 ## v5.3 · 23/10/2026 · Pasos 2 y 3 según el sector
 
 ### Cambiado

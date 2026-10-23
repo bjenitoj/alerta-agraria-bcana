@@ -30,7 +30,8 @@ const onlyTodayBtn = document.getElementById("onlyToday");
 const refreshBtn = document.getElementById("refresh");
 const readAllBtn = document.getElementById("readAll");
 const clearReadBtn = document.getElementById("clearRead");
-const prefsBar = document.getElementById("prefsBar");
+const settingsBtn = document.getElementById("settingsBtn");
+const digestBtn = document.getElementById("digestBtn");
 const sectorChoices = document.getElementById("sectorChoices");
 const zoneChoices = document.getElementById("zoneChoices");
 const sectorBlocks = document.getElementById("sectorBlocks");
@@ -47,14 +48,17 @@ const wizardBack = document.getElementById("wizardBack");
 const wizardNext = document.getElementById("wizardNext");
 const wizardDefault = document.getElementById("wizardDefault");
 const prefSheet = document.getElementById("prefSheet");
-const themeToggle = document.getElementById("themeToggle");
 
 const PATH = location.pathname.replace(/\/$/, "") || "/";
+// Botón pequeño «← Inicio» arriba de todo lo que no es Inicio.
+const BACK_HOME_TAB = `<button type="button" class="back-home" data-goto="inicio">← Inicio</button>`;
+const BACK_HOME_PAGE = `<nav class="back-home-wrap" aria-label="Volver"><a class="back-home back-home-page" href="/">← Inicio</a></nav>`;
 const QUIET = new Set(["/fuentes", "/quienes-somos", "/aviso-legal", "/privacidad", "/cookies", "/planes", "/herramientas"]);
 const PRO_PLAN_COPY = "Próximamente: plan Pro con alertas personalizadas por cultivo y zona, avisos de plazos por correo/WhatsApp, calendario de la explotación.";
 
 let onlyToday = false;
-let active = "inicio";
+// «/#resumen» abre directamente el Resumen del día (lo usa el botón de la cabecera desde las páginas sueltas).
+let active = location.hash === "#resumen" ? "resumen" : "inicio";
 let prefs = normalizePrefs(null);
 let wizardIndex = 0;
 let wizardFirstRun = false;
@@ -451,9 +455,6 @@ function renderChoices() {
   if (infoChoices) infoChoices.innerHTML = choiceButtons(INFO_TYPES, prefs.info, "info", { numbered: true });
   cropChoices.innerHTML = cropTilesHtml(prefs);
   if (cropsTitle) cropsTitle.textContent = (CROPS_TITLE[prefs.sector] || CROPS_TITLE.todos)[1];
-  if (prefsBar) {
-    prefsBar.innerHTML = `<span>${escapeHtml(prefsSummary(prefs).bar)}</span><span class="tune">Mis preferencias</span>`;
-  }
 }
 
 function togglePref(group, id) {
@@ -768,31 +769,53 @@ function inTab(item, tab) {
   return true;
 }
 
-function column(title, items, empty) {
-  const body = items.length ? items.map((item) => aidCard(item)).join("") : `<p class="empty">${empty}</p>`;
-  return `<section class="column"><h2>${title}<span>${items.length}</span></h2>${body}</section>`;
-}
-
-function digestCard(compact) {
+/** Piezas del resumen de un día, SOLO de los tipos elegidos. Sin resumen guardado devuelve null. */
+function digestData(date) {
   const digests = [...(state.digests || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
-  if (!digestDate && digests[0]) digestDate = digests[0].date;
-  const current = digests.find((entry) => entry.date === digestDate) || digests[0];
-  if (!current) {
-    return `<aside class="digest"><div class="digest-head"><span class="mark">${GLYPH.plazo}</span><div><p class="eyebrow">Novedades oficiales</p><h2>Resumen del día</h2><p class="orientativo">Información orientativa. Consulta siempre la publicación oficial.</p></div></div>${closingSoonSection("")}<p class="empty">Todavía no hay resumen. Se genera solo al terminar la consulta del día.</p></aside>`;
-  }
-  const options = digests
-    .map((entry) => `<option value="${escapeHtml(entry.date)}" ${entry.date === current.date ? "selected" : ""}>${escapeHtml(fmtDay(entry.date))}</option>`)
-    .join("");
+  const current = digests.find((entry) => entry.date === date) || digests[0];
+  if (!current) return null;
   const shown = (item) => hasSourceUrl(item) && !isHidden(item) && !(soloAbiertas && isClosedAid(item.aid, madridTodayKey()));
-  // Ayudas nuevas del resumen (las guarda el servidor) + el resto de piezas oficiales publicadas ese día.
-  // El resumen enseña SOLO los tipos de información elegidos en «Mis preferencias», en su orden.
   const aids = (current.items || []).filter(hasSourceUrl);
   const aidIds = new Set(aids.map((item) => item.id));
   const others = unseen(state.items || [], "alerta_ocultas")
     .filter((item) => !aidIds.has(item.id) && hasSourceUrl(item) && madridDay(item.publishedAt) === current.date);
   const sorted = [...aids, ...others].filter(shown).sort((a, b) => compareItems(a, b, prefs, current.date));
   const groups = digestSelection(sorted, prefs).filter((group) => group.items.length);
-  const visible = groups.flatMap((group) => group.items);
+  return { digests, current, aids, aidIds, sorted, groups, visible: groups.flatMap((group) => group.items) };
+}
+
+/** Número para el botón «Resumen» de la cabecera: lo que trae el último resumen en los tipos elegidos. */
+function digestBadgeCount() {
+  const data = digestData(null);
+  return data ? data.visible.length : 0;
+}
+
+function paintDigestBtn() {
+  if (!digestBtn) return;
+  const badge = digestBtn.querySelector(".head-badge");
+  const count = digestBadgeCount();
+  digestBtn.classList.toggle("on", active === "resumen");
+  if (badge) {
+    badge.hidden = !count;
+    badge.textContent = count > 99 ? "99+" : String(count);
+  }
+  digestBtn.setAttribute("aria-label", count ? `Resumen del día: ${count} ${count === 1 ? "novedad" : "novedades"}` : "Resumen del día");
+}
+
+function digestCard(compact) {
+  const digests = [...(state.digests || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  if (!digestDate && digests[0]) digestDate = digests[0].date;
+  const data = digestData(digestDate);
+  const current = data?.current;
+  if (!current) {
+    return `<aside class="digest"><div class="digest-head"><span class="mark">${GLYPH.plazo}</span><div><p class="eyebrow">Novedades oficiales</p><h2>Resumen del día</h2><p class="orientativo">Información orientativa. Consulta siempre la publicación oficial.</p></div></div>${closingSoonSection("")}<p class="empty">Todavía no hay resumen. Se genera solo al terminar la consulta del día.</p></aside>`;
+  }
+  const options = digests
+    .map((entry) => `<option value="${escapeHtml(entry.date)}" ${entry.date === current.date ? "selected" : ""}>${escapeHtml(fmtDay(entry.date))}</option>`)
+    .join("");
+  // Ayudas nuevas del resumen (las guarda el servidor) + el resto de piezas oficiales publicadas ese día.
+  // El resumen enseña SOLO los tipos de información elegidos en «Mis preferencias», en su orden.
+  const { aids, aidIds, sorted, groups, visible } = data;
   const chosen = prefsSummary(prefs).info;
   const wantsAids = prefs.info.includes("ayudas");
   const wantsDeadlines = wantsAids || prefs.info.includes("pac");
@@ -832,7 +855,7 @@ function digestCard(compact) {
       <label class="history">Día
         <select id="digestDate">${options}</select>
       </label>
-      <p class="hint digest-showing">Mostrando: ${escapeHtml(chosen.join(", "))} · <button type="button" class="hint-link" data-open-prefs="1">Cambiar en Mis preferencias</button></p>
+      <p class="hint digest-showing">Mostrando: ${escapeHtml(chosen.join(", "))} · <button type="button" class="hint-link" data-open-prefs="1">Cambiar en Ajustes › Mis preferencias</button></p>
       ${notice}
       ${wantsDeadlines ? closingSoonSection(current.date) : ""}
       <h3 class="digest-sub">Novedades de este resumen</h3>
@@ -860,7 +883,8 @@ function priorityStrip(items) {
 
 function planStrip() {
   const text = state.plans?.upcoming || PRO_PLAN_COPY;
-  return `<section class="plan-soon"><h2>Plan Gratis</h2><p>${escapeHtml(text)}</p><p class="links"><a href="/planes">Ver los planes</a></p></section>`;
+  // Aviso discreto: letra pequeña y gris, sin caja ni negrita.
+  return `<p class="plan-soon">Plan Gratis. ${escapeHtml(text)} <a href="/planes">Ver los planes</a></p>`;
 }
 
 function baseItems(options = {}) {
@@ -936,7 +960,10 @@ function euro(value) {
   return value == null ? "" : new Intl.NumberFormat("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 }
 
-/** Semana tal como la escribe la hoja del MAPA («Semana 41 · 05/10-1/10»). */
+/**
+ * Semana tal como la escribe la cabecera de la hoja del MAPA. Se copia literal, sin corregir:
+ * en la hoja de 2026 la semana 41 figura como «05/10-1/10» (así viene en el Excel oficial).
+ */
 function weekText(data) {
   if (!data?.week) return "";
   return `${data.weekHeader || `Semana ${data.week}`}${data.weekLabel ? ` · ${data.weekLabel}` : ""}`;
@@ -987,11 +1014,51 @@ function trend(item) {
   return `<em class="trend flat">= 0,00</em>`;
 }
 
+// Cuadros de colores de Inicio (Abiertas, Cierran pronto, Próximas, Líneas PAC). Son la ÚNICA vez que salen
+// estos nombres en Inicio: al tocar uno se despliega debajo su lista (máx. 10) y «Ver todas» lleva a la lista completa.
+const GLANCE = [
+  { id: "abierta", label: "Abiertas", goto: "ayudas", status: "abierta" },
+  { id: "cierra_pronto", label: "Cierran pronto", goto: "ayudas", status: "cierra_pronto" },
+  { id: "proxima", label: "Próximas", goto: "ayudas", status: "proxima" },
+  { id: "pac", label: "Líneas PAC", goto: "pac", status: "pac" },
+];
+const GLANCE_LIMIT = 10;
+const CHEVRON = `<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
+let openStat = null;
+// Filtro de estado de la lista de Ayudas cuando se llega desde «Ver todas» de un cuadro.
+let listStatus = null;
+
+function isPacLine(item) {
+  return item.kind === "linea" && (item.sourceId === "pac_lineas" || item.category === "pac_pagos" || (item.themes || []).includes("pac"));
+}
+
+function glanceCards(lists) {
+  const cards = GLANCE.map((card) => {
+    const on = openStat === card.id;
+    return `<button type="button" class="stat ${card.id}${on ? " open" : ""}" data-stat="${card.id}" aria-expanded="${on ? "true" : "false"}" aria-controls="statPanel"><strong>${lists[card.id].length}</strong><span>${card.label}</span>${CHEVRON}</button>`;
+  }).join("");
+  const card = GLANCE.find((entry) => entry.id === openStat);
+  let panel = "";
+  if (card) {
+    const list = lists[card.id];
+    const more = list.length > GLANCE_LIMIT
+      ? `<button type="button" class="link-btn" data-goto="${card.goto}" data-status="${card.status}">Ver todas (${list.length})</button>`
+      : list.length ? `<button type="button" class="link-btn" data-goto="${card.goto}" data-status="${card.status}">Ver todas</button>` : "";
+    panel = list.length
+      ? `<div class="list">${list.slice(0, GLANCE_LIMIT).map((item) => aidCard(item)).join("")}</div>${more}`
+      : `<p class="empty">No hay ninguna ahora</p>`;
+  }
+  return `<section class="glance-wrap" aria-label="De un vistazo">
+      <div class="glance">${cards}</div>
+      <div id="statPanel" class="stat-panel" role="region" aria-label="${card ? escapeHtml(card.label) : "Detalle"}"${card ? "" : " hidden"}>${panel}</div>
+    </section>`;
+}
+
 function renderBoard() {
   const items = sortedItems(baseItems());
-  const open = items.filter((item) => item.kind !== "linea" && item.aid?.status === "abierta");
-  const next = items.filter((item) => item.kind !== "linea" && item.aid?.status === "proxima");
-  const soon = items.filter((item) => item.kind !== "linea" && item.aid?.status === "cierra_pronto");
+  const open = items.filter(GLANCE_MATCH.abierta);
+  const next = items.filter(GLANCE_MATCH.proxima);
+  const soon = items.filter(GLANCE_MATCH.cierra_pronto);
   const loose = items
     .filter((item) => {
       if (item.aid?.status !== "sin_plazo") return false;
@@ -999,40 +1066,39 @@ function renderBoard() {
       return (item.infoTypes || []).includes("ayudas");
     })
     .slice(0, 8);
-  const pac = items.filter((item) => item.kind === "linea" && (item.sourceId === "pac_lineas" || item.category === "pac_pagos" || (item.themes || []).includes("pac"))).slice(0, 8);
-  const glance = [
-    ["abierta", String(open.length), "Abiertas"],
-    ["cierra_pronto", String(soon.length), "Cierran pronto"],
-    ["proxima", String(next.length), "Próximas"],
-    ["pac", String(pac.length), "Líneas PAC"],
-  ].map(([id, count, label]) => `<article class="stat ${id}"><strong>${count}</strong><span>${label}</span></article>`).join("");
+  const pacAll = items.filter(GLANCE_MATCH.pac);
   return `
     <div class="board">
       ${filterRow()}
-      <section class="glance" aria-label="De un vistazo">${glance}</section>
+      ${glanceCards({ abierta: open, cierra_pronto: soon, proxima: next, pac: pacAll })}
       ${priorityStrip(items)}
       ${fieldStrip()}
       ${planStrip()}
-      <div class="columns">
-        ${column("Abiertas ahora", open.slice(0, 10), "No hay ayudas abiertas con estos criterios.")}
-        ${column("Próximas", next.slice(0, 10), "No hay una fecha de apertura próxima.")}
-        ${column("Cierran pronto", soon.slice(0, 10), "Ninguna ayuda de la lista cierra en los próximos 15 días.")}
-      </div>
-      <section class="pac-block">
-        <h2>PAC <span>${pac.length}</span></h2>
-        ${pac.length ? pac.map((item) => aidCard(item)).join("") : `<p class="empty">Las líneas de la PAC aparecerán aquí cuando la web de la Junta se pueda leer.</p>`}
-      </section>
       ${loose.length ? `<section class="loose"><h2>Sin plazo concreto</h2>${loose.map((item) => aidCard(item)).join("")}</section>` : ""}
-      ${digestCard(true)}
     </div>`;
 }
 
+// Mismo criterio que los cuadros de Inicio, para que «Ver todas» enseñe exactamente lo que cuenta el cuadro.
+const GLANCE_MATCH = {
+  // Una ayuda que cierra pronto también está abierta (lib/preferences.js statusOf: ya abrió y no ha cerrado), así que
+  // cuenta en el cuadro de abiertas. Lo que no tiene estado conocido (sin_plazo) no se cuenta como abierto.
+  abierta: (item) => item.kind !== "linea" && (item.aid?.status === "abierta" || item.aid?.status === "cierra_pronto"),
+  cierra_pronto: (item) => item.kind !== "linea" && item.aid?.status === "cierra_pronto",
+  proxima: (item) => item.kind !== "linea" && item.aid?.status === "proxima",
+  pac: (item) => isPacLine(item),
+};
+
 function renderList(tab) {
-  const items = sortedItems(baseItems()).filter((item) => inTab(item, tab));
+  const card = listStatus ? GLANCE.find((entry) => entry.status === listStatus && entry.goto === tab) : null;
+  const match = card ? GLANCE_MATCH[card.id] : null;
+  const items = sortedItems(baseItems()).filter((item) => (match ? match(item) : inTab(item, tab)));
+  const head = card
+    ? `<p class="hint list-status">Mostrando solo: ${escapeHtml(card.label)} · <button type="button" class="hint-link" data-goto="${card.goto}">Ver todo el apartado</button></p>`
+    : "";
   const body = items.length
     ? `<div class="list">${items.map((item) => aidCard(item)).join("")}</div>`
     : `<p class="empty">No hay nada en este apartado con los criterios de ahora.${soloAbiertas ? " Las cerradas no se ven: quita «Solo abiertas» para verlas." : ""}</p>`;
-  return filterRow() + body;
+  return filterRow() + head + body;
 }
 
 function closingSoonList(dateKey) {
@@ -1078,7 +1144,8 @@ function renderFavorites() {
     <section class="view-head">
       <p class="eyebrow">Solo en este móvil u ordenador</p>
       <h2>Mis favoritas <span>${entries.length}</span></h2>
-      <p>Toca ☆ en cualquier ayuda para guardarla aquí. Se guarda solo en este navegador: no hay cuenta ni se envía nada.${entries.length ? ` ${openCount} siguen con el plazo abierto o sin fecha.` : ""}</p>
+      <p>Toca ☆ en cualquier ayuda para guardarla aquí.${entries.length ? ` ${openCount} siguen con el plazo abierto o sin fecha.` : ""}</p>
+      <p class="account-note">Se guarda solo en este navegador: no hay cuenta ni se envía nada.</p>
     </section>
     ${cards.length ? `<div class="list">${cards.join("")}</div>` : `<p class="empty">Todavía no tienes favoritas.</p>`}
     <section class="hidden-box">
@@ -1161,10 +1228,10 @@ function renderField() {
     <section class="price-group">
       <h3>${escapeHtml(group)}</h3>
       <table class="prices-table">
-        <thead><tr><th>Producto (tal como figura en la tabla)</th><th>Precio</th><th>Frente a la semana anterior publicada</th></tr></thead>
+        <thead><tr><th>Producto</th><th>Precio</th><th>Variación</th></tr></thead>
         <tbody>${(pricesData.items || []).filter((item) => item.group === group).map((item) => `
           <tr>
-            <th scope="row">${escapeHtml(item.sheetLabel || item.name)}${item.positionRef ? ` <small>${escapeHtml(item.positionRef)}</small>` : ""}${item.position ? `<br><small class="muted">Posición comercial ${escapeHtml(item.positionRef)}: ${escapeHtml(item.position)}</small>` : ""}</th>
+            <th scope="row">${escapeHtml(item.sheetLabel || item.name)}</th>
             <td>${item.value != null ? `<strong>${euro(item.value)}</strong> ${escapeHtml(item.unit)}` : `<span class="muted">«-» en la tabla esta semana${item.lastValue != null ? ` (semana ${item.lastWeek}: ${euro(item.lastValue)} ${escapeHtml(item.unit)})` : ""}</span>`}</td>
             <td>${trend(item)}</td>
           </tr>`).join("")}</tbody>
@@ -1175,7 +1242,7 @@ function renderField() {
       <div class="view-head">
         <p class="eyebrow">Hoy en el campo</p>
         <h2>Precios medios nacionales</h2>
-        <p>Última columna con precios en la tabla oficial: <strong>${escapeHtml(weekText(pricesData))}</strong> (texto literal de la cabecera).</p>
+        <p><strong>${escapeHtml(weekText(pricesData))}</strong></p>
         ${pricesData.stale ? `<p class="note">No hemos podido actualizar ahora mismo. Te enseñamos la última copia buena, del ${escapeHtml(fmtStamp(pricesData.fetchedAt))}.</p>` : ""}
       </div>
       ${tables}
@@ -1312,22 +1379,25 @@ function render() {
   if (clearReadBtn) clearReadBtn.hidden = active === "archivadas";
   renderChoices();
   renderTabs();
+  paintDigestBtn();
+  if (location.hash === "#resumen" && active !== "resumen") history.replaceState(null, "", location.pathname + location.search);
   renderSources();
   paintPrefsNote();
   document.querySelectorAll("[data-dock]").forEach((button) => {
-    const openSheet = button.dataset.dock === "preferencias" && prefSheet && !prefSheet.hidden;
-    const on = button.dataset.dock === active || openSheet;
+    const on = button.dataset.dock === active;
     button.classList.toggle("on", on);
     button.setAttribute("aria-current", button.dataset.dock === active ? "page" : "false");
   });
-  if (active === "inicio") appEl.innerHTML = renderBoard();
-  else if (active === "resumen") appEl.innerHTML = renderDigestTab();
-  else if (active === "favoritas") appEl.innerHTML = renderFavorites();
-  else if (active === "calendario") appEl.innerHTML = renderPacCalendar();
-  else if (active === "campo") appEl.innerHTML = renderField();
-  else if (active === "herramientas") appEl.innerHTML = renderToolsTab();
-  else if (active === "archivadas") appEl.innerHTML = renderArchive();
-  else appEl.innerHTML = renderList(active);
+  let html;
+  if (active === "inicio") html = renderBoard();
+  else if (active === "resumen") html = renderDigestTab();
+  else if (active === "favoritas") html = renderFavorites();
+  else if (active === "calendario") html = renderPacCalendar();
+  else if (active === "campo") html = renderField();
+  else if (active === "herramientas") html = renderToolsTab();
+  else if (active === "archivadas") html = renderArchive();
+  else html = renderList(active);
+  appEl.innerHTML = active === "inicio" ? html : `${BACK_HOME_TAB}${html}`;
 }
 
 function showGate(message) {
@@ -1533,17 +1603,38 @@ tabsEl.addEventListener("click", (event) => {
   const button = event.target.closest(".tab");
   if (!button) return;
   active = button.dataset.id;
+  listStatus = null;
   setSheet(false);
   render();
 });
 
-function setSheet(open) {
+// Ajustes: un solo panel con el tema (Claro / Oscuro / Automático) y, debajo,
+// «Mis preferencias». Se abre con el botón del engranaje de la cabecera.
+function setSheet(open, focusPrefs = false) {
   if (!prefSheet) return;
   prefSheet.hidden = !open;
-  prefsBar?.setAttribute("aria-expanded", open ? "true" : "false");
+  settingsBtn?.setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) {
+    paintThemeChoice();
+    const target = focusPrefs ? document.getElementById("prefsSection") : null;
+    if (target && !document.body.classList.contains("public-page")) target.scrollIntoView({ block: "start" });
+    else prefSheet.querySelector(".sheet-card")?.scrollTo(0, 0);
+  }
 }
 
-prefsBar?.addEventListener("click", () => setSheet(prefSheet?.hidden));
+settingsBtn?.addEventListener("click", () => setSheet(prefSheet?.hidden));
+// Botón «Resumen» de la cabecera: abre la vista completa del Resumen del día.
+digestBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  if (QUIET.has(PATH) || PATH === "/admin" || document.body.classList.contains("public-page")) {
+    location.href = "/#resumen";
+    return;
+  }
+  active = "resumen";
+  setSheet(false);
+  render();
+  window.scrollTo(0, 0);
+});
 document.getElementById("closeSheet")?.addEventListener("click", () => setSheet(false));
 prefSheet?.addEventListener("click", (event) => {
   if (event.target === prefSheet) setSheet(false);
@@ -1551,12 +1642,8 @@ prefSheet?.addEventListener("click", (event) => {
 document.querySelector(".dock")?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-dock]");
   if (!button) return;
-  if (button.dataset.dock === "preferencias") {
-    setSheet(prefSheet?.hidden);
-    render();
-    return;
-  }
   active = button.dataset.dock;
+  listStatus = null;
   setSheet(false);
   render();
   window.scrollTo(0, 0);
@@ -1569,16 +1656,41 @@ function effectiveTheme() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-function paintTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  try { localStorage.setItem("alerta_theme", theme); } catch { /* el tema queda en esta visita */ }
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = theme === "dark" ? "#101812" : "#1b4332";
-  if (themeToggle) themeToggle.textContent = theme === "dark" ? "Claro" : "Oscuro";
+// El tema se guarda igual que antes (localStorage «alerta_theme»: light/dark).
+// «Automático» borra lo guardado y sigue el modo del sistema.
+function savedTheme() {
+  try {
+    const saved = localStorage.getItem("alerta_theme");
+    return saved === "light" || saved === "dark" ? saved : "auto";
+  } catch { return "auto"; }
 }
 
-themeToggle?.addEventListener("click", () => paintTheme(effectiveTheme() === "dark" ? "light" : "dark"));
-if (themeToggle) themeToggle.textContent = effectiveTheme() === "dark" ? "Claro" : "Oscuro";
+function paintThemeChoice(choice = savedTheme()) {
+  document.querySelectorAll("[data-theme-choice]").forEach((button) => {
+    const on = button.dataset.themeChoice === choice;
+    button.classList.toggle("on", on);
+    button.setAttribute("aria-checked", on ? "true" : "false");
+  });
+}
+
+function paintTheme(theme) {
+  if (theme === "light" || theme === "dark") {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem("alerta_theme", theme); } catch { /* el tema queda en esta visita */ }
+  } else {
+    delete document.documentElement.dataset.theme;
+    try { localStorage.removeItem("alerta_theme"); } catch { /* sigue el sistema */ }
+  }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = effectiveTheme() === "dark" ? "#101812" : "#1b4332";
+  paintThemeChoice(theme === "light" || theme === "dark" ? theme : "auto");
+}
+
+document.querySelector(".settings-theme")?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-theme-choice]");
+  if (button) paintTheme(button.dataset.themeChoice);
+});
+paintThemeChoice();
 
 async function archiveById(id) {
   if (!isAdmin()) return;
@@ -1655,6 +1767,16 @@ async function deleteArchivedById(id) {
 }
 
 appEl.addEventListener("click", (event) => {
+  const stat = event.target.closest("[data-stat]");
+  if (stat) {
+    event.preventDefault();
+    openStat = openStat === stat.dataset.stat ? null : stat.dataset.stat;
+    const y = window.scrollY;
+    render();
+    window.scrollTo(0, y);
+    appEl.querySelector(`[data-stat="${stat.dataset.stat}"]`)?.focus({ preventScroll: true });
+    return;
+  }
   const fav = event.target.closest("[data-fav]");
   if (fav) {
     event.preventDefault();
@@ -1692,7 +1814,7 @@ appEl.addEventListener("click", (event) => {
   }
   if (event.target.closest("[data-open-prefs]")) {
     event.preventDefault();
-    setSheet(true);
+    setSheet(true, true);
     render();
     return;
   }
@@ -1700,6 +1822,7 @@ appEl.addEventListener("click", (event) => {
   if (go) {
     event.preventDefault();
     active = go.dataset.goto;
+    listStatus = go.dataset.status || null;
     render();
     window.scrollTo(0, 0);
   }
@@ -1839,7 +1962,7 @@ async function renderPlans() {
       <p>La consulta de ayudas, PAC, resumen del día y fuentes es abierta.</p>
       <h2>Plan Pro</h2>
       <p>${escapeHtml(plans.upcoming || PRO_PLAN_COPY)}</p>
-      <p>Todavía no se contrata ni se cobra.</p>
+      <p class="account-note">Todavía no se contrata ni se cobra.</p>
     </article>`;
 }
 
@@ -1868,6 +1991,8 @@ async function renderLegal() {
 async function renderPublic() {
   document.body.classList.add("public-page");
   document.body.classList.remove("locked");
+  // Estas páginas no tienen barra de pestañas: «← Inicio» arriba, siempre visible.
+  if (!document.querySelector(".back-home-page")) appEl.insertAdjacentHTML("beforebegin", BACK_HOME_PAGE);
   const stored = loadPrefs();
   prefs = stored.prefs;
   await loadSession();
