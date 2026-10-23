@@ -826,6 +826,25 @@ body[data-review="on"] .wizard-card { max-height: calc(100vh - 70px); max-height
   .head-btn { width: 44px; min-height: 44px; }
 }
 
+/* v5.5 · «Preferencias» abre el panel solo con «Mis preferencias»; Ajustes lo enseña todo. */
+.pref-sheet.prefs-only .settings-theme,
+.pref-sheet.prefs-only .settings-read,
+.pref-sheet.prefs-only .settings-link,
+.pref-sheet.prefs-only #prefsTitle { display: none; }
+.settings-link { margin: 10px 0 0; }
+@media (max-width: 560px) {
+  .top-tools { gap: 6px; }
+  .brand { min-width: 0; }
+  .brand > span { min-width: 0; }
+}
+@media (max-width: 360px) {
+  .top { gap: 6px; }
+  .top-tools { gap: 4px; }
+  .logo { width: 32px; height: 32px; }
+  .brand strong { font-size: 15px; line-height: 1.1; }
+  .head-btn { width: 42px; min-height: 44px; }
+}
+
 /* Ajustes: tema + «Mis preferencias». */
 .settings-title { margin: 14px 0 8px; font-size: 18px; }
 .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -893,3 +912,42 @@ button.stat[aria-expanded="true"] .chev { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) { .stat-panel { animation: none; } button.stat .chev { transition: none; } }
 @media (max-width: 420px) { button.stat span { font-size: 15px; } }
 @media (max-width: 360px) { button.stat { padding: 10px; } .stat strong { font-size: 26px; } }
+
+/* v5.5 · Leídas y borradas (como la app original, guardado solo en este dispositivo). */
+.card.fresh { cursor: pointer; }
+.card.read { cursor: pointer; opacity: 0.5; box-shadow: inset 5px 0 0 #b7b0a2, var(--shadow); }
+.card.read h3 { color: var(--muted); }
+@media (hover: hover) and (pointer: fine) { .card.read:hover { opacity: 0.8; } }
+.badge.read-badge { background: var(--line); color: var(--muted); }
+.card:not(.read) .mark-unread { display: none; }
+.mark-unread { font-size: 15px; min-height: 40px; }
+.read-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 10px; min-width: 0; }
+.read-tools .clear-read { min-height: 40px; padding: 6px 12px; font-size: 15px; }
+.read-tools .clear-read[disabled] { opacity: 0.55; cursor: default; }
+.read-tools .hint { font-size: 14px; color: var(--muted); min-width: 0; }
+.settings-read { border-top: 1px solid var(--line); margin-top: 16px; }
+.settings-read .hint { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
+.settings-read-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.settings-read-actions button { min-height: 44px; padding: 8px 12px; font-size: 15px; }
+.settings-read-actions button[disabled] { opacity: 0.55; cursor: default; }
+.toast[hidden] { display: none; }
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 24px);
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: var(--card);
+  box-shadow: var(--shadow);
+  font-size: 15px;
+}
+.toast > span { white-space: nowrap; }
+.toast-undo { min-height: 40px; padding: 6px 12px; background: var(--card); color: var(--ink); border: 0; }
+@media (min-width: 901px) { .toast { bottom: 24px; } }

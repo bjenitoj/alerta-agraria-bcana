@@ -46,7 +46,7 @@ test("v5.4: tablas de precios sin «Posición comercial» y con «Variación»",
   assert.match(field, /<th>Producto<\/th><th>Precio<\/th><th>Variación<\/th>/);
   assert.match(field, /Tabla oficial \(Excel\)/, "se mantiene el enlace a la fuente oficial");
   assert.match(field, /Página oficial del MAPA/);
-  assert.match(indexHtml, /app\.js\?v=32/);
-  assert.match(indexHtml, /styles\.css\?v=32/);
+  assert.match(indexHtml, /app\.js\?v=33/);
+  assert.match(indexHtml, /styles\.css\?v=33/);
   assert.match(appJs, /Versión en revisión/, "se mantiene el cartel «En revisión»");
 });

@@ -123,8 +123,8 @@ test("el asistente no tiene textos fijos de sector o zona", () => {
 test("«Mis preferencias» incluye los tipos de información y la versión de caché sube", () => {
   assert.match(indexHtml, /id="infoChoices"/);
   assert.match(indexHtml, /Mis preferencias/);
-  assert.match(indexHtml, /app\.js\?v=32/);
-  assert.match(indexHtml, /styles\.css\?v=32/);
+  assert.match(indexHtml, /app\.js\?v=33/);
+  assert.match(indexHtml, /styles\.css\?v=33/);
 });
 
 test("el resumen del día enseña solo los tipos elegidos, en su orden", () => {
@@ -148,7 +148,7 @@ test("el resumen usa la selección y dice qué se está mostrando", () => {
   const body = appJs.slice(appJs.indexOf("function digestData"), appJs.indexOf("function priorityStrip"));
   assert.match(body, /digestSelection\(/);
   assert.match(body, /Mostrando: /);
-  assert.match(body, /Cambiar en Ajustes › Mis preferencias/);
+  assert.match(body, /Cambiar en Mis preferencias/);
   assert.match(body, /data-open-prefs/);
   assert.match(body, /hasSourceUrl/, "solo piezas con enlace oficial");
 });

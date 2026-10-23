@@ -98,8 +98,8 @@ test("v5.3: migración segura de preferencias guardadas antes", () => {
   assert.deepEqual(normalizePrefs({ farm: ["inventado"], fishing: "x" }).farm, []);
   assert.deepEqual(DEFAULT_PREFS.farm, []);
   assert.deepEqual(DEFAULT_PREFS.fishing, []);
-  assert.match(indexHtml, /app\.js\?v=32/);
-  assert.match(indexHtml, /styles\.css\?v=32/);
+  assert.match(indexHtml, /app\.js\?v=33/);
+  assert.match(indexHtml, /styles\.css\?v=33/);
 });
 
 test("v5.3: tipo de explotación y actividad solo cuentan si la palabra sale tal cual en el texto oficial", () => {

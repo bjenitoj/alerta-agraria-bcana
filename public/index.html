@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=32" />
+  <link rel="stylesheet" href="/styles.css?v=33" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -61,6 +61,7 @@
     </a>
     <div class="top-tools">
       <button id="digestBtn" type="button" class="ghost head-btn digest-btn" aria-label="Resumen del día"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="head-text">Resumen</span><span class="head-badge" hidden></span></button>
+      <button id="prefsBtn" type="button" class="ghost head-btn prefs-btn" aria-label="Mis preferencias" aria-haspopup="dialog" aria-controls="prefSheet" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span class="head-text">Preferencias</span></button>
       <button id="settingsBtn" type="button" class="ghost head-btn settings-btn" aria-label="Ajustes" aria-haspopup="dialog" aria-controls="prefSheet" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="head-text">Ajustes</span></button>
       <p class="stamp" id="stamp">Cargando…</p>
       <button id="refresh" type="button" class="admin-only">Actualizar</button>
@@ -86,6 +87,15 @@
           <button type="button" role="radio" data-theme-choice="light" aria-checked="false">Claro</button>
           <button type="button" role="radio" data-theme-choice="dark" aria-checked="false">Oscuro</button>
           <button type="button" role="radio" data-theme-choice="auto" aria-checked="false">Automático</button>
+        </div>
+      </section>
+      <p class="settings-link private"><button type="button" class="hint-link" data-open-prefs="1">Ir a Mis preferencias ›</button></p>
+      <section class="settings-read private" aria-labelledby="readTitle">
+        <h3 id="readTitle" class="settings-title">Leídas y borradas</h3>
+        <p class="hint">Toca una noticia para marcarla como leída. «Borrar leídas» las quita de la vista durante 15 días. Se guarda solo en este dispositivo.</p>
+        <div class="settings-read-actions">
+          <button type="button" id="restoreDeleted" class="ghost" disabled>Recuperar borradas (0)</button>
+          <button type="button" id="restoreHidden" class="ghost" disabled>Volver a mostrar ocultas (0)</button>
         </div>
       </section>
       <div class="settings-prefs private" id="prefsSection">
@@ -185,6 +195,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=32"></script>
+  <script type="module" src="/app.js?v=33"></script>
 </body>
 </html>

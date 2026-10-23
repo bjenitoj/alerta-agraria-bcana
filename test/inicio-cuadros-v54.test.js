@@ -12,8 +12,8 @@ const LABELS = ["Abiertas", "Cierran pronto", "Próximas", "Líneas PAC"];
 // Se carga el código real de los cuadros (GLANCE … glanceCards) con dos ayudantes mínimos.
 const chunk = appJs.slice(appJs.indexOf("const GLANCE = ["), appJs.indexOf("function renderBoard"));
 const esc = (v) => String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const load = () => new Function("aidCard", "escapeHtml", `${chunk}; return { glanceCards, open: (v) => { openStat = v; } };`)(
-  (item) => `<article class="card"><a href="${esc(item.url)}">${esc(item.title)}</a></article>`, esc);
+const load = () => new Function("aidCard", "escapeHtml", "readTools", `${chunk}; return { glanceCards, open: (v) => { openStat = v; } };`)(
+  (item) => `<article class="card"><a href="${esc(item.url)}">${esc(item.title)}</a></article>`, esc, () => "");
 const item = (n) => ({ id: `a${n}`, title: `Ayuda oficial ${n}`, url: `https://www.boe.es/${n}` });
 
 test("v5.4 Inicio: los nombres de los cuadros solo salen en los cuadros de colores", () => {

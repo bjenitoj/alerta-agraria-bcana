@@ -1,5 +1,30 @@
 # Cambios
 
+## v5.5 · 23/10/2026 · Vuelven «tocar para marcar como leída» y «Borrar leídas»; botón «Preferencias» en la cabecera; el sector filtra los números
+
+### Recuperado (como en la app original)
+- **Tocar una noticia o ayuda la marca como leída** (otra vez la deja sin leer). Se ve atenuada, con el borde gris y la etiqueta «✓ Leída» en lugar de «Nueva». Abrir el enlace oficial (o «Ir al trámite») también la marca. En las leídas aparece «Marcar como no leída». Funciona en Ayudas, PAC, demás listas, cuadros de Inicio, Resumen y Mis favoritas.
+- **«Borrar leídas (N)»** encima de las listas (Ayudas, PAC, Normativa…), dentro de los cuadros de Inicio abiertos y en el Resumen. Quita de la vista las leídas durante 15 días (como la app original). Las favoritas nunca se borran. Sale un aviso pequeño «Borradas N leídas · Deshacer» (8 s).
+- **Ajustes › «Leídas y borradas»:** «Recuperar borradas (N)» y «Volver a mostrar ocultas (N)».
+
+### Corregido
+- **Los chips de sector (Agricultura / Ganadería / Pesca / Todos) ahora filtran de verdad.** Antes solo cambiaban el orden y los números no variaban. Ahora cambian los cuadros de Inicio (Abiertas, Cierran pronto, Próximas, Líneas PAC), su lista desplegada y «Ver todas (N)», «Lo que has puesto primero», los números de las pestañas, las listas de Ayudas, PAC, Normativa…, el Resumen y su número, y los plazos que cierran pronto. Se usa la clasificación que ya trae cada pieza (sector de la fuente oficial o del texto); lo que no tiene sector conocido solo sale en «Todos». «Solo abiertas» sigue aplicándose igual en todas partes.
+- «Ver todas» lleva siempre el número (es el mismo que el del cuadro y el de la lista que abre).
+- El número de la pestaña «Resumen» es el mismo que el del botón de la cabecera (piezas del último resumen), no el número de días guardados.
+
+### Cambiado
+- Todo se guarda **solo en este dispositivo** (`alerta_leidas_v1`: leídas y borradas con su fecha; cada marca caduca a los 15 días). Sin cuentas y sin enviar nada al servidor. Las marcas antiguas (`alerta_leidas_local`) se conservan.
+- Los números de cuadros, pestañas y del botón «Resumen» ya no cuentan las borradas; las leídas que no se han borrado sí cuentan.
+- «Solo no leídas» (en Mis preferencias › filtros) usa estas marcas también para el público.
+- «Ocultar esta ayuda» sigue aparte (una sola ayuda, sin caducidad); se recupera desde Ajustes.
+- **Cabecera:** nuevo botón «Preferencias» (icono de reguladores) entre «Resumen» y «Ajustes». En pantallas anchas se ve el texto; en móvil estrecho solo el icono, con `aria-label="Mis preferencias"`. Abre directamente el panel «Mis preferencias» (el mismo de Ajustes, sin el tema). Ajustes conserva el tema, «Leídas y borradas», un enlace «Ir a Mis preferencias ›» y las preferencias. En las páginas sueltas (/fuentes…) lleva a `/#preferencias`. Sin desbordes a 320 px.
+- La línea del Resumen pasa a «Cambiar en Mis preferencias».
+- Caché `?v=33`.
+
+### Pruebas
+- `test/sector-v55.test.js`: los cuadros cambian por sector, lo que no tiene sector solo sale en «Todos», número del cuadro = piezas del cuadro abierto = «Ver todas (N)», y listas, pestañas, Resumen y plazos usan el mismo filtro.
+- `test/leidas-v55.test.js`: caducidad a 15 días, migración, borrar sin tocar favoritas, Deshacer, Recuperar, filtros de listas y Resumen, tarjeta (✓ Leída / Marcar como no leída / enlace oficial), «Borrar leídas (N)», Ajustes, cabecera con 3 botones y caché v=33.
+
 ## v5.4 · 23/10/2026 · Precios más limpios, cabecera con «Resumen» y «Ajustes», «← Inicio», cuadros desplegables
 
 ### Cambiado
