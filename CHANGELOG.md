@@ -1,5 +1,56 @@
 # Cambios
 
+## v5.6 · 25/10/2026 · Pie de página discreto y legal; fichas más limpias; «Herramientas» en la cabecera; fuera «Estado de las fuentes» y el botón «← Inicio»
+
+### Quitado
+- **«Estado de las fuentes»** ya no sale al final de cada página. El listado completo, con el estado de cada fuente y sus condiciones de reutilización, sigue en la página **Fuentes oficiales** (`/fuentes`).
+- **Botón «← Inicio»** (de v5.4) en todas las vistas y páginas sueltas. Para volver a Inicio se toca el título **«Alerta Agraria»** de la cabecera (en la consulta cambia a Inicio sin recargar; en /fuentes, /aviso-legal, /privacidad, /cookies, /herramientas, /quienes-somos y /planes lleva a `/`) o **Inicio** en la barra de abajo del móvil.
+- Del pie salen el lema y los enlaces Inicio, Herramientas oficiales, Quiénes somos, Planes y Administración, y la frase «Información orientativa…» (sigue en cada aviso).
+
+### Cambiado
+- **Pie de página único y discreto** (letra pequeña y gris, claro y oscuro, no lo tapa la barra de abajo): «Información obtenida de fuentes oficiales, con enlace y fecha en cada aviso. Esta app no está vinculada a ningún organismo público.» y enlaces a Fuentes oficiales, Aviso legal, Privacidad y Cookies. El titular («BC») sigue saliendo solo en el Aviso legal.
+- **Aviso legal:** nuevo párrafo sobre la reutilización de información del sector público (Ley 37/2007 y RD 1495/2011): se cita la fuente con su enlace, la fecha de publicación o de última actualización que da la fuente, no se cambia el sentido y la app no está vinculada a ningún organismo ni la patrocina o respalda ninguno.
+- **«Lo que has puesto primero»** (Inicio): cada título lleva ahora también su fecha de publicación cuando la fuente la da, además de la fuente.
+- **Tarjeta «Pagos PAC»** de Inicio: añade «Revisado el …» (la misma fecha de revisión del calendario PAC).
+
+### Ficha de cada ayuda o noticia (todas las listas, cuadros, Resumen y favoritas)
+- **Chips de arriba:** fuera «Plazo no indicado», «Fuera de tus filtros» / «En tus filtros», «Sin plazo indicado», «Línea», «Ayuda» y el de sector (Agricultura…). Se quedan «Nueva» / «✓ Leída», el tema (PAC, Normativa, Alerta) y los plazos reales («Cierra en N días», «Abre en…», «Abierta ahora», «Próxima apertura», «Cerrada»…).
+- **Título en MAYÚSCULAS.**
+- **Fuera el bloque «Por qué te puede interesar»** (menciones, «Solo se citan palabras…», beneficiarios).
+- **«★ Favorita» y «Compartir» arriba a la derecha**, pequeños. Compartir usa el menú de compartir del iPhone/iPad (`navigator.share`) y, si no existe, abre WhatsApp. En móvil estrecho Compartir es solo el icono.
+- **Abajo fuera:** «Favorita», «Compartir por WhatsApp», «Sin fecha para el calendario», «Ocultar esta ayuda» y «Abrir fuente oficial».
+- **Fuente oficial:** el nombre de la fuente es ahora un botón que abre la publicación oficial en otra pestaña. «Publicado: dd/mm/aaaa» sale pequeño solo si la fuente da la fecha; si no la da, no sale ninguna línea.
+- **Calendario:** si la ficha trae una fecha real y el plazo no ha cerrado, sale un enlace pequeño «Añadir al calendario» dentro de «Plazo e importe»; si no hay fecha, nada.
+- Lo ya ocultado antes sigue oculto y se recupera en Ajustes › «Volver a mostrar ocultas». Tocar para marcar como leída, «Borrar leídas» y las favoritas siguen igual.
+
+### Fuentes oficiales: estado discreto
+- En `/fuentes`, el **estado de las fuentes** pasa a una lista compacta: una línea por fuente («BOE alimentación 3 piezas · Última lectura correcta…», ya con el espacio), letra de 13 px gris y separadores finos; los errores, en rojo pequeño.
+- **«Preparadas, aún no consultadas (N)»** va en un desplegable cerrado; esas fuentes ya no salen como tarjetas.
+- `/api/fuentes` añade el número de piezas de la última lectura (`count`).
+- Caché `?v=39`.
+
+### Solo lo abierto, sectores de selección múltiple
+- Se quita el chip **«Solo abiertas»**: la app enseña siempre solo lo abierto. Lo **cerrado** y lo que **aún no ha abierto** (próximo) no sale en listas, Inicio, Resumen, plazos, contadores ni Mis favoritas (las favoritas se guardan igual y vuelven a salir si reabren). Lo que no trae fechas (líneas, anuncios) sí sale: nada dice que esté cerrado.
+- Se quita el cuadro **«Próximas»** de Inicio (quedan 3: Abiertas, Cierran pronto, Líneas PAC) y la etiqueta «Próxima apertura» de las fichas.
+- Se quita el chip **«Todos»**. Agricultura, Ganadería y Pesca se pueden marcar varios a la vez: ninguno = todo; varios = la suma. Se guarda en el dispositivo (`alerta_sectores_v1`); la primera vez parte del sector de Mis preferencias.
+
+### Inicio más compacto
+- Pestañas (Inicio, Ayudas, PAC, Calendario PAC…) y chips de sector (Solo abiertas, Agricultura…) con letra y relleno más pequeños: caben más en iPad y móvil.
+- Se quita la pestaña **«Resumen»**: el resumen se abre con el botón «Resumen» de la cabecera (con su número).
+- Los 4 cuadros de colores (Abiertas, Cierran pronto, Próximas, Líneas PAC) son más bajos; siguen desplegándose al tocarlos.
+
+### Sin «Ocultar»
+- Se quita la opción de **ocultar noticias** en todas partes: ficha, listas, cuadros de Inicio, Resumen, Mis favoritas (recuadro «Ayudas que ocultaste») y Ajustes («Volver a mostrar ocultas»).
+- Lo que se hubiera ocultado antes **vuelve a verse**: al abrir la app se borra la lista antigua del dispositivo (`alerta_ocultadas_v1`). Las listas internas de la administración ya no ocultan nada al público.
+- **«Borrar leídas» se mantiene** (es otra cosa): quita de la vista las leídas durante 15 días, con «Deshacer» y «Recuperar borradas» en Ajustes.
+
+### Cabecera
+- **Nuevo botón «Herramientas»** (icono de llave inglesa) entre «Preferencias» y «Ajustes»: Resumen, Preferencias, Herramientas, Ajustes. Abre «Herramientas oficiales» (en las páginas sueltas lleva a `/herramientas`). Se quita la pestaña «Herramientas» de la barra de pestañas; la barra de abajo sigue con Inicio, Ayudas, PAC y Precios. Cabe en 390 px (botones de 44 px).
+
+### Pruebas
+- `test/footer-v56.test.js`: sin «Estado de las fuentes», pie con la frase y los enlaces, sin «BC» en el pie, aviso legal con las condiciones de reutilización, fuente y fecha en cada pieza, sin botón «← Inicio» y vuelta con el título y la barra de abajo, caché v=39; sin «Ocultar»; ficha (chips, mayúsculas, sin «Por qué…», Favorita y Compartir arriba, fuente como botón, fecha solo si existe) y cabecera con Herramientas.
+- Se adaptan las pruebas de v5.4/v5.5 que esperaban el botón «← Inicio» y la caché v=33.
+
 ## v5.5 · 23/10/2026 · Vuelven «tocar para marcar como leída» y «Borrar leídas»; botón «Preferencias» en la cabecera; el sector filtra los números
 
 ### Recuperado (como en la app original)

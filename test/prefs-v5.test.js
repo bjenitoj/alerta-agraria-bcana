@@ -123,8 +123,8 @@ test("el asistente no tiene textos fijos de sector o zona", () => {
 test("«Mis preferencias» incluye los tipos de información y la versión de caché sube", () => {
   assert.match(indexHtml, /id="infoChoices"/);
   assert.match(indexHtml, /Mis preferencias/);
-  assert.match(indexHtml, /app\.js\?v=33/);
-  assert.match(indexHtml, /styles\.css\?v=33/);
+  assert.match(indexHtml, /app\.js\?v=39/);
+  assert.match(indexHtml, /styles\.css\?v=39/);
 });
 
 test("el resumen del día enseña solo los tipos elegidos, en su orden", () => {

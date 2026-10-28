@@ -21,7 +21,7 @@ test("v5.4 cabecera: solo «Resumen» y el engranaje «Ajustes»; sin Oscuro ni 
   // v5.5: se añade «Preferencias» entre «Resumen» y «Ajustes» (ver leidas-v55.test.js).
   const buttons = header.match(/<button[^>]*>/g) || [];
   const visible = buttons.filter((b) => !/admin-only/.test(b));
-  assert.equal(visible.length, 3, "Resumen, Preferencias y Ajustes");
+  assert.equal(visible.length, 4, "Resumen, Preferencias, Herramientas (v5.6) y Ajustes");
   assert.match(header, /<button id="digestBtn"[^>]*aria-label="Resumen del día"/);
   assert.match(header, /<button id="settingsBtn"[^>]*aria-label="Ajustes"[^>]*aria-controls="prefSheet"/);
   // iconos SVG de trazo (no emoji) y texto visible en pantallas anchas
@@ -83,16 +83,11 @@ test("v5.4 barra de abajo: Inicio, Ayudas, PAC y Precios (sin Resumen ni Prefere
   assert.match(css, /\.dock \{[\s\S]*?grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
 });
 
-test("v5.4 «← Inicio» en todas las vistas que no son Inicio y en las páginas sueltas", () => {
-  assert.match(appJs, /const BACK_HOME_TAB = `<button type="button" class="back-home" data-goto="inicio">← Inicio<\/button>`/);
-  assert.match(appJs, /appEl\.innerHTML = active === "inicio" \? html : `\$\{BACK_HOME_TAB\}\$\{html\}`/);
-  const pub = appJs.slice(appJs.indexOf("async function renderPublic"));
-  assert.match(pub.slice(0, 600), /insertAdjacentHTML\("beforebegin", BACK_HOME_PAGE\)/, "antes de cualquier página suelta");
-  assert.match(appJs, /<a class="back-home back-home-page" href="\/">← Inicio<\/a>/);
+// v5.6: el botón «← Inicio» se quitó; se vuelve con el título de la cabecera (ver footer-v56.test.js).
+test("v5.4 páginas sueltas siguen existiendo", () => {
   for (const page of ["/fuentes", "/herramientas", "/aviso-legal", "/privacidad", "/cookies", "/quienes-somos", "/planes"]) {
     assert.match(appJs, new RegExp(`"${page}"`), page);
   }
-  assert.match(css, /\.back-home \{/);
 });
 
 test("v5.4 texto sobre cuentas/planes: pequeño, gris, sin caja ni negrita", () => {

@@ -14,10 +14,13 @@ const esc = (v) => String(v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const inSectorSrc = between("function inSector(", "function baseItems");
 const glanceSrc = between("const GLANCE = [", "function renderBoard");
 const matchSrc = between("const GLANCE_MATCH = {", "function renderList");
+// v5.6: selección múltiple. «todos» = ningún chip marcado; también se admite una lista.
 function load(sector) {
-  return new Function("SECTORS", "prefs", "aidCard", "escapeHtml", "readTools",
+  const chosen = Array.isArray(sector) ? sector : sector === "todos" ? [] : [sector];
+  const CHIP_SECTORS = SECTORS.filter((entry) => entry.id !== "todos");
+  return new Function("SECTORS", "CHIP_SECTORS", "currentSectors", "aidCard", "escapeHtml", "readTools",
     `${inSectorSrc}; ${glanceSrc}; ${matchSrc}; return { inSector, glanceCards, GLANCE, GLANCE_MATCH, open: (v) => { openStat = v; } };`)(
-    SECTORS, { sector }, (item) => `<article class="card" data-id="${esc(item.id)}"></article>`, esc, () => "");
+    SECTORS, CHIP_SECTORS, () => chosen, (item) => `<article class="card" data-id="${esc(item.id)}"></article>`, esc, () => "");
 }
 
 // Piezas de prueba con la clasificación que ya trae cada una (`sectors`). Una sin sector conocido.
@@ -42,10 +45,13 @@ function counts(sector) {
 }
 
 test("v5.5 sector: los cuadros de Inicio cambian con Agricultura / Ganadería / Pesca / Todos", () => {
-  assert.deepEqual(counts("agricultura").n, { abierta: 2, cierra_pronto: 1, proxima: 0, pac: 2 });
-  assert.deepEqual(counts("ganaderia").n, { abierta: 2, cierra_pronto: 1, proxima: 0, pac: 2 });
-  assert.deepEqual(counts("pesca").n, { abierta: 0, cierra_pronto: 0, proxima: 1, pac: 0 });
-  assert.deepEqual(counts("todos").n, { abierta: 4, cierra_pronto: 1, proxima: 1, pac: 3 });
+  assert.deepEqual(counts("agricultura").n, { abierta: 2, cierra_pronto: 1, pac: 2 });
+  assert.deepEqual(counts("ganaderia").n, { abierta: 2, cierra_pronto: 1, pac: 2 });
+  assert.deepEqual(counts("pesca").n, { abierta: 0, cierra_pronto: 0, pac: 0 });
+  assert.deepEqual(counts("todos").n, { abierta: 4, cierra_pronto: 1, pac: 3 });
+  // v5.6: varios sectores = la suma (sin repetir); ninguno = todo
+  assert.deepEqual(counts(["agricultura", "ganaderia"]).n, { abierta: 3, cierra_pronto: 1, pac: 3 });
+  assert.deepEqual(counts(["agricultura", "ganaderia"]).lists.abierta.map((i) => i.id), ["a1", "a2", "a3"]);
   // a1 solo agricultura, a3 solo ganadería: mismas cifras pero piezas distintas
   assert.deepEqual(counts("agricultura").lists.abierta.map((i) => i.id), ["a1", "a2"]);
   assert.deepEqual(counts("ganaderia").lists.abierta.map((i) => i.id), ["a2", "a3"]);
@@ -80,10 +86,10 @@ test("v5.5 sector: listas, pestañas, «Ver todas», Resumen y plazos usan el mi
   const list = between("function renderList", "function closingSoonList");
   assert.match(list, /sortedItems\(baseItems\(\)\)\.filter\(\(item\) => \(match \? match\(item\) : inTab\(item, tab\)\)\)/);
   assert.match(between("function renderTabs", "function "), /const items = baseItems\(\);/);
-  assert.match(between("function renderTabs", "function "), /\? digestBadgeCount\(\)/, "Resumen cuenta piezas, no días");
+  assert.match(between("function paintDigestBtn", "function "), /digestBadgeCount\(\)/, "Resumen (botón de cabecera) cuenta piezas, no días");
   assert.match(between("function digestData", "function digestBadgeCount"), /inSector\(item\)/);
   assert.match(between("function closingSoonList", "function closingSoonSection"), /!inSector\(item\)/);
   // el chip cambia el sector y vuelve a pintar todo
-  const chip = appJs.slice(appJs.indexOf('const sector = event.target.closest("[data-sector]")'), appJs.indexOf('const sector = event.target.closest("[data-sector]")') + 300);
-  assert.match(chip, /savePrefs\(\{ \.\.\.prefs, sector: sector\.dataset\.sector \}\);\s*render\(\);/);
+  const chip = appJs.slice(appJs.indexOf('const sectorChip = event.target.closest("[data-sector-chip]")'), appJs.indexOf('const sectorChip = event.target.closest("[data-sector-chip]")') + 400);
+  assert.match(chip, /saveChosenSectors\(now\.includes\(id\) \? now\.filter\(\(entry\) => entry !== id\) : \[\.\.\.now, id\]\);\s*render\(\);/);
 });

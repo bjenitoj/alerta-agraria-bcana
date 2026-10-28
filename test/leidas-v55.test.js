@@ -105,10 +105,10 @@ test("v5.5 «Borrar leídas (N)» en listas, cuadros y Resumen con «Deshacer»"
   assert.match(css, /\.toast \{[^}]*max-width: calc\(100% - 24px\)/);
 });
 
-test("v5.5 Ajustes: «Recuperar borradas (N)» y «Volver a mostrar ocultas (N)»", () => {
+test("v5.5 Ajustes: «Recuperar borradas (N)» (v5.6: sin «ocultas»)", () => {
   const sheet = indexHtml.slice(indexHtml.indexOf('<div id="prefSheet"'), indexHtml.indexOf('<nav class="dock'));
   assert.match(sheet, /<button type="button" id="restoreDeleted" class="ghost" disabled>Recuperar borradas \(0\)<\/button>/);
-  assert.match(sheet, /id="restoreHidden"/);
+  assert.doesNotMatch(sheet, /id="restoreHidden"/);
   assert.match(sheet, /solo en este dispositivo/);
   assert.match(appJs, /Recuperar borradas \(\$\{n\}\)/);
   assert.match(appJs, /restoreAllDeleted\(\)/);
@@ -131,7 +131,7 @@ test("v5.5 cabecera: Resumen · Preferencias · Ajustes, con icono y aria-label"
   assert.match(indexHtml, /data-open-prefs="1">Ir a Mis preferencias/);
 });
 
-test("v5.5 caché v=33", () => {
-  assert.match(indexHtml, /\/app\.js\?v=33/);
+test("caché v=39 (v5.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=39/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });
