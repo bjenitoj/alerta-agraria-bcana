@@ -120,7 +120,7 @@ button, .choice, .tab {
   border: 0;
 }
 
-.top, .quick, .tabs, .app, .sources, footer {
+.top, .quick, .tabs, .app, footer {
   width: min(1180px, calc(100% - 28px));
   margin-left: auto;
   margin-right: auto;
@@ -244,7 +244,7 @@ button, .choice, .tab {
   align-items: start;
 }
 .glance-wrap { grid-area: glance; min-width: 0; }
-.glance { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 /* Estado de las cuentas / planes: aviso discreto, letra pequeña y gris, sin caja ni negrita. */
 .plan-soon, .account-note {
   grid-area: plan;
@@ -261,7 +261,6 @@ button, .choice, .tab {
 .account-note { grid-area: auto; margin-top: 6px; }
 .plan-soon a, .account-note a { color: var(--muted); font-weight: 400; text-decoration: underline; }
 .orientativo { margin: 6px 0 0; color: var(--earth); font-weight: 700; font-size: 16px; }
-footer .orientativo { font-size: 17px; }
 .stat {
   background: var(--card);
   border: 1px solid var(--line);
@@ -389,7 +388,6 @@ footer .orientativo { font-size: 17px; }
 .history { display: grid; gap: 6px; font-weight: 700; margin-bottom: 8px; }
 .type svg, .mark svg, .dock svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-.sources { padding: 8px 0 28px; }
 .source-grid, #sources, .source-cards { display: grid; gap: 10px; }
 .source, .source-card, .prose, .gate-card, .wizard-card, .account-card {
   background: var(--card);
@@ -410,8 +408,12 @@ footer .orientativo { font-size: 17px; }
 
 footer { padding: 8px 0 calc(108px + env(safe-area-inset-bottom)); }
 .motto { margin: 0 0 8px; color: var(--ink); font-weight: 800; }
-.site-nav { display: flex; flex-wrap: wrap; gap: 8px 14px; }
-.site-nav a { font-weight: 800; }
+/* v5.6: pie discreto (texto pequeño y gris). Sin lista de estado de las fuentes: eso está en «Fuentes oficiales». */
+.site-foot { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 13px; line-height: 1.45; color: var(--muted); }
+.site-foot .foot-legal { margin: 0 0 6px; font-weight: 400; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.site-foot .site-nav a { color: var(--muted); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.site-foot .mobile-access { margin: 6px 0 0; }
 .mobile-access { overflow-wrap: anywhere; }
 
 .dock {
@@ -455,7 +457,6 @@ body.locked:not(.public-page) .top,
 body.locked:not(.public-page) .quick,
 body.locked:not(.public-page) .tabs,
 body.locked:not(.public-page) .app,
-body.locked:not(.public-page) .sources,
 body.locked:not(.public-page) .dock,
 body.locked:not(.public-page) footer { visibility: hidden; }
 body.public-page .private, body.public-page .stamp, body.public-page #refresh { display: none; }
@@ -631,7 +632,7 @@ body.public-page footer { padding-bottom: 32px; }
 }
 
 @media (max-width: 420px) {
-  .top, .quick, .tabs, .app, .sources, footer { width: calc(100% - 16px); }
+  .top, .quick, .tabs, .app, footer { width: calc(100% - 16px); }
   .brand strong { font-size: 18px; }
   .brand small { display: none; }
   .logo { width: 42px; height: 42px; }
@@ -852,25 +853,6 @@ body[data-review="on"] .wizard-card { max-height: calc(100vh - 70px); max-height
 .seg button.on { background: var(--btn); color: var(--btn-ink); border-color: var(--btn); }
 .settings-prefs { border-top: 1px solid var(--line); margin-top: 16px; }
 
-/* «← Inicio» pequeño arriba de cada vista que no es Inicio. */
-.back-home {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  margin: 4px 0 10px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--card);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-}
-.back-home-wrap { width: min(1180px, calc(100% - 28px)); margin: 8px auto 0; }
-@media (max-width: 420px) { .back-home-wrap { width: calc(100% - 16px); } }
-body:not(.public-page) .back-home-wrap { display: none; }
-
 /* Textos largos de las fuentes (URL, avisos de la API) no desbordan en 320 px. */
 .source-card, .source-card p, .reuse { overflow-wrap: anywhere; min-width: 0; }
 
@@ -951,3 +933,66 @@ button.stat[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .toast > span { white-space: nowrap; }
 .toast-undo { min-height: 40px; padding: 6px 12px; background: var(--card); color: var(--ink); border: 0; }
 @media (min-width: 901px) { .toast { bottom: 24px; } }
+
+/* v5.6 · Cabecera con 4 botones (Resumen, Preferencias, Herramientas, Ajustes): cabe en 390 px. */
+@media (max-width: 420px) {
+  .head-btn { width: 44px; min-height: 44px; }
+  .top-tools { gap: 4px; }
+}
+
+/* v5.6 · Ficha: título en mayúsculas, Favorita y Compartir arriba a la derecha, fuente como botón. */
+.card h3 { text-transform: uppercase; letter-spacing: 0; }
+.card-top .pills { flex: 1 1 auto; min-width: 0; }
+.card-top .pills .types { display: contents; }
+.top-right { display: flex; align-items: flex-start; gap: 8px; flex: none; }
+.top-actions { display: flex; gap: 6px; }
+.act.mini { min-height: 38px; padding: 6px 10px; font-size: 14px; border-radius: 10px; }
+.act.mini svg { width: 18px; height: 18px; }
+.act.share { border-color: var(--line); }
+.src-btn { display: inline-flex; min-height: 44px; align-items: center; text-decoration: none; }
+.src-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.origin.pub { font-size: 13px; color: var(--muted); margin: 6px 0 0; }
+.cal-mini { margin: 6px 0 0; font-size: 13px; }
+.cal-mini a { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); }
+.cal-mini svg { width: 14px; height: 14px; }
+@media (max-width: 560px) {
+  .card-top { flex-wrap: wrap; }
+  .share-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .act.share { width: 40px; justify-content: center; padding: 0; }
+}
+
+/* v5.6: pestañas, chips de sector y cuadros de Inicio más compactos (caben más en iPad y móvil) */
+.tabs { gap: 6px; padding: 8px 0; }
+.tabs .tab { min-height: 38px; padding: 6px 12px; font-size: 15px; border-radius: 999px; }
+.tabs .tab .count { margin-left: 5px; font-size: 13px; }
+.board .filter-row .chip { min-height: 36px; padding: 5px 11px; font-size: 14px; gap: 5px; border-width: 1.5px; }
+.board .filter-row .chip svg { width: 16px; height: 16px; }
+.board .filter-row .chip-sep { height: 22px; }
+.glance { gap: 8px; }
+.glance .stat { padding: 8px 12px; border-radius: 14px; min-height: 0; }
+.glance .stat strong { font-size: 24px; }
+.glance .stat span { font-size: 14px; }
+.glance .stat .chev { width: 18px; height: 18px; }
+@media (max-width: 640px) {
+  .tabs .tab { min-height: 36px; padding: 5px 10px; font-size: 14px; }
+  .board .filter-row .chip { min-height: 34px; padding: 4px 10px; font-size: 13.5px; }
+  .glance .stat { padding: 7px 10px; }
+  .glance .stat strong { font-size: 22px; }
+  .glance .stat span { font-size: 13px; }
+}
+.glance { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* v5.6: estado de las fuentes discreto (/fuentes) */
+.src-status { margin: 14px 0 18px; font-size: 13px; color: var(--muted); }
+.src-status h3 { margin: 0 0 4px; font-size: 14px; color: var(--muted); font-weight: 700; }
+.src-status ul { list-style: none; margin: 0; padding: 0; }
+.src-status li { padding: 5px 0; border-bottom: 1px solid var(--line); line-height: 1.35; }
+.src-status .src-name { color: var(--ink); font-weight: 600; }
+.src-status .src-meta { color: var(--muted); font-weight: 400; }
+.src-status .src-err { color: var(--soon); font-size: 12px; }
+.src-status .src-note { display: block; font-size: 12px; color: var(--muted); }
+.src-prepared { margin-top: 8px; }
+.src-prepared summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; font-weight: 600; color: var(--muted); }
+.src-prepared ul { columns: 2; column-gap: 18px; }
+.src-prepared li { border: 0; padding: 2px 0; }
+@media (max-width: 640px) { .src-prepared ul { columns: 1; } }

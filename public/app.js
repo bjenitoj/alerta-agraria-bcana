@@ -18,11 +18,10 @@ import {
   prefsSummary,
   sectorScope,
 } from "/mod/preferences.js";
-import { closesWithin, deadlineInfo, hasSourceUrl, icsHref, icsLink, isClosedAid, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
+import { closesWithin, deadlineInfo, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
 
 const tabsEl = document.getElementById("tabs");
 const appEl = document.getElementById("app");
-const sourcesEl = document.getElementById("sources");
 const stampEl = document.getElementById("stamp");
 const qEl = document.getElementById("q");
 const onlyNewEl = document.getElementById("onlyNew");
@@ -32,6 +31,7 @@ const readAllBtn = document.getElementById("readAll");
 const clearReadBtn = document.getElementById("clearRead");
 const settingsBtn = document.getElementById("settingsBtn");
 const prefsBtn = document.getElementById("prefsBtn");
+const toolsBtn = document.getElementById("toolsBtn");
 const digestBtn = document.getElementById("digestBtn");
 const sectorChoices = document.getElementById("sectorChoices");
 const zoneChoices = document.getElementById("zoneChoices");
@@ -51,9 +51,6 @@ const wizardDefault = document.getElementById("wizardDefault");
 const prefSheet = document.getElementById("prefSheet");
 
 const PATH = location.pathname.replace(/\/$/, "") || "/";
-// Botón pequeño «← Inicio» arriba de todo lo que no es Inicio.
-const BACK_HOME_TAB = `<button type="button" class="back-home" data-goto="inicio">← Inicio</button>`;
-const BACK_HOME_PAGE = `<nav class="back-home-wrap" aria-label="Volver"><a class="back-home back-home-page" href="/">← Inicio</a></nav>`;
 const QUIET = new Set(["/fuentes", "/quienes-somos", "/aviso-legal", "/privacidad", "/cookies", "/planes", "/herramientas"]);
 const PRO_PLAN_COPY = "Próximamente: plan Pro con alertas personalizadas por cultivo y zona, avisos de plazos por correo/WhatsApp, calendario de la explotación.";
 
@@ -275,8 +272,10 @@ function suppress(item) {
 }
 
 function unseen(items, bucket, options = {}) {
-  const hidden = readSet(bucket);
-  const gone = options.keepArchived ? new Set() : readSet("alerta_suprimidas");
+  // v5.6: las listas de ocultas/suprimidas son solo de la administración; al público no se le oculta nada.
+  const admin = isAdmin();
+  const hidden = admin ? readSet(bucket) : new Set();
+  const gone = options.keepArchived || !admin ? new Set() : readSet("alerta_suprimidas");
   const seenUrl = new Set();
   const seenTitle = new Set();
   const out = [];
@@ -488,7 +487,8 @@ function togglePref(group, id) {
 
 const NOTICE = "Información orientativa. Consulta siempre la publicación oficial.";
 const FAV_KEY = "alerta_favoritas_v1";
-const HIDE_KEY = "alerta_ocultadas_v1";
+// v5.6: ya no se ocultan noticias. Se borra la lista antigua para que todo vuelva a verse.
+const OLD_HIDE_KEY = "alerta_ocultadas_v1";
 const OPEN_KEY = "alerta_solo_abiertas";
 
 function readJson(key, fallback) {
@@ -506,7 +506,7 @@ function writeJson(key, value) {
 
 let favorites = readJson(FAV_KEY, {});
 if (!favorites || typeof favorites !== "object" || Array.isArray(favorites)) favorites = {};
-let hiddenAids = new Set(readJson(HIDE_KEY, []));
+try { localStorage.removeItem(OLD_HIDE_KEY); } catch { /* sin almacén local */ }
 // ── Leídas y borradas (v5.5) ─────────────────────────────────────────────────────────────
 // Como en la app original: tocar una noticia la marca como leída (se ve más apagada) y «Borrar leídas»
 // las quita de la vista. Aquí se guarda SOLO en este dispositivo (localStorage «alerta_leidas_v1»):
@@ -607,9 +607,32 @@ function restoreAllDeleted() {
 }
 // ── fin leídas y borradas ──
 
-let soloAbiertas = (() => {
-  try { return localStorage.getItem(OPEN_KEY) !== "0"; } catch { return true; }
-})();
+// v5.6: la app solo enseña lo que está abierto o sin plazo conocido. Lo cerrado y lo que aún no ha abierto
+// (próximo) no sale en ningún sitio: listas, Inicio, Resumen, contadores ni favoritas. Ya no hay «Solo abiertas».
+try { localStorage.removeItem(OPEN_KEY); } catch {}
+function isLiveAid(aid, today = madridTodayKey()) {
+  if (aid?.status === "cerrada" || aid?.status === "proxima") return false;
+  const kind = deadlineInfo(aid, today).kind;
+  return kind !== "closed" && kind !== "upcoming";
+}
+
+// v5.6: chips de sector de selección múltiple (Agricultura, Ganadería, Pesca). Ninguno = todo; varios = la suma.
+const SECTOR_CHIPS_KEY = "alerta_sectores_v1";
+const CHIP_SECTORS = SECTORS.filter((sector) => sector.id !== "todos");
+// Se lee al usarla (las preferencias se cargan después): sin elección guardada, sale del sector de Mis preferencias.
+let chosenSectors = null;
+function currentSectors() {
+  if (chosenSectors) return chosenSectors;
+  try {
+    const saved = JSON.parse(localStorage.getItem(SECTOR_CHIPS_KEY) || "null");
+    if (Array.isArray(saved)) return (chosenSectors = saved.filter((id) => CHIP_SECTORS.some((sector) => sector.id === id)));
+  } catch {}
+  return CHIP_SECTORS.some((sector) => sector.id === prefs.sector) ? [prefs.sector] : [];
+}
+function saveChosenSectors(next) {
+  chosenSectors = next;
+  try { localStorage.setItem(SECTOR_CHIPS_KEY, JSON.stringify(next)); } catch { /* queda en esta visita */ }
+}
 
 function itemKey(item) {
   return canonicalUrl(item?.url) || String(item?.id || "");
@@ -656,22 +679,6 @@ function toggleFavorite(id) {
   writeJson(FAV_KEY, favorites);
 }
 
-function isHidden(item) {
-  return hiddenAids.has(String(item?.id)) || (canonicalUrl(item?.url) && hiddenAids.has(`u:${canonicalUrl(item.url)}`));
-}
-
-function hideAid(id) {
-  const item = findItem(id);
-  hiddenAids.add(String(id));
-  if (item && canonicalUrl(item.url)) hiddenAids.add(`u:${canonicalUrl(item.url)}`);
-  writeJson(HIDE_KEY, [...hiddenAids].slice(-2000));
-}
-
-function showHiddenAgain() {
-  hiddenAids = new Set();
-  writeJson(HIDE_KEY, []);
-}
-
 function findItem(id) {
   return (state.items || []).find((item) => item.id === id)
     || (state.digests || []).flatMap((entry) => entry.items || []).find((item) => item.id === id)
@@ -706,6 +713,8 @@ const STATUS_LABEL = {
 
 function deadlinePill(aid) {
   const info = deadlineInfo(aid, madridTodayKey());
+  // v5.6: «Plazo no indicado» no se enseña (solo plazos reales o lo que dice la fuente).
+  if (info.kind === "none") return "";
   const soon = info.kind === "open" && info.days != null && info.days < 15 ? " soon" : "";
   return `<span class="badge deadline dl-${escapeHtml(info.kind)}${soon}">${escapeHtml(info.label)}</span>`;
 }
@@ -722,52 +731,36 @@ function isAidLike(item) {
   return item.kind === "linea" || item.kind === "ayuda" || (item.infoTypes || []).includes("ayudas") || (item.infoTypes || []).includes("pac");
 }
 
-function whyBlock(item) {
-  const why = whyForYou(item, prefs);
-  const inFilters = forYou(item, prefs);
-  const lines = [
-    ...why.reasons.map((text) => `<li class="ok">${escapeHtml(text)}</li>`),
-    ...(inFilters ? [`<li class="ok">Coincide con tus filtros (clasificación automática por palabras).</li>`] : []),
-    ...why.warnings.map((text) => `<li class="warn">${escapeHtml(text)}</li>`),
-  ];
-  return `
-    <section class="block why">
-      <h4>Por qué te puede interesar</h4>
-      <ul>${lines.join("")}</ul>
-      <p class="note">Solo se citan palabras del texto oficial. Los requisitos los fija la convocatoria.</p>
-      ${why.who ? `<p class="who"><span>Beneficiarios (texto de la convocatoria):</span> ${escapeHtml(why.who)}</p>` : ""}
-    </section>`;
-}
-
-function shareButtons(item) {
+// v5.6: «★ Favorita» y «Compartir» arriba a la derecha de la ficha. Compartir usa el menú del sistema
+// (navigator.share, iPhone/iPad) y, si no lo hay, WhatsApp.
+function topActions(item) {
   const today = madridTodayKey();
-  const info = deadlineInfo(item.aid, today);
   const appUrl = location.origin && /^https?:/.test(location.origin) ? `${location.origin}/` : "";
   const fav = isFavorite(item);
-  const ics = info.kind !== "closed" ? icsHref(item) : "";
-  const calendar = ics
-    ? `<a class="act calendar" href="${escapeHtml(ics)}" download>${icon("plazo")}Añadir al calendario</a>`
-    : `<span class="act disabled" title="Sin fecha de cierre concreta">${icon("plazo")}${info.kind === "closed" ? "Plazo cerrado" : "Sin fecha para el calendario"}</span>`;
   return `
-    <div class="share-row">
-      <button type="button" class="act fav ${fav ? "on" : ""}" data-fav="${escapeHtml(item.id)}" aria-pressed="${fav ? "true" : "false"}">${fav ? "★ En favoritas" : "☆ Favorita"}</button>
-      <a class="act whatsapp" href="${escapeHtml(whatsappUrl(item, today, appUrl))}" target="_blank" rel="noopener">${WHATSAPP_ICON}Compartir por WhatsApp</a>
-      ${calendar}
-      <button type="button" class="act hide" data-hide="${escapeHtml(item.id)}">Ocultar esta ayuda</button>
+    <div class="top-actions">
+      <button type="button" class="act mini fav ${fav ? "on" : ""}" data-fav="${escapeHtml(item.id)}" aria-pressed="${fav ? "true" : "false"}">${fav ? "★ En favoritas" : "★ Favorita"}</button>
+      <button type="button" class="act mini share" data-share="${escapeHtml(item.id)}" data-wa="${escapeHtml(whatsappUrl(item, today, appUrl))}" aria-label="Compartir">${SHARE_ICON}<span class="share-text">Compartir</span></button>
     </div>`;
 }
+
+/** «Añadir al calendario» pequeño, solo si la ficha trae una fecha real y el plazo no ha cerrado. */
+function calendarLink(item) {
+  const info = deadlineInfo(item.aid, madridTodayKey());
+  const ics = info.kind !== "closed" ? icsHref(item) : "";
+  return ics ? `<p class="cal-mini"><a class="calendar" href="${escapeHtml(ics)}" download>${icon("plazo")}Añadir al calendario</a></p>` : "";
+}
+
+const SHARE_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
 
 const WHATSAPP_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5 5.6 16A8 8 0 1 1 8.4 18.6z"/><path d="M9.2 8.6c.3 2.6 2.3 4.9 5.2 5.6l1-1.2-1.7-.9-.8.8c-1-.4-1.9-1.3-2.3-2.3l.8-.8-.9-1.7z"/></svg>`;
 
 function typeRow(item) {
   const bits = [];
-  if ((item.infoTypes || []).includes("ayudas") || item.kind === "ayuda") bits.push(["ayuda", "Ayuda"]);
   if ((item.infoTypes || []).includes("pac") || item.category === "pac_pagos") bits.push(["pac", "PAC"]);
   if ((item.infoTypes || []).includes("normativa") || item.category === "normativa_convocatorias") bits.push(["norma", "Normativa"]);
   if ((item.themes || []).includes("alerta") || (item.infoTypes || []).includes("alertas")) bits.push(["alerta", "Alerta"]);
-  // El sector solo se enseña si el texto oficial trae una palabra que lo justifique.
-  const sector = (item.sectors || []).find((id) => GLYPH[id] && item.sectorEvidence && Array.isArray(item.sectorEvidence[id]) && item.sectorEvidence[id].length);
-  if (sector) bits.push([sector, SECTORS.find((item) => item.id === sector)?.label || sector]);
+  // v5.6: sin chips «Ayuda» ni de sector en la ficha; solo el tema (PAC, Normativa, Alerta).
   if (!bits.length) return "";
   return `<div class="types">${bits.map(([id, label]) => `<span class="type">${GLYPH[id] || ""}${escapeHtml(label)}</span>`).join("")}</div>`;
 }
@@ -812,13 +805,7 @@ function paintReadSettings() {
     restore.textContent = `Recuperar borradas (${n})`;
     restore.disabled = !n;
   }
-  const unhide = document.getElementById("restoreHidden");
-  if (unhide) {
-    // Cada «Ocultar» guarda el id (y además la URL como «u:…»): se cuentan los ids.
-    const n = [...hiddenAids].filter((key) => !String(key).startsWith("u:")).length;
-    unhide.textContent = `Volver a mostrar ocultas (${n})`;
-    unhide.disabled = !hiddenAids.size;
-  }
+  // v5.6: sin «Volver a mostrar ocultas» (ya no se oculta ninguna noticia).
 }
 
 function paintCardRead(id, read) {
@@ -865,6 +852,20 @@ function clearRead() {
   });
 }
 
+/** Compartir una ficha: menú del sistema si existe (iPhone/iPad); si no, WhatsApp. */
+async function shareItem(button) {
+  const item = findItem(button.dataset.share);
+  if (item && navigator.share) {
+    try {
+      await navigator.share({ title: item.title || "Alerta Agraria", text: item.title || "", url: item.url });
+      return;
+    } catch (error) {
+      if (error?.name === "AbortError") return;
+    }
+  }
+  window.open(button.dataset.wa, "_blank", "noopener");
+}
+
 function aidCard(item, options = {}) {
   // Sin enlace a la fuente oficial no se enseña la ficha.
   if (!hasSourceUrl(item)) return "";
@@ -892,7 +893,9 @@ function aidCard(item, options = {}) {
     ? ""
     : `<label class="marker"><input type="checkbox" class="mark-archive" data-id="${escapeHtml(item.id)}" /><span>Archivar</span></label>`;
   const ghost = options.snapshot ? `<p class="note">Guardada el ${escapeHtml(fmtDay(item.savedAt))}. Ya no sale en la lista de hoy: estos datos son de cuando la guardaste.</p>` : "";
-  const sourceLink = `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.sourceName || "Fuente oficial")}</a>`;
+  // v5.6: la fuente es un botón que abre la publicación oficial. La fecha solo sale si la fuente la da.
+  const sourceLink = `<a class="official src-btn" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.sourceName || "Fuente oficial")} ↗</a>`;
+  const published = item.publishedAt ? `<p class="origin pub">Publicado: ${escapeHtml(fmtDay(item.publishedAt))}</p>` : "";
   const fromText = (key) => (details.from?.[key] === "texto" ? " (leído del texto oficial)" : details.from?.[key] === "ficha" ? " (ficha oficial)" : "");
   const maxAmount = details.maxAmount || (details.maxAmountAmbiguous ? CHECK_OFFICIAL : "");
   const amountText = aid.amount || (aid.amountAmbiguous ? CHECK_OFFICIAL : "La convocatoria no indica el importe");
@@ -910,18 +913,18 @@ function aidCard(item, options = {}) {
           ${field("Menciona:", waterLine)}
         </div>
       </section>
-      ${whyBlock(item)}
       <section class="block money">
         <h4>Plazo e importe</h4>
         <p><span>Plazo:</span> ${escapeHtml(plazoText(aid))}</p>
         ${info.kind === "relative" ? `<p class="note">La fecha exacta depende de la publicación: mira la fuente oficial.</p>` : ""}
         <p><span>Importe:</span> ${escapeHtml(amountText)}</p>
         ${sourceOpenNote}
+        ${calendarLink(item)}
       </section>
       <section class="block source">
         <h4>Fuente oficial</h4>
         <p>${sourceLink}</p>
-        <p class="origin">Publicado: ${escapeHtml(item.publishedAt ? fmtDay(item.publishedAt) : "la fuente no indica la fecha")}</p>
+        ${published}
       </section>
     </div>`;
   return `
@@ -929,22 +932,18 @@ function aidCard(item, options = {}) {
       <div class="card-top">
         <div class="pills">
           ${showAid || aid.closesAt ? deadlinePill(aid) : ""}
-          ${yours ? `<span class="badge you">En tus filtros</span>` : `<span class="badge other">Fuera de tus filtros</span>`}
-          ${status && aid.status !== "cerrada" && aid.status !== "cierra_pronto" && showAid ? `<span class="badge status-${escapeHtml(aid.status || "")}">${escapeHtml(status)}</span>` : ""}
-          ${item.kind === "linea" ? `<span class="badge">Línea</span>` : ""}
+          ${status && aid.status === "abierta" && showAid ? `<span class="badge status-${escapeHtml(aid.status)}">${escapeHtml(status)}</span>` : ""}
           ${readBadge(read)}
+          ${typeRow(item)}
         </div>
-        ${daysBadge(aid)}
+        <div class="top-right">${daysBadge(aid)}${topActions(item)}</div>
       </div>
-      ${typeRow(item)}
       <h3>${escapeHtml(item.title || "Sin título")}</h3>
       ${ghost}
-      ${showAid ? fourBlocks : `<p class="summary">${escapeHtml(item.summary || "")}</p><p class="origin">${icon("plazo")} Fuente oficial: ${sourceLink} · Publicado: ${escapeHtml(item.publishedAt ? fmtDay(item.publishedAt) : "la fuente no indica la fecha")}</p>`}
-      ${shareButtons(item)}
+      ${showAid ? fourBlocks : `<p class="summary">${escapeHtml(item.summary || "")}</p><div class="origin src-line"><span>Fuente oficial:</span> ${sourceLink}${published}</div>`}
       <p class="orientativo">${NOTICE}</p>
       <div class="card-actions">
         ${archive}
-        <a class="official" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">Abrir fuente oficial</a>
         ${tramite}
         <button type="button" class="text-btn mark-unread" data-unread="${escapeHtml(item.id)}">Marcar como no leída</button>
       </div>
@@ -970,7 +969,7 @@ function digestData(date) {
   const digests = [...(state.digests || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const current = digests.find((entry) => entry.date === date) || digests[0];
   if (!current) return null;
-  const shown = (item) => hasSourceUrl(item) && !isHidden(item) && !isDeletedItem(item) && inSector(item) && !(soloAbiertas && isClosedAid(item.aid, madridTodayKey()));
+  const shown = (item) => hasSourceUrl(item) && !isDeletedItem(item) && inSector(item) && isLiveAid(item.aid);
   const aids = (current.items || []).filter(hasSourceUrl);
   const aidIds = new Set(aids.map((item) => item.id));
   const others = unseen(state.items || [], "alerta_ocultas")
@@ -1019,7 +1018,7 @@ function digestCard(compact) {
   if (!visible.length) {
     const visibleAids = sorted.filter((item) => aidIds.has(item.id));
     if (wantsAids && aids.length && !visibleAids.length) {
-      emptyText = `Este resumen tiene ${aids.length} ${aids.length === 1 ? "ayuda" : "ayudas"}, pero no se ven con los filtros de ahora (ocultas${soloAbiertas ? " o cerradas: quita «Solo abiertas»" : ""}).`;
+      emptyText = `Este resumen tiene ${aids.length} ${aids.length === 1 ? "ayuda" : "ayudas"}, pero no se ven con los filtros de ahora (solo salen las abiertas o sin plazo).`;
     } else if (wantsAids && !aids.length && current.notice) {
       emptyText = current.notice;
     } else {
@@ -1069,7 +1068,7 @@ function priorityStrip(items) {
       const list = items.filter((item) => itemInfoTypes(item).includes(id));
       const typeLabel = INFO_TYPES.find((type) => type.id === id)?.label || id;
       const top = list.slice(0, 3)
-        .map((item) => `<li><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title || "Sin título")}</a><small>${escapeHtml(item.sourceName || "Fuente oficial")}</small></li>`)
+        .map((item) => `<li><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title || "Sin título")}</a><small>${escapeHtml(item.sourceName || "Fuente oficial")}${item.publishedAt ? ` · ${escapeHtml(fmtDay(item.publishedAt))}` : ""}</small></li>`)
         .join("");
       const more = TAB_OF[id] ? `<button type="button" class="link-btn" data-goto="${TAB_OF[id]}">Ver ${list.length}</button>` : "";
       return `<div class="prio-row"><h3><span class="prio">${index + 1}</span>${escapeHtml(typeLabel)} <span class="count">${list.length}</span></h3>${top ? `<ul>${top}</ul>` : `<p class="empty">Nada con los criterios de ahora.</p>`}${more}</div>`;
@@ -1089,19 +1088,19 @@ function planStrip() {
  * y Resumen cuentan solo lo de ese sector. Se usa la clasificación que ya trae cada pieza (`sectors`, puesta por la
  * fuente oficial o por el texto); no se deduce nada nuevo. Lo que no tiene sector conocido solo sale en «Todos».
  */
-function inSector(item, sector = prefs.sector) {
-  if (!sector || sector === "todos" || !SECTORS.some((entry) => entry.id === sector)) return true;
-  return (item?.sectors || []).includes(sector);
+function inSector(item, sectors = currentSectors()) {
+  const list = (Array.isArray(sectors) ? sectors : [sectors]).filter((id) => CHIP_SECTORS.some((entry) => entry.id === id));
+  if (!list.length) return true;
+  return list.some((id) => (item?.sectors || []).includes(id));
 }
 
 function baseItems(options = {}) {
   const today = madridTodayKey();
   return unseen(state.items || [], "alerta_ocultas").filter((item) => {
     if (!hasSourceUrl(item)) return false;
-    if (!options.keepHidden && isHidden(item)) return false;
     if (isDeletedItem(item)) return false;
     if (!inSector(item)) return false;
-    if (!options.keepClosed && soloAbiertas && isClosedAid(item.aid, today)) return false;
+    if (!isLiveAid(item.aid, today)) return false;
     if (onlyNewEl?.checked && isReadItem(item)) return false;
     if (onlyToday && madridDay(item.publishedAt) !== madridDay(new Date())) return false;
     const q = qEl?.value.trim().toLowerCase() || "";
@@ -1111,14 +1110,13 @@ function baseItems(options = {}) {
 }
 
 function filterRow() {
-  const sectors = SECTORS.map((sector) => `<button type="button" class="chip ${prefs.sector === sector.id ? "on" : ""}" data-sector="${escapeHtml(sector.id)}" aria-pressed="${prefs.sector === sector.id ? "true" : "false"}">${GLYPH[sector.id] || ""}${escapeHtml(sector.label)}</button>`).join("");
-  const hiddenCount = hiddenAids.size ? `<button type="button" class="chip ghost-chip" data-unhide="1">Volver a mostrar ocultas</button>` : "";
+  const sectors = CHIP_SECTORS.map((sector) => {
+    const on = currentSectors().includes(sector.id);
+    return `<button type="button" class="chip ${on ? "on" : ""}" data-sector-chip="${escapeHtml(sector.id)}" aria-pressed="${on ? "true" : "false"}">${on ? "✓ " : ""}${GLYPH[sector.id] || ""}${escapeHtml(sector.label)}</button>`;
+  }).join("");
   return `
-    <div class="filter-row" role="group" aria-label="Filtros rápidos">
-      <button type="button" class="chip open-toggle ${soloAbiertas ? "on" : ""}" data-open-only="1" aria-pressed="${soloAbiertas ? "true" : "false"}">${soloAbiertas ? "✓ " : ""}Solo abiertas</button>
-      <span class="chip-sep" aria-hidden="true"></span>
+    <div class="filter-row" role="group" aria-label="Sectores (puedes elegir varios; ninguno = todos)">
       ${sectors}
-      ${hiddenCount}
     </div>`;
 }
 
@@ -1197,7 +1195,7 @@ function fieldStrip() {
         <strong>${escapeHtml(next.title)}</strong>
         ${big}
         <span>${escapeHtml(next.countdown)}</span>
-        <span class="small">Fuente: ${sourceAnchor(next.source.url, next.source.nombre)}</span>
+        <span class="small">Fuente: ${sourceAnchor(next.source.url, next.source.nombre)}${pacData.updated ? ` · Revisado el ${escapeHtml(fmtDay(pacData.updated))}` : ""}</span>
         <button type="button" class="link-btn" data-goto="calendario">Ver el calendario con las citas</button>
       </div>`;
   } else if (!next) {
@@ -1223,12 +1221,11 @@ function trend(item) {
   return `<em class="trend flat">= 0,00</em>`;
 }
 
-// Cuadros de colores de Inicio (Abiertas, Cierran pronto, Próximas, Líneas PAC). Son la ÚNICA vez que salen
+// Cuadros de colores de Inicio (Abiertas, Cierran pronto, Líneas PAC). Son la ÚNICA vez que salen
 // estos nombres en Inicio: al tocar uno se despliega debajo su lista (máx. 10) y «Ver todas» lleva a la lista completa.
 const GLANCE = [
   { id: "abierta", label: "Abiertas", goto: "ayudas", status: "abierta" },
   { id: "cierra_pronto", label: "Cierran pronto", goto: "ayudas", status: "cierra_pronto" },
-  { id: "proxima", label: "Próximas", goto: "ayudas", status: "proxima" },
   { id: "pac", label: "Líneas PAC", goto: "pac", status: "pac" },
 ];
 const GLANCE_LIMIT = 10;
@@ -1265,7 +1262,6 @@ function glanceCards(lists) {
 function renderBoard() {
   const items = sortedItems(baseItems());
   const open = items.filter(GLANCE_MATCH.abierta);
-  const next = items.filter(GLANCE_MATCH.proxima);
   const soon = items.filter(GLANCE_MATCH.cierra_pronto);
   const loose = items
     .filter((item) => {
@@ -1278,7 +1274,7 @@ function renderBoard() {
   return `
     <div class="board">
       ${filterRow()}
-      ${glanceCards({ abierta: open, cierra_pronto: soon, proxima: next, pac: pacAll })}
+      ${glanceCards({ abierta: open, cierra_pronto: soon, pac: pacAll })}
       ${priorityStrip(items)}
       ${fieldStrip()}
       ${planStrip()}
@@ -1292,7 +1288,6 @@ const GLANCE_MATCH = {
   // cuenta en el cuadro de abiertas. Lo que no tiene estado conocido (sin_plazo) no se cuenta como abierto.
   abierta: (item) => item.kind !== "linea" && (item.aid?.status === "abierta" || item.aid?.status === "cierra_pronto"),
   cierra_pronto: (item) => item.kind !== "linea" && item.aid?.status === "cierra_pronto",
-  proxima: (item) => item.kind !== "linea" && item.aid?.status === "proxima",
   pac: (item) => isPacLine(item),
 };
 
@@ -1305,7 +1300,7 @@ function renderList(tab) {
     : "";
   const body = items.length
     ? `<div class="list">${items.map((item) => aidCard(item)).join("")}</div>`
-    : `<p class="empty">No hay nada en este apartado con los criterios de ahora.${soloAbiertas ? " Las cerradas no se ven: quita «Solo abiertas» para verlas." : ""}</p>`;
+    : `<p class="empty">No hay nada en este apartado con los criterios de ahora. Solo salen las abiertas o sin plazo.</p>`;
   return filterRow() + head + (items.length ? readTools() : "") + body;
 }
 
@@ -1316,9 +1311,9 @@ function closingSoonList(dateKey) {
   const list = [];
   for (const item of pool) {
     const key = itemKey(item);
-    if (seen.has(key) || isHidden(item) || isDeletedItem(item) || !inSector(item) || !hasSourceUrl(item)) continue;
+    if (seen.has(key) || isDeletedItem(item) || !inSector(item) || !hasSourceUrl(item)) continue;
     seen.add(key);
-    if (closesWithin(item.aid, today, 15)) list.push(item);
+    if (isLiveAid(item.aid, today) && closesWithin(item.aid, today, 15)) list.push(item);
   }
   return list.sort((a, b) => String(a.aid.closesAt).localeCompare(String(b.aid.closesAt)));
 }
@@ -1342,25 +1337,24 @@ function closingSoonSection(dateKey) {
 function renderFavorites() {
   const today = madridTodayKey();
   const live = new Map((state.items || []).map((item) => [itemKey(item), item]));
-  const entries = Object.values(favorites).sort((a, b) => String(a.aid?.closesAt || "9999").localeCompare(String(b.aid?.closesAt || "9999")));
+  // v5.6: las favoritas cerradas o aún no abiertas tampoco se enseñan (siguen guardadas por si vuelven a abrir).
+  const entries = Object.values(favorites).filter((fav) => {
+    const current = live.get(fav.key) || (state.items || []).find((item) => item.id === fav.id);
+    return isLiveAid((current || fav).aid, today);
+  }).sort((a, b) => String(a.aid?.closesAt || "9999").localeCompare(String(b.aid?.closesAt || "9999")));
   const cards = entries.map((fav) => {
     const current = live.get(fav.key) || (state.items || []).find((item) => item.id === fav.id);
     return current ? aidCard(current) : aidCard(fav, { snapshot: true });
   });
-  const openCount = entries.filter((fav) => !isClosedAid(fav.aid, today)).length;
   return `
     <section class="view-head">
       <p class="eyebrow">Solo en este móvil u ordenador</p>
       <h2>Mis favoritas <span>${entries.length}</span></h2>
-      <p>Toca ☆ en cualquier ayuda para guardarla aquí.${entries.length ? ` ${openCount} siguen con el plazo abierto o sin fecha.` : ""}</p>
+      <p>Toca «★ Favorita» en cualquier ayuda para guardarla aquí.${entries.length ? " Solo salen las que siguen abiertas o sin fecha." : ""}</p>
       <p class="account-note">Se guarda solo en este navegador: no hay cuenta ni se envía nada.</p>
     </section>
     ${cards.length ? `<div class="list">${cards.join("")}</div>` : `<p class="empty">Todavía no tienes favoritas.</p>`}
-    <section class="hidden-box">
-      <h3>Ayudas que has ocultado <span>${[...hiddenAids].filter((key) => !String(key).startsWith("u:")).length}</span></h3>
-      <p>«Ocultar esta ayuda» la quita de tus listas en este navegador.</p>
-      ${hiddenAids.size ? `<button type="button" class="ghost" data-unhide="1">Volver a mostrar todas</button>` : ""}
-    </section>`;
+`;
 }
 
 function milestoneRow(item) {
@@ -1527,11 +1521,10 @@ function renderTabs() {
     ["calendario", "Calendario PAC"],
     ["campo", "Hoy en el campo"],
     ["favoritas", "★ Mis favoritas"],
-    ["resumen", "Resumen"],
+    // v5.6: «Resumen» ya no es pestaña; se abre con el botón «Resumen» de la cabecera.
     ["normativa", "Normativa"],
     ["jovenes", "Jóvenes"],
     ["noticias", "Noticias"],
-    ["herramientas", "Herramientas"],
     ["archivadas", "Archivadas"],
   ].filter(([id]) => id !== "archivadas" || isAdmin());
   const noCount = new Set(["calendario", "campo", "herramientas"]);
@@ -1541,39 +1534,13 @@ function renderTabs() {
         ? items.length
         : id === "archivadas"
           ? (state.archive || []).length
-          : id === "resumen"
-            ? digestBadgeCount()
-            : id === "favoritas"
-              ? Object.keys(favorites).length
-              : items.filter((item) => inTab(item, id)).length;
-      const main = ["inicio", "ayudas", "pac", "resumen"].includes(id) ? "tab-main" : "tab-extra";
+          : id === "favoritas"
+            ? Object.values(favorites).filter((fav) => isLiveAid(fav.aid)).length
+            : items.filter((item) => inTab(item, id)).length;
+      const main = ["inicio", "ayudas", "pac"].includes(id) ? "tab-main" : "tab-extra";
       return `<button class="tab ${main} ${active === id ? "active" : ""}" data-id="${id}" type="button">${title}${noCount.has(id) ? "" : `<span class="count">${count}</span>`}</button>`;
     })
     .join("");
-}
-
-function renderSources() {
-  const reports = state.sources || {};
-  const catalog = state.sourceCatalog || [];
-  const prepared = catalog.filter((source) => source.enabled === false);
-  const entries = Object.entries(reports);
-  if (!entries.length && !prepared.length) {
-    sourcesEl.innerHTML = "<p>Aún no hay informe de la última consulta.</p>";
-    return;
-  }
-  const live = entries
-    .map(([id, src]) => {
-      const cls = src.ok ? "ok" : "err";
-      const when = src.lastOkAt ? `Última lectura correcta: ${fmtStamp(src.lastOkAt)}` : "Sin lectura correcta guardada";
-      const detail = src.ok ? `${src.count} piezas · ${when}` : `${src.error || "Error"} · ${when}`;
-      const note = src.note ? `<small>${escapeHtml(src.note)}</small>` : "";
-      return `<article class="source"><strong>${escapeHtml(src.name || id)}</strong><span class="${cls}">${escapeHtml(detail)}</span>${note}</article>`;
-    })
-    .join("");
-  const later = prepared.length
-    ? `<h3>Preparadas, aún no consultadas</h3><ul class="prepared">${prepared.map((source) => `<li>${escapeHtml(source.name)}</li>`).join("")}</ul>`
-    : "";
-  sourcesEl.innerHTML = live + later;
 }
 
 function render() {
@@ -1588,8 +1555,8 @@ function render() {
   renderChoices();
   renderTabs();
   paintDigestBtn();
+  toolsBtn?.classList.toggle("on", active === "herramientas");
   if (location.hash === "#resumen" && active !== "resumen") history.replaceState(null, "", location.pathname + location.search);
-  renderSources();
   paintPrefsNote();
   document.querySelectorAll("[data-dock]").forEach((button) => {
     const on = button.dataset.dock === active;
@@ -1605,7 +1572,7 @@ function render() {
   else if (active === "herramientas") html = renderToolsTab();
   else if (active === "archivadas") html = renderArchive();
   else html = renderList(active);
-  appEl.innerHTML = active === "inicio" ? html : `${BACK_HOME_TAB}${html}`;
+  appEl.innerHTML = html;
 }
 
 function showGate(message) {
@@ -1857,6 +1824,19 @@ if (location.hash === "#preferencias" && !QUIET.has(PATH) && PATH !== "/admin") 
   setSheet(true, true);
 }
 // Botón «Resumen» de la cabecera: abre la vista completa del Resumen del día.
+// v5.6: «Herramientas» en la cabecera (entre «Preferencias» y «Ajustes»); ya no está en la barra de pestañas.
+toolsBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  if (QUIET.has(PATH) || PATH === "/admin" || document.body.classList.contains("public-page")) {
+    location.href = "/herramientas";
+    return;
+  }
+  active = "herramientas";
+  listStatus = null;
+  setSheet(false);
+  render();
+  window.scrollTo(0, 0);
+});
 digestBtn?.addEventListener("click", (event) => {
   event.preventDefault();
   if (QUIET.has(PATH) || PATH === "/admin" || document.body.classList.contains("public-page")) {
@@ -1875,13 +1855,20 @@ document.getElementById("restoreDeleted")?.addEventListener("click", () => {
   render();
   if (n) showToast(n === 1 ? "Recuperada 1 noticia" : `Recuperadas ${n} noticias`);
 });
-document.getElementById("restoreHidden")?.addEventListener("click", () => {
-  showHiddenAgain();
-  paintReadSettings();
-  render();
-});
 prefSheet?.addEventListener("click", (event) => {
   if (event.target === prefSheet) setSheet(false);
+});
+// v5.6: el título «Alerta Agraria» de la cabecera es la vuelta a Inicio (ya no hay botón de volver).
+// En la consulta cambia a Inicio sin recargar; en las páginas sueltas (/fuentes, /aviso-legal…) el enlace href="/" lleva a Inicio.
+document.querySelector(".top .brand")?.addEventListener("click", (event) => {
+  if (QUIET.has(PATH) || PATH === "/admin" || event.metaKey || event.ctrlKey || event.shiftKey || event.button) return;
+  event.preventDefault();
+  active = "inicio";
+  listStatus = null;
+  setSheet(false);
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  render();
+  window.scrollTo(0, 0);
 });
 document.querySelector(".dock")?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-dock]");
@@ -2019,29 +2006,17 @@ appEl.addEventListener("click", (event) => {
     window.scrollTo(0, y);
     return;
   }
-  const hide = event.target.closest("[data-hide]");
-  if (hide) {
+  const share = event.target.closest("[data-share]");
+  if (share) {
     event.preventDefault();
-    hideAid(hide.dataset.hide);
-    const y = window.scrollY;
-    render();
-    window.scrollTo(0, y);
+    shareItem(share);
     return;
   }
-  if (event.target.closest("[data-unhide]")) {
-    showHiddenAgain();
-    render();
-    return;
-  }
-  if (event.target.closest("[data-open-only]")) {
-    soloAbiertas = !soloAbiertas;
-    try { localStorage.setItem(OPEN_KEY, soloAbiertas ? "1" : "0"); } catch { /* queda en esta visita */ }
-    render();
-    return;
-  }
-  const sector = event.target.closest("[data-sector]");
-  if (sector) {
-    savePrefs({ ...prefs, sector: sector.dataset.sector });
+  const sectorChip = event.target.closest("[data-sector-chip]");
+  if (sectorChip) {
+    const id = sectorChip.dataset.sectorChip;
+    const now = currentSectors();
+    saveChosenSectors(now.includes(id) ? now.filter((entry) => entry !== id) : [...now, id]);
     render();
     return;
   }
@@ -2202,6 +2177,27 @@ const STATUS_TEXT = {
   sin_canal: "Sin canal automático",
 };
 
+/**
+ * v5.6 · Estado de las fuentes, discreto: una línea por fuente (nombre · N piezas · última lectura), letra pequeña
+ * y gris, separadores finos; el error en rojo pequeño. Las preparadas, en un desplegable cerrado con su número.
+ */
+function sourceStatusList(sources) {
+  const live = sources.filter((source) => source.status === "ok" || source.status === "error" || source.status === "pendiente");
+  const prepared = sources.filter((source) => source.status === "preparada");
+  const rows = live.map((source) => {
+    const when = source.lastOkAt ? `Última lectura correcta: ${fmtStamp(source.lastOkAt)}` : "Sin lectura correcta guardada";
+    const count = source.count != null ? `${source.count} ${source.count === 1 ? "pieza" : "piezas"} · ` : "";
+    const err = source.status === "error" ? `<span class="src-err">${escapeHtml(source.error || "La última consulta falló")}</span> · ` : "";
+    const note = source.note ? `<small class="src-note">${escapeHtml(source.note)}</small>` : "";
+    return `<li><span class="src-name">${escapeHtml(source.name)}</span> <span class="src-meta">${err}${escapeHtml(count)}${escapeHtml(when)}</span>${note}</li>`;
+  }).join("");
+  const later = prepared.length
+    ? `<details class="src-prepared"><summary>Preparadas, aún no consultadas (${prepared.length})</summary><ul>${prepared.map((source) => `<li>${escapeHtml(source.name)}</li>`).join("")}</ul></details>`
+    : "";
+  if (!rows && !later) return "";
+  return `<section class="src-status" aria-label="Estado de las fuentes"><h3>Estado de las fuentes</h3>${rows ? `<ul>${rows}</ul>` : ""}${later}</section>`;
+}
+
 async function renderPlans() {
   document.title = "Planes · Alerta Agraria";
   const res = await fetch("/api/planes", { cache: "no-store" });
@@ -2242,8 +2238,6 @@ async function renderLegal() {
 async function renderPublic() {
   document.body.classList.add("public-page");
   document.body.classList.remove("locked");
-  // Estas páginas no tienen barra de pestañas: «← Inicio» arriba, siempre visible.
-  if (!document.querySelector(".back-home-page")) appEl.insertAdjacentHTML("beforebegin", BACK_HOME_PAGE);
   const stored = loadPrefs();
   prefs = stored.prefs;
   await loadSession();
@@ -2280,7 +2274,8 @@ async function renderPublic() {
     const data = await res.json();
     const groups = (data.groups || [])
       .map((group) => {
-        const sources = (data.sources || []).filter((source) => source.group === group.id);
+        // v5.6: las preparadas (aún sin consultar) van solo en el desplegable de abajo.
+        const sources = (data.sources || []).filter((source) => source.group === group.id && source.status !== "preparada");
         if (!sources.length) return "";
         const cards = sources
           .map((source) => {
@@ -2321,6 +2316,7 @@ async function renderPublic() {
         <p>${escapeHtml(data.methodology || "")}</p>
         <p>Si un dato no viene en la publicación, no se enseña. Esta pantalla sale de la misma lista que usa la recogida automática y de los archivos del calendario PAC, los precios y las herramientas.</p>
       </article>
+      ${sourceStatusList(data.sources || [])}
       ${groups || `<p class="empty">No hay fuentes en la configuración.</p>`}
       ${refGroup}`;
   } catch (error) {
