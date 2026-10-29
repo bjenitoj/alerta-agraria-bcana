@@ -1,0 +1,1206 @@
+{
+ "status": {
+  "code": "200",
+  "text": "ok"
+ },
+ "data": [
+  {
+   "fecha_actualizacion": "20261029T131436Z",
+   "identificador": "BOE-A-2026-22614",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "9575",
+    "texto": "Ministerio para la Transición Ecológica y el Reto Demográfico"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20261028",
+   "numero_oficial": "925/2026",
+   "titulo": "Real Decreto 925/2026, de 28 de octubre, por el que se desarrolla la Red Nacional de Vías Pecuarias.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20261029",
+   "diario_numero": "269",
+   "fecha_vigencia": "20261118",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-22614"
+  },
+  {
+   "fecha_actualizacion": "20261014T103026Z",
+   "identificador": "BOE-A-2026-21319",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20261007",
+   "numero_oficial": "APA/1082/2026",
+   "titulo": "Orden APA/1082/2026, de 7 de octubre, por la que se establecen medidas específicas de protección en relación con la lengua azul.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20261014",
+   "diario_numero": "255",
+   "fecha_vigencia": "20261101",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2026/10/07/apa1082",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-21319"
+  },
+  {
+   "fecha_actualizacion": "20261022T064817Z",
+   "identificador": "BOE-A-2026-20270",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "9585",
+    "texto": "Ministerio de la Presidencia, Justicia y Relaciones con las Cortes"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20260826",
+   "numero_oficial": "682/2026",
+   "titulo": "Real Decreto 682/2026, de 26 de agosto, por el que se regulan los laboratorios nacionales de referencia en materia agroalimentaria y de sanidad de la producción primaria.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260930",
+   "diario_numero": "241",
+   "fecha_vigencia": "20261001",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2026/08/26/682",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-20270"
+  },
+  {
+   "fecha_actualizacion": "20260922T120814Z",
+   "identificador": "BOE-A-2026-19200",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "9573",
+    "texto": "Ministerio de Trabajo y Economía Social"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20260909",
+   "numero_oficial": "723/2026",
+   "titulo": "Real Decreto 723/2026, de 9 de septiembre, por el que se transpone la Directiva (UE) 2019/1152 del Parlamento Europeo y del Consejo, de 20 de junio de 2019, relativa a unas condiciones laborales transparentes y previsibles en la Unión Europea.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260915",
+   "diario_numero": "228",
+   "fecha_vigencia": "20261005",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2026/09/09/723",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-19200"
+  },
+  {
+   "fecha_actualizacion": "20260716T080543Z",
+   "identificador": "BOE-A-2026-15552",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20260707",
+   "numero_oficial": "APA/731/2026",
+   "titulo": "Orden APA/731/2026, de 7 de julio, por la que se regula el acceso al porcentaje de capturas y esfuerzo para fines científicos y se establecen los criterios para su fijación en el marco de campañas científicas autorizadas.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260716",
+   "diario_numero": "172",
+   "fecha_vigencia": "20260717",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2026/07/07/apa731",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-15552"
+  },
+  {
+   "fecha_actualizacion": "20260330T093208Z",
+   "identificador": "BOE-A-2026-7169",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20260318",
+   "numero_oficial": "APA/284/2026",
+   "titulo": "Orden APA/284/2026, de 18 de marzo, por la que se aprueban los Estatutos del Consejo Regulador de la Denominación de Origen Protegida «Jumilla».",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260328",
+   "diario_numero": "77",
+   "fecha_vigencia": "20260329",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2026/03/18/apa284",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-7169"
+  },
+  {
+   "fecha_actualizacion": "20260327T111433Z",
+   "identificador": "BOE-A-2026-7105",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20260318",
+   "numero_oficial": "APA/280/2026",
+   "titulo": "Orden APA/280/2026, de 18 de marzo, por la que se establecen límites del volumen de capturas por buque de gamba roja del stock ARA/GF1-7.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260327",
+   "diario_numero": "76",
+   "fecha_vigencia": "20260328",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2026/03/18/apa280",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-7105"
+  },
+  {
+   "fecha_actualizacion": "20260410T081815Z",
+   "identificador": "BOE-A-2026-6401",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20260318",
+   "numero_oficial": "214/2026",
+   "titulo": "Real Decreto 214/2026, de 18 de marzo, por el que se regula la presentación de solicitudes, declaraciones y comunicaciones a través de medios electrónicos en las reservas marinas de interés pesquero y para la pesca de recreo.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260319",
+   "diario_numero": "69",
+   "fecha_vigencia": "20260320",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2026/03/18/214",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-6401"
+  },
+  {
+   "fecha_actualizacion": "20260410T080935Z",
+   "identificador": "BOE-A-2026-5875",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20260311",
+   "numero_oficial": "189/2026",
+   "titulo": "Real Decreto 189/2026, de 11 de marzo, por el que se regula la inscripción, modificación y cancelación de las indicaciones geográficas para vinos, bebidas espirituosas y productos agrícolas y de las especialidades tradicionales garantizadas, y se disponen normas relativas a su comercialización.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260313",
+   "diario_numero": "64",
+   "fecha_vigencia": "20260501",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2026/03/11/189",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-5875"
+  },
+  {
+   "fecha_actualizacion": "20260430T112038Z",
+   "identificador": "BOE-A-2026-4781",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20260224",
+   "numero_oficial": "APA/150/2026",
+   "titulo": "Orden APA/150/2026, de 24 de febrero, por la que se regula el Comité de Caza.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260302",
+   "diario_numero": "54",
+   "fecha_vigencia": "20260303",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2026/02/24/apa150",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-4781"
+  },
+  {
+   "fecha_actualizacion": "20260604T103441Z",
+   "identificador": "BOE-A-2026-4644",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20260225",
+   "numero_oficial": "APA/142/2026",
+   "titulo": "Orden APA/142/2026, de 25 de febrero, por la que se acuerdan adaptaciones y concreciones relativas a la ayuda y a las actuaciones de reparación previstas en los artículos 9 y 12 del Real Decreto-ley 5/2026, de 17 de febrero, por el que se adoptan medidas urgentes en respuesta a los daños causados por diversos fenómenos meteorológicos adversos, de especial afectación en las comunidades autónomas de Andalucía y Extremadura.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260227",
+   "diario_numero": "52",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2026/02/25/apa142",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-4644"
+  },
+  {
+   "fecha_actualizacion": "20260429T111002Z",
+   "identificador": "BOE-A-2026-3385",
+   "ambito": {
+    "codigo": "2",
+    "texto": "Autonómico"
+   },
+   "departamento": {
+    "codigo": "8090",
+    "texto": "Comunidad Autónoma de Galicia"
+   },
+   "rango": {
+    "codigo": "1300",
+    "texto": "Ley"
+   },
+   "fecha_disposicion": "20251223",
+   "numero_oficial": "5/2025",
+   "titulo": "Ley 5/2025, de 23 de diciembre, de medidas fiscales y administrativas.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260214",
+   "diario_numero": "40",
+   "fecha_vigencia": "20260101",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es-ga/l/2025/12/23/5",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-3385"
+  },
+  {
+   "fecha_actualizacion": "20260206T093037Z",
+   "identificador": "BOE-A-2026-2727",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20260204",
+   "numero_oficial": "69/2026",
+   "titulo": "Real Decreto 69/2026, de 4 de febrero, por el que se regulan aspectos organizativos en materia de bienestar y protección de los animales mantenidos con fines agrarios y para la acuicultura.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20260206",
+   "diario_numero": "33",
+   "fecha_vigencia": "20260207",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2026/02/04/69",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-2727"
+  },
+  {
+   "fecha_actualizacion": "20260107T090508Z",
+   "identificador": "BOE-A-2025-26848",
+   "ambito": {
+    "codigo": "2",
+    "texto": "Autonómico"
+   },
+   "departamento": {
+    "codigo": "8010",
+    "texto": "Comunidad Autónoma de Andalucía"
+   },
+   "rango": {
+    "codigo": "1300",
+    "texto": "Ley"
+   },
+   "fecha_disposicion": "20251212",
+   "numero_oficial": "2/2025",
+   "titulo": "Ley 2/2025, de 12 de diciembre, de impulso y promoción de la producción ecológica y otras producciones agrarias, pesqueras y acuícolas certificadas en Andalucía.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20251229",
+   "diario_numero": "313",
+   "fecha_vigencia": "20251219",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es-an/l/2025/12/12/2",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-26848"
+  },
+  {
+   "fecha_actualizacion": "20260107T083250Z",
+   "identificador": "BOE-A-2025-26702",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20251217",
+   "numero_oficial": "APA/1523/2025",
+   "titulo": "Orden APA/1523/2025, de 17 de diciembre, por la que se fija para el año 2026 la renta de referencia.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20251227",
+   "diario_numero": "312",
+   "fecha_vigencia": "20260101",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/12/17/apa1523",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-26702"
+  },
+  {
+   "fecha_actualizacion": "20251220T190007Z",
+   "identificador": "BOE-A-2025-25705",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20251205",
+   "numero_oficial": "APA/1454/2025",
+   "titulo": "Orden APA/1454/2025, de 5 de diciembre, por la que se establece la marca de calidad y se determina el procedimiento de aplicación y ensayo de los sistemas de autoguiado utilizados en máquinas agrícolas y forestales.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20251216",
+   "diario_numero": "301",
+   "fecha_vigencia": "20251217",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/12/05/apa1454",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-25705"
+  },
+  {
+   "fecha_actualizacion": "20251220T190007Z",
+   "identificador": "BOE-A-2025-25393",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20251210",
+   "numero_oficial": "1133/2025",
+   "titulo": "Real Decreto 1133/2025, de 10 de diciembre, por el que se establecen las bases reguladoras de las subvenciones destinadas al fomento de las razas autóctonas españolas.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20251212",
+   "diario_numero": "298",
+   "fecha_vigencia": "20251213",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2025/12/10/1133",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-25393"
+  },
+  {
+   "fecha_actualizacion": "20251220T190003Z",
+   "identificador": "BOE-A-2025-22091",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20251027",
+   "numero_oficial": "APA/1226/2025",
+   "titulo": "Orden APA/1226/2025, de 27 de octubre, por la que se desarrolla la estructura y funcionamiento del Registro general de fabricantes y otros agentes económicos de productos fertilizantes (REGFER) y se regula su actuación.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20251103",
+   "diario_numero": "264",
+   "fecha_vigencia": "20260101",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/10/27/apa1226",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-22091"
+  },
+  {
+   "fecha_actualizacion": "20251220T190002Z",
+   "identificador": "BOE-A-2025-21899",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20251027",
+   "numero_oficial": "APA/1203/2025",
+   "titulo": "Orden APA/1203/2025, de 27 de octubre, por la que se establecen condiciones para la pesca de la sardina («Sardina pilchardus») de las aguas ibéricas (zonas 8c y 9a) del Consejo Internacional para la Exploración del Mar.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20251030",
+   "diario_numero": "261",
+   "fecha_vigencia": "20251031",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/10/27/apa1203",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-21899"
+  },
+  {
+   "fecha_actualizacion": "20251220T185958Z",
+   "identificador": "BOE-A-2025-18344",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20250911",
+   "numero_oficial": "APA/1018/2025",
+   "titulo": "Orden APA/1018/2025, de 11 de septiembre, por la que se crean y regulan la Junta de Contratación y la Mesa única de Contratación.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250917",
+   "diario_numero": "224",
+   "fecha_vigencia": "20250918",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/09/11/apa1018",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-18344"
+  },
+  {
+   "fecha_actualizacion": "20251220T185953Z",
+   "identificador": "BOE-A-2025-15979",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20250722",
+   "numero_oficial": "APA/827/2025",
+   "titulo": "Orden APA/827/2025, de 22 de julio, por la que se publican las nuevas relaciones de zonas de producción de moluscos y otros invertebrados marinos en el litoral español.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250801",
+   "diario_numero": "184",
+   "fecha_vigencia": "20250802",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/07/22/apa827",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-15979"
+  },
+  {
+   "fecha_actualizacion": "20251220T185952Z",
+   "identificador": "BOE-A-2025-15207",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20250711",
+   "numero_oficial": "APA/779/2025",
+   "titulo": "Orden APA/779/2025, de 11 de julio, por la que se establece una zona de veda en los montes coralinos de Cabliers, en el mar de Alborán.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250722",
+   "diario_numero": "175",
+   "fecha_vigencia": "20250723",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/07/11/apa779",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-15207"
+  },
+  {
+   "fecha_actualizacion": "20251220T185952Z",
+   "identificador": "BOE-A-2025-14964",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20250715",
+   "numero_oficial": "APA/766/2025",
+   "titulo": "Orden APA/766/2025, de 15 de julio, por la que se establece la composición y funcionamiento del Comité de Participación en el marco del Consejo Interministerial de Organismos Modificados Genéticamente.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250719",
+   "diario_numero": "173",
+   "fecha_vigencia": "20250720",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/07/15/apa766",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-14964"
+  },
+  {
+   "fecha_actualizacion": "20251220T185941Z",
+   "identificador": "BOE-A-2025-8160",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20250422",
+   "numero_oficial": "346/2025",
+   "titulo": "Real Decreto 346/2025, de 22 de abril, por el que se establecen las bases de desarrollo de la normativa de la Unión Europea de sanidad animal, en lo relativo a las obligaciones de vigilancia del titular de la explotación.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250423",
+   "diario_numero": "98",
+   "fecha_vigencia": "20250601",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2025/04/22/346",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-8160"
+  },
+  {
+   "fecha_actualizacion": "20251220T185939Z",
+   "identificador": "BOE-A-2025-6597",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "7723",
+    "texto": "Jefatura del Estado"
+   },
+   "rango": {
+    "codigo": "1300",
+    "texto": "Ley"
+   },
+   "fecha_disposicion": "20250401",
+   "numero_oficial": "1/2025",
+   "titulo": "Ley 1/2025, de 1 de abril, de prevención de las pérdidas y el desperdicio alimentario.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250402",
+   "diario_numero": "80",
+   "fecha_vigencia": "20250102",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/l/2025/04/01/1",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-6597"
+  },
+  {
+   "fecha_actualizacion": "20261014T080513Z",
+   "identificador": "BOE-A-2025-4756",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20250310",
+   "numero_oficial": "APA/229/2025",
+   "titulo": "Orden APA/229/2025, de 10 de marzo, por la que se establecen medidas específicas de protección en relación con la lengua azul.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250311",
+   "diario_numero": "60",
+   "fecha_vigencia": "20250312",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2025/03/10/apa229",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-4756"
+  },
+  {
+   "fecha_actualizacion": "20260327T132015Z",
+   "identificador": "BOE-A-2025-2145",
+   "ambito": {
+    "codigo": "2",
+    "texto": "Autonómico"
+   },
+   "departamento": {
+    "codigo": "8090",
+    "texto": "Comunidad Autónoma de Galicia"
+   },
+   "rango": {
+    "codigo": "1300",
+    "texto": "Ley"
+   },
+   "fecha_disposicion": "20241227",
+   "numero_oficial": "5/2024",
+   "titulo": "Ley 5/2024, de 27 de diciembre, de medidas fiscales y administrativas.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250206",
+   "diario_numero": "32",
+   "fecha_vigencia": "20250101",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es-ga/l/2024/12/27/5",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-2145"
+  },
+  {
+   "fecha_actualizacion": "20260717T121924Z",
+   "identificador": "BOE-A-2025-720",
+   "ambito": {
+    "codigo": "2",
+    "texto": "Autonómico"
+   },
+   "departamento": {
+    "codigo": "8121",
+    "texto": "Comunidad Autónoma de las Illes Balears"
+   },
+   "rango": {
+    "codigo": "1300",
+    "texto": "Ley"
+   },
+   "fecha_disposicion": "20241211",
+   "numero_oficial": "7/2024",
+   "titulo": "Ley 7/2024, de 11 de diciembre, de medidas urgentes de simplificación y racionalización administrativas de las administraciones públicas de las Illes Balears.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250117",
+   "diario_numero": "15",
+   "fecha_vigencia": "20241214",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es-ib/l/2024/12/11/7",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-720"
+  },
+  {
+   "fecha_actualizacion": "20251220T185925Z",
+   "identificador": "BOE-A-2025-715",
+   "ambito": {
+    "codigo": "2",
+    "texto": "Autonómico"
+   },
+   "departamento": {
+    "codigo": "8070",
+    "texto": "Comunidad Autónoma de Cataluña"
+   },
+   "rango": {
+    "codigo": "1300",
+    "texto": "Ley"
+   },
+   "fecha_disposicion": "20250108",
+   "numero_oficial": "1/2025",
+   "titulo": "Ley 1/2025, de 8 de enero, del Fondo Agrario y Ganadero.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250117",
+   "diario_numero": "15",
+   "fecha_vigencia": "20250110",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es-ct/l/2025/01/08/1",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-715"
+  },
+  {
+   "fecha_actualizacion": "20260917T072645Z",
+   "identificador": "BOE-A-2025-1",
+   "ambito": {
+    "codigo": "2",
+    "texto": "Autonómico"
+   },
+   "departamento": {
+    "codigo": "8162",
+    "texto": "Comunitat Valenciana"
+   },
+   "rango": {
+    "codigo": "1300",
+    "texto": "Ley"
+   },
+   "fecha_disposicion": "20241205",
+   "numero_oficial": "6/2024",
+   "titulo": "Ley 6/2024, de 5 de diciembre, de simplificación administrativa.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20250101",
+   "diario_numero": "1",
+   "fecha_vigencia": "20241210",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es-vc/l/2024/12/05/6",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2025-1"
+  },
+  {
+   "fecha_actualizacion": "20251229T082226Z",
+   "identificador": "BOE-A-2024-26373",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20241213",
+   "numero_oficial": "APA/1426/2024",
+   "titulo": "Orden APA/1426/2024, de 13 de diciembre, por la que se fija para el año 2025 la renta de referencia.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20241218",
+   "diario_numero": "304",
+   "fecha_vigencia": "20250101",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2024/12/13/apa1426",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-26373"
+  },
+  {
+   "fecha_actualizacion": "20251220T181325Z",
+   "identificador": "BOE-A-2024-25455",
+   "ambito": {
+    "codigo": "2",
+    "texto": "Autonómico"
+   },
+   "departamento": {
+    "codigo": "8010",
+    "texto": "Comunidad Autónoma de Andalucía"
+   },
+   "rango": {
+    "codigo": "1300",
+    "texto": "Ley"
+   },
+   "fecha_disposicion": "20241113",
+   "numero_oficial": "5/2024",
+   "titulo": "Ley 5/2024, de 13 de noviembre, del Estatuto de las Mujeres Rurales y del Mar de Andalucía.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20241206",
+   "diario_numero": "294",
+   "fecha_vigencia": "20241123",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es-an/l/2024/11/13/5",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-25455"
+  },
+  {
+   "fecha_actualizacion": "20260313T074054Z",
+   "identificador": "BOE-A-2024-25207",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20241203",
+   "numero_oficial": "1219/2024",
+   "titulo": "Real Decreto 1219/2024, de 3 de diciembre, por el que se establecen las bases reguladoras de la concesión de ayudas a inversiones materiales o inmateriales en transformación, comercialización o desarrollo de productos agroalimentarios en el marco del Plan Estratégico de la Política Agrícola Común, para el fomento de la integración de entidades asociativas agroalimentarias de carácter supraautonómico.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20241204",
+   "diario_numero": "292",
+   "fecha_vigencia": "20241205",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2024/12/03/1219",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-25207"
+  },
+  {
+   "fecha_actualizacion": "20251220T181323Z",
+   "identificador": "BOE-A-2024-24103",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20241119",
+   "numero_oficial": "1158/2024",
+   "titulo": "Real Decreto 1158/2024, de 19 de noviembre, por el que se desarrollan determinadas disposiciones de la Unión Europea que establecen medidas para responder a problemas específicos en el sector vitivinícola provocados por los fenómenos meteorológicos adversos y las perturbaciones del mercado vitivinícola de la Unión.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20241120",
+   "diario_numero": "280",
+   "fecha_vigencia": "20241121",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2024/11/19/1158",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-24103"
+  },
+  {
+   "fecha_actualizacion": "20251220T181321Z",
+   "identificador": "BOE-A-2024-23425",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20241111",
+   "numero_oficial": "1139/2024",
+   "titulo": "Real Decreto 1139/2024, de 11 de noviembre, por el que se regulan el límite máximo de las ayudas de minimis en el sector agrícola y pesquero y el procedimiento para garantizar que no se sobrepasan los topes nacional y sectorial establecidos en la normativa europea.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20241112",
+   "diario_numero": "273",
+   "fecha_vigencia": "20241202",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2024/11/11/1139",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-23425"
+  },
+  {
+   "fecha_actualizacion": "20251220T181309Z",
+   "identificador": "BOE-A-2024-20403",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20241008",
+   "numero_oficial": "1027/2024",
+   "titulo": "Real Decreto 1027/2024, de 8 de octubre, por el que se regulan las condiciones de aplicación de la normativa de la Unión Europea de comercialización de huevos.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20241009",
+   "diario_numero": "244",
+   "fecha_vigencia": "20241010",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2024/10/08/1027",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-20403"
+  },
+  {
+   "fecha_actualizacion": "20251220T181248Z",
+   "identificador": "BOE-A-2024-10236",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "9585",
+    "texto": "Ministerio de la Presidencia, Justicia y Relaciones con las Cortes"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20240521",
+   "numero_oficial": "496/2024",
+   "titulo": "Real Decreto 496/2024, de 21 de mayo, por el que se dictan disposiciones para la aplicación en España de la normativa de la Unión Europea relativa a la alimentación de animales de granja con determinados piensos de origen animal.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20240522",
+   "diario_numero": "124",
+   "fecha_vigencia": "20240523",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2024/05/21/496",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-10236"
+  },
+  {
+   "fecha_actualizacion": "20251220T181244Z",
+   "identificador": "BOE-A-2024-8262",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20240419",
+   "numero_oficial": "APA/367/2024",
+   "titulo": "Orden APA/367/2024, de 19 de abril, por la que se reconoce al Consejo Regulador de la Denominación de Origen Protegida \"Pimentón de Murcia\" la condición de Corporación de Derecho Público de ámbito territorial supraautonómico y se aprueban sus estatutos.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20240424",
+   "diario_numero": "100",
+   "fecha_vigencia": "20240425",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2024/04/19/apa367",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-8262"
+  },
+  {
+   "fecha_actualizacion": "20260519T082529Z",
+   "identificador": "BOE-A-2024-7035",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1340",
+    "texto": "Real Decreto"
+   },
+   "fecha_disposicion": "20240312",
+   "numero_oficial": "251/2024",
+   "titulo": "Real Decreto 251/2024, de 12 de marzo, por el que se establecen las bases reguladoras de las subvenciones de las intervenciones de intercambio de conocimientos y actividades de formación e información y servicios de asesoramiento, destinadas al sector agroalimentario y forestal, en el marco del Plan Estratégico de la Política Agrícola Común 2023-2027.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20240410",
+   "diario_numero": "88",
+   "fecha_vigencia": "20240411",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/rd/2024/03/12/251",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-7035"
+  },
+  {
+   "fecha_actualizacion": "20251220T181233Z",
+   "identificador": "BOE-A-2024-5467",
+   "ambito": {
+    "codigo": "1",
+    "texto": "Estatal"
+   },
+   "departamento": {
+    "codigo": "3120",
+    "texto": "Ministerio de Agricultura, Pesca y Alimentación"
+   },
+   "rango": {
+    "codigo": "1350",
+    "texto": "Orden"
+   },
+   "fecha_disposicion": "20240313",
+   "numero_oficial": "APA/251/2024",
+   "titulo": "Orden APA/251/2024, de 13 de marzo, por la que se reconoce el Consejo Regulador de la Denominación de Origen Protegida de ámbito territorial supraautonómico «Nueces de Nerpio» como Corporación de Derecho Público y se aprueban sus estatutos.",
+   "diario": "Boletín Oficial del Estado",
+   "fecha_publicacion": "20240319",
+   "diario_numero": "69",
+   "fecha_vigencia": "20240320",
+   "vigencia_agotada": "N",
+   "estado_consolidacion": {
+    "codigo": "3",
+    "texto": "Finalizado"
+   },
+   "url_eli": "https://www.boe.es/eli/es/o/2024/03/13/apa251",
+   "url_html_consolidada": "https://www.boe.es/buscar/act.php?id=BOE-A-2024-5467"
+  }
+ ]
+}

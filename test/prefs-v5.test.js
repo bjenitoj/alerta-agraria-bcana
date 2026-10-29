@@ -39,10 +39,11 @@ test("la clave del navegador no cambia: las preferencias guardadas se conservan"
 });
 
 test("se pueden elegir varios tipos de información, en orden, y siempre queda uno", () => {
-  const prefs = normalizePrefs({ info: ["pac", "noticias", "pac", "inventado"] });
-  assert.deepEqual(prefs.info, ["pac", "noticias"]);
-  assert.deepEqual(prefs.infoOrder.slice(0, 2), ["pac", "noticias"]);
-  assert.equal(prefs.infoOrder.length, 5, "el resto de tipos sigue en la lista");
+  // v5.7: «noticias» ya no es un tipo; si venía guardado se ignora.
+  const prefs = normalizePrefs({ info: ["pac", "noticias", "normativa", "pac", "inventado"] });
+  assert.deepEqual(prefs.info, ["pac", "normativa"]);
+  assert.deepEqual(prefs.infoOrder.slice(0, 2), ["pac", "normativa"]);
+  assert.equal(prefs.infoOrder.length, 4, "el resto de tipos sigue en la lista");
   assert.deepEqual(normalizePrefs({ info: [] }).info, DEFAULT_PREFS.info);
 });
 
@@ -68,8 +69,8 @@ test("ordena por los tipos elegidos sin quitar ninguno", () => {
 });
 
 test("«En tus filtros» usa todos los tipos elegidos", () => {
-  const prefs = normalizePrefs({ sector: "agricultura", zone: "mi-zona", crops: [], info: ["noticias", "normativa"] });
-  assert.equal(forYou(news, prefs), true);
+  const prefs = normalizePrefs({ sector: "agricultura", zone: "mi-zona", crops: [], info: ["alertas", "normativa"] });
+  assert.deepEqual(prefs.info, ["alertas", "normativa"]);
   assert.equal(forYou(norma, prefs), true);
   assert.equal(forYou(aidAgri, prefs), false);
 });
@@ -123,8 +124,8 @@ test("el asistente no tiene textos fijos de sector o zona", () => {
 test("«Mis preferencias» incluye los tipos de información y la versión de caché sube", () => {
   assert.match(indexHtml, /id="infoChoices"/);
   assert.match(indexHtml, /Mis preferencias/);
-  assert.match(indexHtml, /app\.js\?v=39/);
-  assert.match(indexHtml, /styles\.css\?v=39/);
+  assert.match(indexHtml, /app\.js\?v=44/);
+  assert.match(indexHtml, /styles\.css\?v=44/);
 });
 
 test("el resumen del día enseña solo los tipos elegidos, en su orden", () => {

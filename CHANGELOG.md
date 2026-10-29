@@ -1,5 +1,35 @@
 # Cambios
 
+## v5.7 · 28/10/2026 · Precios de la Lonja de Salamanca
+
+### Nuevo
+- **Hoy en el campo › Precios** tiene un desplegable **«Fuente: Ministerio (MAPA) | Lonja de Salamanca»**. Por defecto, el Ministerio; la elección se recuerda en el dispositivo (`alerta_precios_fuente`).
+- **Lonja de Salamanca** (Lonja Agropecuaria de Salamanca, Diputación de Salamanca): se lee la tabla oficial de cotizaciones (`https://www.lasalina.es/Aplicaciones/lonja/Cotizaciones.jsp`) de la última sesión, mesas de Cereales (cereales, leguminosas, oleaginosas, forrajes), Ovino, Bovino de vida, Bovino de carne y Porcino blanco e ibérico. Mismas columnas (Producto / Precio / Variación); precio, unidad («€ / t», «€ / kg vivo», «€ / kg canal», «€ / ud.») y diferencia **tal como los publica la tabla**, con «Sesión del dd/mm/aaaa» y enlace a la tabla oficial. «0,00» en la tabla = **«Sin cotización»** (la tablilla en PDF pone «S. / C.»): no se enseña precio. Las horquillas («150,00 / 175,00») se copian literales.
+- Copia en caché 12 h (`DATA_DIR/lonja-cache.json`); si la Diputación falla, la última copia buena con su fecha; si no hay ninguna, ningún precio y el enlace oficial.
+- La Lonja sale de «Preparadas, aún no consultadas» en **Fuentes oficiales**: ahora figura como fuente de precios.
+- API: `GET /api/precios/lonja`.
+- Caché `?v=44`.
+
+### Girar la pantalla
+- La app gira entre vertical y horizontal en móvil y tableta, también instalada en la pantalla de inicio: `"orientation": "any"` en `manifest.webmanifest` (Android) y nada en la página bloquea el giro.
+- En horizontal con poca altura (≤ 500 px), cabecera, barra de abajo, cuadros y botones más bajos; hojas y ventanas con scroll y alturas `dvh`; márgenes del notch a los lados (`safe-area-inset-left/right`); sin desplazamiento lateral.
+
+### Normativa y Ayudas
+- La regla «solo lo abierto» vale **solo para ayudas** (PAC y no PAC). **Normativa**, alertas y lo demás salen siempre, aunque no tengan plazo o figuren como cerradas; Normativa se ordena por fecha de publicación (lo más reciente arriba).
+- Pestaña **Ayudas** rediseñada: dos bloques, **«Ayudas PAC»** y **«Otras ayudas»**, y chips de estado **Abiertas · Cierran pronto · Próximas** (por defecto Abiertas; lo cerrado no sale nunca; se recuerda en el dispositivo, `alerta_ayudas_estado_v1`). Los chips de sector siguen igual.
+- **Normativa ≠ Ayudas** (excluyentes): en Normativa solo normas de BOE y BOCyL (leyes, reales decretos, decretos, órdenes, resoluciones, reglamentos) de agricultura, ganadería y pesca. Lo que trata de ayudas, subvenciones, convocatorias, beneficiarios o premios va solo a Ayudas. Los anuncios que no son normas ya no entran en Normativa.
+- **Normas en vigor (BOE)**: nueva sección de consulta en Normativa, desde la API oficial de legislación consolidada del BOE (`/api/normativa/vigente`, `lib/normativa.js`): Ministerio de Agricultura, Pesca y Alimentación o materias Agricultura, Ganadería, Pesca y PAC; leyes, reales decretos y órdenes. «En vigor» = lo que el BOE marca con `vigencia_agotada: N`; lo derogado o agotado no sale. Nada inventado: lo publicado últimamente en BOE/BOCyL no tiene ese dato y se enseña sin estado. Caché de 12 h; si el BOE falla, la última copia buena. Filtrable con los chips de sector.
+- **Sin pestaña PAC**: en **Ayudas** se elige primero **«Ayudas PAC» | «Otras ayudas»** (botones grandes, por defecto Ayudas PAC, se recuerda: `alerta_ayudas_grupo_v1`) y solo se lista ese grupo. Debajo, los **cuadros grandes de colores** Abiertas (verde) · Cierran pronto (naranja) · Próximas (azul), como los de Inicio, con el elegido marcado. Los avisos PAC que no son una línea de ayuda salen en «Ayudas PAC». La pestaña PAC antigua y el cuadro «Líneas PAC» de Inicio abren Ayudas > Ayudas PAC.
+- **Barra de abajo**: Inicio · Ayudas · **Normativa** · Precios (PAC sale de la barra).
+- **Números iguales**: el número de la pestaña Ayudas, los cuadros y la lista salen del mismo conjunto (sector, grupo y estado elegidos).
+- **Listados de la Junta** (ayudas de incorporación, modernización, ganaderas): cada párrafo de requisitos ya no se publica como una «ayuda»; la página cuenta como una sola línea (su título) y se quitan las portadas genéricas («Ayudas, solicitudes y normativa», «Gestión electrónica de procedimientos y ayudas», «Ayudas para actividades ganaderas»). Las convocatorias y extractos enlazados siguen.
+- Inicio no cambia: solo ayudas abiertas (cuadros Abiertas, Cierran pronto, Líneas PAC). Desde los cuadros, «Ver todas» abre Ayudas con el chip correspondiente.
+
+### Quitado
+- Pestañas **«Jóvenes»** (Jóvenes y modernización) y **«Noticias»** (Noticias oficiales). La barra de abajo (Inicio, Ayudas, PAC, Precios) no cambia.
+- «Noticias» deja de ser un tipo en **Mis preferencias** y en «Lo que has puesto primero». Si estaba guardado en el dispositivo, se ignora (si era lo único elegido, vuelven Ayudas y PAC).
+- La clasificación de las piezas no cambia: lo que es de Ayudas o PAC sigue saliendo ahí.
+
 ## v5.6 · 25/10/2026 · Pie de página discreto y legal; fichas más limpias; «Herramientas» en la cabecera; fuera «Estado de las fuentes» y el botón «← Inicio»
 
 ### Quitado

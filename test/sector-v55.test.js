@@ -84,7 +84,8 @@ test("v5.5 sector: listas, pestañas, «Ver todas», Resumen y plazos usan el mi
   // cuadros y listas salen de baseItems() con el mismo criterio por cuadro (GLANCE_MATCH)
   assert.match(between("function renderBoard", "const GLANCE_MATCH"), /sortedItems\(baseItems\(\)\)/);
   const list = between("function renderList", "function closingSoonList");
-  assert.match(list, /sortedItems\(baseItems\(\)\)\.filter\(\(item\) => \(match \? match\(item\) : inTab\(item, tab\)\)\)/);
+  assert.match(list, /baseItems\(\)\.filter\(\(item\) => \(match \? match\(item\) : inTab\(item, tab\)\)\)/);
+  assert.match(between("function ayudasView", "function renderAyudas"), /baseItems\(\{ allStatus: true \}\)/);
   assert.match(between("function renderTabs", "function "), /const items = baseItems\(\);/);
   assert.match(between("function paintDigestBtn", "function "), /digestBadgeCount\(\)/, "Resumen (botón de cabecera) cuenta piezas, no días");
   assert.match(between("function digestData", "function digestBadgeCount"), /inSector\(item\)/);
