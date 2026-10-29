@@ -18,7 +18,7 @@ import {
   prefsSummary,
   sectorScope,
 } from "/mod/preferences.js";
-import { closesWithin, deadlineInfo, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
+import { closesWithin, deadlineInfo, fmtDayKey, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
 
 const tabsEl = document.getElementById("tabs");
 const appEl = document.getElementById("app");
@@ -362,7 +362,7 @@ async function loadSession() {
 /** Iconos sencillos de cada opción (solo decoración, el lector de pantalla lee la etiqueta). */
 const EMOJI = {
   agricultura: "🌾", ganaderia: "🐄", pesca: "🐟", todos: "🌐",
-  ayudas: "💶", pac: "🇪🇺", normativa: "📜", alertas: "⚠️", noticias: "📰",
+  ayudas: "💶", pac: "🇪🇺", normativa: "📜", alertas: "⚠️",
   "mi-zona": "⭐", salamanca: "📍", cyl: "🏰", nacional: "🇪🇸",
   secano: "☀️", regadio: "💧",
   cereal: "🌾", girasol: "🌻", mejorantes: "🫘", maiz: "🌽", remolacha: "🥕", vinedo: "🍇", olivar: "🫒",
@@ -731,6 +731,53 @@ function isAidLike(item) {
   return item.kind === "linea" || item.kind === "ayuda" || (item.infoTypes || []).includes("ayudas") || (item.infoTypes || []).includes("pac");
 }
 
+// v5.7: la regla «solo lo abierto» vale SOLO para ayudas (PAC y no PAC). Normativa, alertas y lo demás
+// se enseña siempre, por fecha de publicación, tenga el estado que tenga.
+function isAidItem(item) {
+  return isAidLike(item) || item?.category === "ayudas_subvenciones";
+}
+function shownByStatus(item, today = madridTodayKey()) {
+  return !isAidItem(item) || isLiveAid(item.aid, today);
+}
+
+// v5.7: estado de una ayuda para los chips de la pestaña Ayudas.
+const AID_STATUS_CHIPS = [
+  { id: "abierta", label: "Abiertas" },
+  { id: "cierra_pronto", label: "Cierran pronto" },
+  { id: "proxima", label: "Próximas" },
+  // Sin «Cerradas»: lo cerrado no se enseña en ningún sitio. Un «cerrada» guardado antes vuelve al chip de abiertas.
+];
+const AID_STATUS_KEY = "alerta_ayudas_estado_v1";
+function aidStatusOf(item, today = madridTodayKey()) {
+  const aid = item?.aid;
+  const kind = deadlineInfo(aid, today).kind;
+  if (aid?.status === "cerrada" || kind === "closed") return "cerrada";
+  if (aid?.status === "proxima" || kind === "upcoming") return "proxima";
+  if (aid?.status === "cierra_pronto" || closesWithin(aid, today, 15)) return "cierra_pronto";
+  return "abierta";
+}
+// El chip de abiertas incluye las que cierran pronto (siguen abiertas) y las abiertas sin plazo conocido.
+function matchesAidStatus(item, chip, today = madridTodayKey()) {
+  const status = aidStatusOf(item, today);
+  return chip === "abierta" ? status === "abierta" || status === "cierra_pronto" : status === chip;
+}
+let aidStatusChip = null;
+function currentAidStatus() {
+  if (aidStatusChip) return aidStatusChip;
+  try {
+    const saved = localStorage.getItem(AID_STATUS_KEY);
+    if (AID_STATUS_CHIPS.some((chip) => chip.id === saved)) return (aidStatusChip = saved);
+  } catch {}
+  return (aidStatusChip = "abierta");
+}
+function saveAidStatus(next) {
+  aidStatusChip = AID_STATUS_CHIPS.some((chip) => chip.id === next) ? next : "abierta";
+  try { localStorage.setItem(AID_STATUS_KEY, aidStatusChip); } catch { /* queda en esta visita */ }
+}
+function isPacAid(item) {
+  return item.category === "pac_pagos" || (item.infoTypes || []).includes("pac") || item.sourceId === "pac_lineas" || isPacLine(item);
+}
+
 // v5.6: «★ Favorita» y «Compartir» arriba a la derecha de la ficha. Compartir usa el menú del sistema
 // (navigator.share, iPhone/iPad) y, si no lo hay, WhatsApp.
 function topActions(item) {
@@ -956,11 +1003,11 @@ function sortedItems(list) {
 }
 
 function inTab(item, tab) {
-  if (tab === "ayudas") return item.category === "ayudas_subvenciones" || (item.infoTypes || []).includes("ayudas") || item.kind === "ayuda";
-  if (tab === "pac") return item.category === "pac_pagos" || (item.infoTypes || []).includes("pac") || item.sourceId === "pac_lineas";
-  if (tab === "normativa") return item.category === "normativa_convocatorias";
-  if (tab === "jovenes") return item.category === "jovenes_modernizacion";
-  if (tab === "noticias") return item.category === "noticias_oficiales" || (item.infoTypes || []).includes("noticias");
+  // v5.7: Ayudas reúne también lo de PAC (líneas y avisos): la pestaña PAC ya no existe.
+  if (tab === "ayudas") return item.category === "ayudas_subvenciones" || (item.infoTypes || []).includes("ayudas") || item.kind === "ayuda" || isPacAid(item);
+  if (tab === "pac") return isPacAid(item);
+  // v5.7: exclusivo: una ayuda o convocatoria nunca está en Normativa.
+  if (tab === "normativa") return item.category === "normativa_convocatorias" && !isAidItem(item);
   return true;
 }
 
@@ -969,7 +1016,7 @@ function digestData(date) {
   const digests = [...(state.digests || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const current = digests.find((entry) => entry.date === date) || digests[0];
   if (!current) return null;
-  const shown = (item) => hasSourceUrl(item) && !isDeletedItem(item) && inSector(item) && isLiveAid(item.aid);
+  const shown = (item) => hasSourceUrl(item) && !isDeletedItem(item) && inSector(item) && shownByStatus(item);
   const aids = (current.items || []).filter(hasSourceUrl);
   const aidIds = new Set(aids.map((item) => item.id));
   const others = unseen(state.items || [], "alerta_ocultas")
@@ -1062,7 +1109,7 @@ function digestCard(compact) {
 
 /** Bloque de inicio con lo que el agricultor ha puesto primero, en su orden. Solo títulos de las fuentes. */
 function priorityStrip(items) {
-  const TAB_OF = { ayudas: "ayudas", pac: "pac", normativa: "normativa", noticias: "noticias" };
+  const TAB_OF = { ayudas: "ayudas", pac: "ayudas", normativa: "normativa" };
   const rows = prefs.info
     .map((id, index) => {
       const list = items.filter((item) => itemInfoTypes(item).includes(id));
@@ -1100,7 +1147,7 @@ function baseItems(options = {}) {
     if (!hasSourceUrl(item)) return false;
     if (isDeletedItem(item)) return false;
     if (!inSector(item)) return false;
-    if (!isLiveAid(item.aid, today)) return false;
+    if (!options.allStatus && !shownByStatus(item, today)) return false;
     if (onlyNewEl?.checked && isReadItem(item)) return false;
     if (onlyToday && madridDay(item.publishedAt) !== madridDay(new Date())) return false;
     const q = qEl?.value.trim().toLowerCase() || "";
@@ -1143,6 +1190,27 @@ function ensurePrices() {
     .then((data) => { pricesData = data || { ok: false }; })
     .catch(() => { pricesData = { ok: false }; })
     .finally(() => { pricesLoading = null; if (!QUIET.has(PATH)) render(); });
+}
+
+// v5.7: segunda fuente de precios, la Lonja de Salamanca. Se lee solo si se elige en el desplegable.
+const PRICE_SOURCE_KEY = "alerta_precios_fuente";
+const PRICE_SOURCES = [
+  { id: "mapa", label: "Ministerio (MAPA)" },
+  { id: "lonja", label: "Lonja de Salamanca" },
+];
+let priceSource = (() => {
+  try { return localStorage.getItem(PRICE_SOURCE_KEY) === "lonja" ? "lonja" : "mapa"; } catch { return "mapa"; }
+})();
+let lonjaData = null;
+let lonjaLoading = null;
+
+function ensureLonja() {
+  if (lonjaData || lonjaLoading) return;
+  lonjaLoading = fetch("/api/precios/lonja", { cache: "no-store" })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => { lonjaData = data || { ok: false }; })
+    .catch(() => { lonjaData = { ok: false }; })
+    .finally(() => { lonjaLoading = null; if (!QUIET.has(PATH)) render(); });
 }
 
 function ensureTools(after) {
@@ -1226,7 +1294,7 @@ function trend(item) {
 const GLANCE = [
   { id: "abierta", label: "Abiertas", goto: "ayudas", status: "abierta" },
   { id: "cierra_pronto", label: "Cierran pronto", goto: "ayudas", status: "cierra_pronto" },
-  { id: "pac", label: "Líneas PAC", goto: "pac", status: "pac" },
+  { id: "pac", label: "Líneas PAC", goto: "ayudas", status: "pac" },
 ];
 const GLANCE_LIMIT = 10;
 const CHEVRON = `<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
@@ -1291,16 +1359,114 @@ const GLANCE_MATCH = {
   pac: (item) => isPacLine(item),
 };
 
+// v5.7: grupo de la pestaña Ayudas («Ayudas PAC» | «Otras ayudas»), recordado en el dispositivo. Ya no hay pestaña PAC.
+const AID_GROUPS = [
+  { id: "pac", label: "Ayudas PAC" },
+  { id: "otras", label: "Otras ayudas" },
+];
+const AID_GROUP_KEY = "alerta_ayudas_grupo_v1";
+let aidGroup = null;
+function currentAidGroup() {
+  if (aidGroup) return aidGroup;
+  try {
+    const saved = localStorage.getItem(AID_GROUP_KEY);
+    if (AID_GROUPS.some((group) => group.id === saved)) return (aidGroup = saved);
+  } catch {}
+  return (aidGroup = "pac");
+}
+function saveAidGroup(next) {
+  aidGroup = AID_GROUPS.some((group) => group.id === next) ? next : "pac";
+  try { localStorage.setItem(AID_GROUP_KEY, aidGroup); } catch { /* queda en esta visita */ }
+}
+
+/**
+ * Lo que enseña la pestaña Ayudas, de UN solo sitio para que cuadros, lista y número de la pestaña coincidan:
+ * ayudas (y avisos PAC) del sector elegido, sin lo cerrado, del grupo elegido.
+ */
+function ayudasView(today = madridTodayKey()) {
+  const group = currentAidGroup();
+  const chip = currentAidStatus();
+  const pool = sortedItems(baseItems({ allStatus: true }))
+    .filter((item) => inTab(item, "ayudas"))
+    .filter((item) => aidStatusOf(item, today) !== "cerrada")
+    .filter((item) => (group === "pac" ? isPacAid(item) : !isPacAid(item)));
+  const counts = Object.fromEntries(AID_STATUS_CHIPS.map((entry) => [entry.id, pool.filter((item) => matchesAidStatus(item, entry.id, today)).length]));
+  return { group, chip, pool, counts, items: pool.filter((item) => matchesAidStatus(item, chip, today)) };
+}
+
+function renderAyudas() {
+  const view = ayudasView();
+  const groups = AID_GROUPS.map((group) => {
+    const on = group.id === view.group;
+    return `<button type="button" class="seg-btn ${on ? "on" : ""}" data-aid-group="${group.id}" aria-pressed="${on ? "true" : "false"}">${escapeHtml(group.label)}</button>`;
+  }).join("");
+  const boxes = AID_STATUS_CHIPS.map((entry) => {
+    const on = entry.id === view.chip;
+    return `<button type="button" class="stat status-box ${entry.id}${on ? " on" : ""}" data-aid-status="${entry.id}" aria-pressed="${on ? "true" : "false"}"><strong>${view.counts[entry.id]}</strong><span>${escapeHtml(entry.label)}</span></button>`;
+  }).join("");
+  const label = AID_STATUS_CHIPS.find((entry) => entry.id === view.chip)?.label || "";
+  const body = view.items.length
+    ? `<div class="list">${view.items.map((item) => aidCard(item)).join("")}</div>`
+    : `<p class="empty">Nada en «${escapeHtml(label)}» ahora mismo.</p>`;
+  return `<div class="seg" role="group" aria-label="Tipo de ayuda">${groups}</div>` +
+    `<div class="glance status-boxes" role="group" aria-label="Estado">${boxes}</div>` +
+    filterRow() + (view.items.length ? readTools() : "") + body;
+}
+
+function byPublication(list) {
+  return [...list].sort((a, b) => String(b.publishedAt || "").localeCompare(String(a.publishedAt || "")));
+}
+
+// v5.7: Normativa = consulta de normas EN VIGOR (BOE, legislación consolidada) + lo último publicado en BOE y BOCyL.
+// Sin estados abierta/cerrada. En vigor lo dice el BOE (`vigencia_agotada`); lo reciente no tiene ese dato y no se inventa.
+let normativaData = null;
+let normativaLoading = null;
+function loadNormativa() {
+  if (normativaData || normativaLoading) return;
+  normativaLoading = fetch("/api/normativa/vigente", { cache: "no-store" })
+    .then((res) => (res.ok ? res.json() : { ok: false }))
+    .then((data) => { normativaData = data || { ok: false }; })
+    .catch(() => { normativaData = { ok: false }; })
+    .finally(() => { normativaLoading = null; if (!QUIET.has(PATH)) render(); });
+}
+function normaCard(norma) {
+  const url = /^https:\/\/www\.boe\.es\//.test(String(norma.url || "")) ? norma.url : "https://www.boe.es/buscar/legislacion.php";
+  return `<article class="card norma-card"><h3><a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(norma.title)}</a></h3>
+    <p class="meta">${escapeHtml(norma.rango)} · ${escapeHtml(norma.departamento)} · BOE ${escapeHtml(fmtDayKey(norma.publishedAt || ""))}</p>
+    <p class="hint">En vigor según el BOE (legislación consolidada).</p></article>`;
+}
+function renderNormativa(recent) {
+  loadNormativa();
+  const q = qEl?.value.trim().toLowerCase() || "";
+  const vigentes = (normativaData?.items || []).filter((norma) => inSector(norma) && (!q || norma.title.toLowerCase().includes(q)));
+  const recentHtml = recent.length
+    ? `<div class="list">${recent.map((item) => aidCard(item)).join("")}</div>`
+    : `<p class="empty">No hay normas nuevas de BOE o BOCyL en los últimos días.</p>`;
+  const vigorHtml = !normativaData
+    ? `<p class="empty">Cargando las normas en vigor del BOE…</p>`
+    : !normativaData.ok && !vigentes.length
+      ? `<p class="empty">Ahora mismo no podemos leer la legislación consolidada del BOE. Consúltala en <a href="https://www.boe.es/buscar/legislacion.php" target="_blank" rel="noopener">boe.es</a>.</p>`
+      : vigentes.length ? `<div class="list">${vigentes.map(normaCard).join("")}</div>` : `<p class="empty">Nada para este sector.</p>`;
+  return filterRow() +
+    `<section class="norma-block"><h2>Publicado últimamente (BOE y BOCyL) <span class="count">${recent.length}</span></h2>${recentHtml}</section>` +
+    `<section class="norma-block"><h2>Normas en vigor (BOE) <span class="count">${vigentes.length}</span></h2>
+      <p class="hint">Leyes, reales decretos y órdenes de agricultura, ganadería y pesca que el BOE da como vigentes (legislación consolidada). Sin ayudas: esas están en Ayudas.</p>${vigorHtml}</section>`;
+}
+
 function renderList(tab) {
+  if (tab === "ayudas") return renderAyudas();
   const card = listStatus ? GLANCE.find((entry) => entry.status === listStatus && entry.goto === tab) : null;
   const match = card ? GLANCE_MATCH[card.id] : null;
-  const items = sortedItems(baseItems()).filter((item) => (match ? match(item) : inTab(item, tab)));
+  const filtered = baseItems().filter((item) => (match ? match(item) : inTab(item, tab)));
+  // v5.7: Normativa va por fecha de publicación (no tiene plazo de «abierta»).
+  const items = tab === "normativa" ? byPublication(filtered) : sortedItems(filtered);
+  if (tab === "normativa" && !card) return renderNormativa(items);
   const head = card
     ? `<p class="hint list-status">Mostrando solo: ${escapeHtml(card.label)} · <button type="button" class="hint-link" data-goto="${card.goto}">Ver todo el apartado</button></p>`
     : "";
   const body = items.length
     ? `<div class="list">${items.map((item) => aidCard(item)).join("")}</div>`
-    : `<p class="empty">No hay nada en este apartado con los criterios de ahora. Solo salen las abiertas o sin plazo.</p>`;
+    : `<p class="empty">No hay nada en este apartado con los criterios de ahora.</p>`;
   return filterRow() + head + (items.length ? readTools() : "") + body;
 }
 
@@ -1412,7 +1578,76 @@ function renderPacCalendar() {
     </section>`;
 }
 
+function priceSourcePicker() {
+  return `<label class="price-source">Fuente:
+      <select id="priceSource" aria-label="Fuente de los precios">${PRICE_SOURCES.map((source) => `<option value="${source.id}"${priceSource === source.id ? " selected" : ""}>${escapeHtml(source.label)}</option>`).join("")}</select>
+    </label>`;
+}
+
 function renderField() {
+  return priceSourcePicker() + (priceSource === "lonja" ? renderLonja() : renderMapaPrices());
+}
+
+/** «▲ 50,00» / «▼ 2,00» / «=»: la columna «Diferencia» de la tabla oficial, sin recalcular nada. */
+function lonjaTrend(item) {
+  if (!item.quoted || item.change == null) return `<em class="trend flat">—</em>`;
+  if (item.change > 0) return `<em class="trend up" title="Respecto a la sesión anterior">▲ ${escapeHtml(item.diff)}</em>`;
+  if (item.change < 0) return `<em class="trend down" title="Respecto a la sesión anterior">▼ ${escapeHtml(item.diff.replace(/^-/, ""))}</em>`;
+  return `<em class="trend flat">=</em>`;
+}
+
+function renderLonja() {
+  ensureLonja();
+  if (!lonjaData) return `<p class="empty">Cargando los precios de la Lonja de Salamanca…</p>`;
+  const table = /^https?:/i.test(String(lonjaData.tableUrl || "")) ? lonjaData.tableUrl : "https://www.lasalina.es/Aplicaciones/lonja/Cotizaciones.jsp";
+  if (!lonjaData.ok) {
+    return `
+      <section class="view-head">
+        <p class="eyebrow">Hoy en el campo</p>
+        <h2>Lonja de Salamanca</h2>
+        <p>${escapeHtml(lonjaData.explanation || "Ahora mismo no podemos leer la tabla de la Lonja de Salamanca. Para no darte un dato equivocado, no enseñamos ninguno.")}</p>
+        <p><a class="official" href="${escapeHtml(table)}" target="_blank" rel="noopener">Ver cotizaciones de la Lonja (Diputación de Salamanca)</a></p>
+      </section>`;
+  }
+  const items = lonjaData.items || [];
+  const mesas = [...new Set(items.map((item) => item.mesa))];
+  const tables = mesas.map((mesa) => {
+    const rows = items.filter((item) => item.mesa === mesa);
+    const groups = [...new Set(rows.map((item) => item.group))];
+    return `
+    <section class="price-group">
+      <h3>${escapeHtml(mesa)}</h3>
+      <table class="prices-table">
+        <thead><tr><th>Producto</th><th>Precio</th><th>Variación</th></tr></thead>
+        <tbody>${groups.map((group) => {
+          const list = rows.filter((item) => item.group === group);
+          const head = groups.length > 1 || group.toLowerCase() !== String(mesa).toLowerCase() ? `<tr class="price-sub"><th colspan="3" scope="rowgroup">${escapeHtml(group)}</th></tr>` : "";
+          return head + list.map((item) => `
+          <tr>
+            <th scope="row">${escapeHtml(item.name)}</th>
+            <td>${item.quoted ? `<strong>${escapeHtml(item.last)}</strong> ${escapeHtml(item.unit)}` : `<span class="muted">Sin cotización</span>`}</td>
+            <td>${lonjaTrend(item)}</td>
+          </tr>`).join("");
+        }).join("")}</tbody>
+      </table>
+    </section>`;
+  }).join("");
+  return `
+    <section class="field-view">
+      <div class="view-head">
+        <p class="eyebrow">Hoy en el campo</p>
+        <h2>Lonja de Salamanca</h2>
+        <p><strong>Sesión del ${escapeHtml(lonjaData.session || "")}</strong></p>
+        ${lonjaData.stale ? `<p class="note">No hemos podido actualizar ahora mismo. Te enseñamos la última copia buena, del ${escapeHtml(fmtStamp(lonjaData.fetchedAt))}.</p>` : ""}
+      </div>
+      ${tables}
+      <p class="note">Fuente: ${escapeHtml(lonjaData.source || "Lonja Agropecuaria de Salamanca")}. Precios tal como los publica la tabla oficial; «Sin cotización» = la Lonja no cotizó ese producto en la sesión. Leídos el ${escapeHtml(fmtStamp(lonjaData.fetchedAt))}.</p>
+      <p class="links"><a href="${escapeHtml(table)}" target="_blank" rel="noopener">Tabla oficial de cotizaciones</a>${/^https?:/i.test(String(lonjaData.pageUrl || "")) ? ` · <a href="${escapeHtml(lonjaData.pageUrl)}" target="_blank" rel="noopener">Página de la Lonja</a>` : ""}</p>
+      <p class="orientativo">${NOTICE}</p>
+    </section>`;
+}
+
+function renderMapaPrices() {
   ensurePrices();
   if (!pricesData) return `<p class="empty">Cargando los precios del Ministerio…</p>`;
   const page = pricesData.pageUrl || "https://www.mapa.gob.es/es/estadistica/temas/estadisticas-agrarias/economia/precios-medios-nacionales/";
@@ -1517,14 +1752,13 @@ function renderTabs() {
   const buttons = [
     ["inicio", "Inicio"],
     ["ayudas", "Ayudas"],
-    ["pac", "PAC"],
+    // v5.7: sin pestaña «PAC»: está dentro de Ayudas («Ayudas PAC»).
     ["calendario", "Calendario PAC"],
     ["campo", "Hoy en el campo"],
     ["favoritas", "★ Mis favoritas"],
     // v5.6: «Resumen» ya no es pestaña; se abre con el botón «Resumen» de la cabecera.
     ["normativa", "Normativa"],
-    ["jovenes", "Jóvenes"],
-    ["noticias", "Noticias"],
+    // v5.7: sin pestañas «Jóvenes» ni «Noticias».
     ["archivadas", "Archivadas"],
   ].filter(([id]) => id !== "archivadas" || isAdmin());
   const noCount = new Set(["calendario", "campo", "herramientas"]);
@@ -1536,8 +1770,10 @@ function renderTabs() {
           ? (state.archive || []).length
           : id === "favoritas"
             ? Object.values(favorites).filter((fav) => isLiveAid(fav.aid)).length
-            : items.filter((item) => inTab(item, id)).length;
-      const main = ["inicio", "ayudas", "pac"].includes(id) ? "tab-main" : "tab-extra";
+            : id === "ayudas"
+              ? ayudasView().items.length // v5.7: el mismo número que la lista y el cuadro elegido
+              : items.filter((item) => inTab(item, id)).length;
+      const main = ["inicio", "ayudas", "normativa"].includes(id) ? "tab-main" : "tab-extra";
       return `<button class="tab ${main} ${active === id ? "active" : ""}" data-id="${id}" type="button">${title}${noCount.has(id) ? "" : `<span class="count">${count}</span>`}</button>`;
     })
     .join("");
@@ -1564,6 +1800,10 @@ function render() {
     button.setAttribute("aria-current", button.dataset.dock === active ? "page" : "false");
   });
   let html;
+  // v5.7: pestañas quitadas (o un valor antiguo) → Inicio.
+  if (active === "jovenes" || active === "noticias") active = "inicio";
+  // v5.7: la pestaña PAC pasa a Ayudas > Ayudas PAC.
+  if (active === "pac") { active = "ayudas"; saveAidGroup("pac"); }
   if (active === "inicio") html = renderBoard();
   else if (active === "resumen") html = renderDigestTab();
   else if (active === "favoritas") html = renderFavorites();
@@ -1964,6 +2204,13 @@ appEl.addEventListener("change", async (event) => {
 });
 
 appEl.addEventListener("change", (event) => {
+  if (event.target.id !== "priceSource") return;
+  priceSource = event.target.value === "lonja" ? "lonja" : "mapa";
+  try { localStorage.setItem(PRICE_SOURCE_KEY, priceSource); } catch { /* queda en esta visita */ }
+  render();
+});
+
+appEl.addEventListener("change", (event) => {
   if (event.target.id !== "digestDate") return;
   digestDate = event.target.value;
   render();
@@ -2012,6 +2259,20 @@ appEl.addEventListener("click", (event) => {
     shareItem(share);
     return;
   }
+  const groupBtn = event.target.closest("[data-aid-group]");
+  if (groupBtn) {
+    event.preventDefault();
+    saveAidGroup(groupBtn.dataset.aidGroup);
+    render();
+    return;
+  }
+  const aidChip = event.target.closest("[data-aid-status]");
+  if (aidChip) {
+    event.preventDefault();
+    saveAidStatus(aidChip.dataset.aidStatus);
+    render();
+    return;
+  }
   const sectorChip = event.target.closest("[data-sector-chip]");
   if (sectorChip) {
     const id = sectorChip.dataset.sectorChip;
@@ -2031,6 +2292,11 @@ appEl.addEventListener("click", (event) => {
     event.preventDefault();
     active = go.dataset.goto;
     listStatus = go.dataset.status || null;
+    // v5.7: desde Inicio, los cuadros abren Ayudas con su estado; el cuadro de líneas PAC abre «Ayudas PAC».
+    if (active === "pac") { active = "ayudas"; saveAidGroup("pac"); }
+    if (active === "ayudas" && (listStatus === "abierta" || listStatus === "cierra_pronto")) saveAidStatus(listStatus);
+    if (active === "ayudas" && listStatus === "pac") { saveAidGroup("pac"); saveAidStatus("abierta"); }
+    if (active === "ayudas") listStatus = null;
     render();
     window.scrollTo(0, 0);
   }
@@ -2175,6 +2441,7 @@ const STATUS_TEXT = {
   pendiente: "Activada, pendiente de la primera consulta",
   preparada: "Preparada, aún no se consulta",
   sin_canal: "Sin canal automático",
+  precios: "Precios en «Hoy en el campo» (Fuente: Lonja de Salamanca)",
 };
 
 /**

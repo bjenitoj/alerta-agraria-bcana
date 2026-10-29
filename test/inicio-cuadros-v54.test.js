@@ -22,7 +22,9 @@ test("v5.4 Inicio: los nombres de los cuadros solo salen en los cuadros de color
   assert.doesNotMatch(body, /column\(|Abiertas ahora|pac-block|<h2>PAC/);
   assert.doesNotMatch(appJs, /function column\(/);
   for (const label of LABELS) {
-    const outside = appJs.replace(chunk, "");
+    const chips = appJs.slice(appJs.indexOf("const AID_STATUS_CHIPS"), appJs.indexOf("const AID_STATUS_KEY"));
+    const groups = appJs.slice(appJs.indexOf("const AID_GROUPS"), appJs.indexOf("const AID_GROUP_KEY"));
+    const outside = appJs.replace(chunk, "").replace(chips, "").replace(groups, ""); // v5.7: chips de estado de Ayudas
     assert.doesNotMatch(outside, new RegExp(`[>«"]${label}[<»"]`), `«${label}» fuera de los cuadros`);
   }
   assert.match(body, /glanceCards\(\{ abierta: open, cierra_pronto: soon, pac: pacAll \}\)/);

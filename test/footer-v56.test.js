@@ -53,8 +53,8 @@ test("v5.6 sin botón «← Inicio»: se vuelve tocando «Alerta Agraria» y con
   assert.match(indexHtml, /<a class="brand" href="\/">/);
   assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/);
   assert.match(indexHtml, /<button type="button" data-dock="inicio">/);
-  assert.match(indexHtml, /styles\.css\?v=39/);
-  assert.match(indexHtml, /app\.js\?v=39/);
+  assert.match(indexHtml, /styles\.css\?v=44/);
+  assert.match(indexHtml, /app\.js\?v=44/);
 });
 
 const card = appJs.slice(appJs.indexOf("function aidCard"), appJs.indexOf("function sortedItems"));
@@ -126,11 +126,13 @@ test("v5.6 solo abiertas siempre: sin «Solo abiertas», sin «Próximas», sin 
   assert.match(live, /aid\?\.status === "cerrada" \|\| aid\?\.status === "proxima"/);
   assert.match(live, /kind !== "closed" && kind !== "upcoming"/);
   const base = appJs.slice(appJs.indexOf("function baseItems"), appJs.indexOf("function filterRow"));
-  assert.match(base, /if \(!isLiveAid\(item\.aid, today\)\) return false;/);
-  assert.match(appJs, /inSector\(item\) && isLiveAid\(item\.aid\);/, "Resumen");
+  // v5.7: solo las ayudas pasan por isLiveAid; Normativa y lo demás sale siempre.
+  assert.match(base, /if \(!options\.allStatus && !shownByStatus\(item, today\)\) return false;/);
+  assert.match(appJs, /inSector\(item\) && shownByStatus\(item\);/, "Resumen");
   assert.match(appJs, /isLiveAid\(item\.aid, today\) && closesWithin/, "plazos que cierran");
   assert.match(appJs, /return isLiveAid\(\(current \|\| fav\)\.aid, today\);/, "favoritas");
-  assert.doesNotMatch(appJs, /\{ id: "proxima", label: "Próximas"/);
+  // v5.7: «Próximas» vuelve solo como chip de la pestaña Ayudas; en Inicio no hay cuadro de próximas.
+  assert.doesNotMatch(appJs.slice(appJs.indexOf("const GLANCE = ["), appJs.indexOf("const GLANCE_LIMIT")), /proxima/);
   const row = appJs.slice(appJs.indexOf("function filterRow"), appJs.indexOf("let pacData"));
   assert.match(row, /CHIP_SECTORS\.map/);
   assert.match(appJs, /const CHIP_SECTORS = SECTORS\.filter\(\(sector\) => sector\.id !== "todos"\);/);

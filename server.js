@@ -15,6 +15,8 @@ import { madridTodayKey, publicSchema } from "./lib/preferences.js";
 import { buildIcs, hasSourceUrl, safeUrl, validDayKey } from "./lib/aid-view.js";
 import { pacTimeline } from "./lib/pac-calendar.js";
 import { getPrices, PRICE_CONFIG } from "./lib/prices.js";
+import { getLonjaPrices, LONJA } from "./lib/lonja.js";
+import { getNormativaVigente } from "./lib/normativa.js";
 import {
   getStore,
   upsertItems,
@@ -70,6 +72,7 @@ export function referenceSources() {
     }
   } catch {}
   add({ name: PRICE_CONFIG.fuente, organism: "Ministerio de Agricultura, Pesca y Alimentación", url: PRICE_CONFIG.pagina, usedIn: "Hoy en el campo (precios). El Excel semanal se descarga desde esta página." });
+  add({ name: LONJA.fuente, organism: LONJA.organismo, url: LONJA.tabla, usedIn: "Hoy en el campo (precios, fuente «Lonja de Salamanca»). Cotizaciones de cada sesión, tal como las publica la tabla oficial." });
   try {
     const tools = readConfig("herramientas.json");
     for (const group of tools.grupos || []) {
@@ -222,6 +225,20 @@ const pricesLoader = options.pricesLoader;
 app.get("/api/precios", async (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.json(await getPrices(pricesLoader ? { loader: pricesLoader } : {}));
+});
+
+// v5.7: normas en vigor (BOE, legislación consolidada). Solo lectura de la API oficial; en vigor según `vigencia_agotada`.
+const normativaLoader = options.normativaLoader;
+app.get("/api/normativa/vigente", async (_req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.json(await getNormativaVigente(normativaLoader ? { loader: normativaLoader } : {}));
+});
+
+// v5.7: cotizaciones de la Lonja de Salamanca (tabla oficial de la Diputación).
+const lonjaLoader = options.lonjaLoader;
+app.get("/api/precios/lonja", async (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json(await getLonjaPrices(lonjaLoader ? { loader: lonjaLoader } : {}));
 });
 
 // Calendario sin estado: todo viene en la URL y no se guarda nada.

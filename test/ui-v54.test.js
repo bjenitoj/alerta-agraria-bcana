@@ -76,9 +76,9 @@ test("v5.4 Resumen: botón de cabecera, fuera del cuerpo de Inicio y contador so
   assert.match(appJs, /Cambiar en Mis preferencias/);
 });
 
-test("v5.4 barra de abajo: Inicio, Ayudas, PAC y Precios (sin Resumen ni Preferencias)", () => {
+test("v5.7 barra de abajo: Inicio, Ayudas, Normativa y Precios (sin PAC, Resumen ni Preferencias)", () => {
   const tabs = [...dock.matchAll(/data-dock="([a-z]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(tabs, ["inicio", "ayudas", "pac", "campo"]);
+  assert.deepEqual(tabs, ["inicio", "ayudas", "normativa", "campo"]);
   assert.match(dock, /Precios/);
   assert.match(css, /\.dock \{[\s\S]*?grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
 });

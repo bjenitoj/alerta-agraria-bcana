@@ -3,6 +3,7 @@
   "short_name": "Alerta Agraria",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#f6f1e6",
   "theme_color": "#1b4332",
   "icons": [

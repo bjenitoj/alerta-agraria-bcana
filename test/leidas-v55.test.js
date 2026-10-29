@@ -131,7 +131,7 @@ test("v5.5 cabecera: Resumen · Preferencias · Ajustes, con icono y aria-label"
   assert.match(indexHtml, /data-open-prefs="1">Ir a Mis preferencias/);
 });
 
-test("caché v=39 (v5.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=39/);
+test("caché v=44 (v5.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=44/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });
