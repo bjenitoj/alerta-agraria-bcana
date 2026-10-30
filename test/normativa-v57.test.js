@@ -88,7 +88,7 @@ test("v5.7 Ayudas: elegir «Ayudas PAC» u «Otras ayudas», cuadros de estado g
   assert.match(appJs, /\{ id: "pac", label: "Líneas PAC", goto: "ayudas", status: "pac" \}/);
   assert.match(appJs, /listStatus === "pac"\) \{ saveAidGroup\("pac"\);/);
   // Un solo grupo a la vez (no dos bloques apilados).
-  const view = appJs.slice(appJs.indexOf("function ayudasView"), appJs.indexOf("function renderAyudas"));
+  const view = appJs.slice(appJs.indexOf("function aidPool"), appJs.indexOf("function renderAyudas")); // v5.8: aidPool compartido con Inicio
   assert.match(view, /group === "pac" \? isPacAid\(item\) : !isPacAid\(item\)/);
   assert.match(view, /aidStatusOf\(item, today\) !== "cerrada"/);
   // El número de la pestaña sale de la misma vista que los cuadros y la lista.
@@ -101,8 +101,8 @@ test("v5.7 Ayudas: elegir «Ayudas PAC» u «Otras ayudas», cuadros de estado g
   assert.match(css, /\.glance\.status-boxes \.status-box\.on \{/);
   assert.match(css, /@media \(max-width: 420px\) \{\s*\.glance\.status-boxes/);
   assert.doesNotMatch(indexHtml, /data-dock="pac"/);
-  assert.match(indexHtml, /data-dock="normativa"/);
-  assert.match(indexHtml, /\?v=44/);
+  assert.doesNotMatch(indexHtml, /data-dock="/, "v5.8: la barra de abajo ya no lleva apartados");
+  assert.match(indexHtml, /\?v=49/);
 });
 
 test("v5.7 listados de la Junta: ni portadas genéricas ni trozos sueltos de una página son ayudas", async () => {
@@ -136,5 +136,5 @@ test("v5.7 girar: el manifest permite cualquier orientación y nada la bloquea",
   assert.match(css, /@media \(orientation: landscape\) and \(max-height: 500px\)/);
   assert.match(css, /env\(safe-area-inset-left, 0px\)/);
   assert.match(css, /overflow-x: clip/);
-  assert.match(indexHtml, /\?v=44/);
+  assert.match(indexHtml, /\?v=49/);
 });

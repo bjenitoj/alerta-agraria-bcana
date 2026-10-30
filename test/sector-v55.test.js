@@ -19,7 +19,12 @@ function load(sector) {
   const chosen = Array.isArray(sector) ? sector : sector === "todos" ? [] : [sector];
   const CHIP_SECTORS = SECTORS.filter((entry) => entry.id !== "todos");
   return new Function("SECTORS", "CHIP_SECTORS", "currentSectors", "aidCard", "escapeHtml", "readTools",
-    `${inSectorSrc}; ${glanceSrc}; ${matchSrc}; return { inSector, glanceCards, GLANCE, GLANCE_MATCH, open: (v) => { openStat = v; } };`)(
+    `function isPacLine(item) { return item.kind === "linea"; }
+function isPacAid(item) { return item.kind === "linea" || item.sourceId === "pac_lineas"; }
+function inTab() { return true; }
+function aidStatusOf(item) { const s = item?.aid?.status; return s === "cerrada" || s === "proxima" || s === "cierra_pronto" ? s : "abierta"; }
+function matchesAidStatus(item, chip) { const s = aidStatusOf(item); return chip === "abierta" ? s === "abierta" || s === "cierra_pronto" : s === chip; }
+${inSectorSrc}; ${glanceSrc}; ${matchSrc}; return { inSector, glanceCards, GLANCE, GLANCE_MATCH, open: (v) => { openStat = v; } };`)(
     SECTORS, CHIP_SECTORS, () => chosen, (item) => `<article class="card" data-id="${esc(item.id)}"></article>`, esc, () => "");
 }
 
@@ -85,7 +90,8 @@ test("v5.5 sector: listas, pestañas, «Ver todas», Resumen y plazos usan el mi
   assert.match(between("function renderBoard", "const GLANCE_MATCH"), /sortedItems\(baseItems\(\)\)/);
   const list = between("function renderList", "function closingSoonList");
   assert.match(list, /baseItems\(\)\.filter\(\(item\) => \(match \? match\(item\) : inTab\(item, tab\)\)\)/);
-  assert.match(between("function ayudasView", "function renderAyudas"), /baseItems\(\{ allStatus: true \}\)/);
+  assert.match(between("function aidPool", "function ayudasView"), /baseItems\(\{ allStatus: true \}\)/);
+  assert.match(between("function renderBoard", "const GLANCE_MATCH"), /aidPool\("otras"\)/, "v5.8: Inicio usa el mismo cálculo que Ayudas");
   assert.match(between("function renderTabs", "function "), /const items = baseItems\(\);/);
   assert.match(between("function paintDigestBtn", "function "), /digestBadgeCount\(\)/, "Resumen (botón de cabecera) cuenta piezas, no días");
   assert.match(between("function digestData", "function digestBadgeCount"), /inSector\(item\)/);

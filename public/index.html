@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=44" />
+  <link rel="stylesheet" href="/styles.css?v=49" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -61,7 +61,6 @@
     </a>
     <div class="top-tools">
       <button id="digestBtn" type="button" class="ghost head-btn digest-btn" aria-label="Resumen del día"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="head-text">Resumen</span><span class="head-badge" hidden></span></button>
-      <button id="prefsBtn" type="button" class="ghost head-btn prefs-btn" aria-label="Mis preferencias" aria-haspopup="dialog" aria-controls="prefSheet" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span class="head-text">Preferencias</span></button>
       <button id="toolsBtn" type="button" class="ghost head-btn tools-btn" aria-label="Herramientas oficiales"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span class="head-text">Herramientas</span></button>
       <button id="settingsBtn" type="button" class="ghost head-btn settings-btn" aria-label="Ajustes" aria-haspopup="dialog" aria-controls="prefSheet" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="head-text">Ajustes</span></button>
       <p class="stamp" id="stamp">Cargando…</p>
@@ -82,24 +81,10 @@
         <h2 id="sheetTitle">Ajustes</h2>
         <button type="button" id="closeSheet" class="ghost">Cerrar</button>
       </div>
-      <section class="settings-theme" aria-labelledby="themeTitle">
-        <h3 id="themeTitle" class="settings-title">Tema</h3>
-        <div class="seg" role="radiogroup" aria-labelledby="themeTitle">
-          <button type="button" role="radio" data-theme-choice="light" aria-checked="false">Claro</button>
-          <button type="button" role="radio" data-theme-choice="dark" aria-checked="false">Oscuro</button>
-          <button type="button" role="radio" data-theme-choice="auto" aria-checked="false">Automático</button>
-        </div>
-      </section>
-      <p class="settings-link private"><button type="button" class="hint-link" data-open-prefs="1">Ir a Mis preferencias ›</button></p>
-      <section class="settings-read private" aria-labelledby="readTitle">
-        <h3 id="readTitle" class="settings-title">Leídas y borradas</h3>
-        <p class="hint">Toca una noticia para marcarla como leída. «Borrar leídas» las quita de la vista durante 15 días. Se guarda solo en este dispositivo.</p>
-        <div class="settings-read-actions">
-          <button type="button" id="restoreDeleted" class="ghost" disabled>Recuperar borradas (0)</button>
-        </div>
-      </section>
-      <div class="settings-prefs private" id="prefsSection">
-      <h3 class="settings-title" id="prefsTitle">Mis preferencias</h3>
+      <!-- v5.8: Ajustes en desplegables: 1) Mis preferencias, 2) Tema, 3) Leídas y borradas. -->
+      <section class="acc settings-prefs private" id="prefsSection">
+        <button type="button" class="acc-btn" id="prefsTitle" data-acc="prefs" aria-expanded="false" aria-controls="acc-prefs"><span class="acc-text"><span class="acc-title">Mis preferencias</span><span class="acc-note">Sector, información, zona y cultivos</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="acc-panel" id="acc-prefs" role="region" aria-labelledby="prefsTitle" hidden>
       <section class="filters" id="filters">
         <p id="prefsAccountNote" class="hint"></p>
         <div class="choice-block">
@@ -130,7 +115,27 @@
         <div class="crop-groups" id="cropChoices"></div>
       </details>
       <button id="openPrefs" type="button" class="text-btn">Repasar paso a paso</button>
-      </div>
+        </div>
+      </section>
+      <section class="acc settings-theme">
+        <button type="button" class="acc-btn" id="themeTitle" data-acc="tema" aria-expanded="false" aria-controls="acc-tema"><span class="acc-text"><span class="acc-title">Tema</span><span class="acc-note">Claro, oscuro o automático</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="acc-panel" id="acc-tema" role="region" aria-labelledby="themeTitle" hidden>
+          <div class="seg" role="radiogroup" aria-labelledby="themeTitle">
+            <button type="button" role="radio" data-theme-choice="light" aria-checked="false">Claro</button>
+            <button type="button" role="radio" data-theme-choice="dark" aria-checked="false">Oscuro</button>
+            <button type="button" role="radio" data-theme-choice="auto" aria-checked="false">Automático</button>
+          </div>
+        </div>
+      </section>
+      <section class="acc settings-read private">
+        <button type="button" class="acc-btn" id="readTitle" data-acc="leidas" aria-expanded="false" aria-controls="acc-leidas"><span class="acc-text"><span class="acc-title">Leídas y borradas</span><span class="acc-note">Se guardan 15 días en este dispositivo</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="acc-panel" id="acc-leidas" role="region" aria-labelledby="readTitle" hidden>
+          <p class="hint">Toca una noticia para marcarla como leída. «Borrar leídas» las quita de la vista durante 15 días. Se guarda solo en este dispositivo.</p>
+          <div class="settings-read-actions">
+            <button type="button" id="restoreDeleted" class="ghost" disabled>Recuperar borradas (0)</button>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -149,21 +154,22 @@
   </footer>
 
   <nav class="dock private" aria-label="Principal">
-    <button type="button" data-dock="inicio">
+    <!-- v5.8: en el móvil la barra tiene Inicio, Resumen, Herramientas y Ajustes (apartados = chips de arriba). -->
+    <button type="button" data-dock-home="1" data-dock-on="inicio" aria-label="Inicio" title="Inicio">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M7 10.5V20h10v-9.5"/></svg>
-      Inicio
+      <span class="dock-label">Inicio</span>
     </button>
-    <button type="button" data-dock="ayudas">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.6-1 1.4-1.5 2.5-1.5 1.6 0 2.5.9 2.5 2s-.8 1.8-2.5 2-2.6.8-2.6 2 1 2 2.6 2c1.1 0 2-.5 2.5-1.4"/></svg>
-      Ayudas
+    <button type="button" data-dock-proxy="digestBtn" data-dock-on="resumen" aria-label="Resumen del día" title="Resumen">
+      <span class="dock-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="dock-badge" hidden></span></span>
+      <span class="dock-label">Resumen</span>
     </button>
-    <button type="button" data-dock="normativa">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9.5 12h6M9.5 15.5h6"/></svg>
-      Normativa
+    <button type="button" data-dock-proxy="toolsBtn" data-dock-on="herramientas" aria-label="Herramientas oficiales" title="Herramientas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <span class="dock-label">Herramientas</span>
     </button>
-    <button type="button" data-dock="campo">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/></svg>
-      Precios
+    <button type="button" data-dock-proxy="settingsBtn" aria-label="Ajustes" title="Ajustes" aria-haspopup="dialog" aria-controls="prefSheet">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="dock-label">Ajustes</span>
     </button>
   </nav>
 
@@ -185,6 +191,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=44"></script>
+  <script type="module" src="/app.js?v=49"></script>
 </body>
 </html>

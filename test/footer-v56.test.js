@@ -52,9 +52,10 @@ test("v5.6 sin botón «← Inicio»: se vuelve tocando «Alerta Agraria» y con
   assert.doesNotMatch(css, /\.back-home/);
   assert.match(indexHtml, /<a class="brand" href="\/">/);
   assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/);
-  assert.match(indexHtml, /<button type="button" data-dock="inicio">/);
-  assert.match(indexHtml, /styles\.css\?v=44/);
-  assert.match(indexHtml, /app\.js\?v=44/);
+  // v5.8: en el móvil se vuelve a Inicio con el logo (la barra ya no lleva «Inicio»).
+  assert.doesNotMatch(indexHtml, /data-dock="inicio"/);
+  assert.match(indexHtml, /styles\.css\?v=49/);
+  assert.match(indexHtml, /app\.js\?v=49/);
 });
 
 const card = appJs.slice(appJs.indexOf("function aidCard"), appJs.indexOf("function sortedItems"));
@@ -88,14 +89,15 @@ test("v5.6 ficha: Favorita y Compartir arriba; abajo sin WhatsApp, calendario va
   assert.match(card, /class="text-btn mark-unread"/);
 });
 
-test("v5.6 cabecera: Resumen, Preferencias, Herramientas y Ajustes; Herramientas fuera de las pestañas y la barra de abajo", () => {
+test("v5.6/v5.8 cabecera: Resumen, Herramientas y Ajustes (v5.8 sin Preferencias); Herramientas fuera de las pestañas", () => {
   const header = indexHtml.slice(indexHtml.indexOf('<header class="top"'), indexHtml.indexOf("</header>"));
-  const order = ["digestBtn", "prefsBtn", "toolsBtn", "settingsBtn"].map((id) => header.indexOf(`id="${id}"`));
+  const order = ["digestBtn", "toolsBtn", "settingsBtn"].map((id) => header.indexOf(`id="${id}"`));
   assert.ok(order.every((i, n) => i > 0 && (n === 0 || i > order[n - 1])), "orden");
   assert.match(header, /id="toolsBtn"[^>]*aria-label="Herramientas oficiales"><svg viewBox="0 0 24 24"/);
   assert.doesNotMatch(appJs, /\["herramientas", "Herramientas"\]/);
   const dock = indexHtml.slice(indexHtml.indexOf('<nav class="dock'));
-  assert.doesNotMatch(dock.slice(0, dock.indexOf("</nav>")), /herramientas/i);
+  // v5.8: en el móvil la barra lleva un botón que abre la misma Herramientas de la cabecera (no una pestaña propia).
+  assert.doesNotMatch(dock.slice(0, dock.indexOf("</nav>")), /data-dock="herramientas"/);
   assert.match(appJs, /location\.href = "\/herramientas"/);
 });
 

@@ -79,9 +79,14 @@ test("v5.4 tocar un cuadro lo abre y tocarlo otra vez lo cierra; «Ver todas» u
   assert.match(css, /prefers-reduced-motion: reduce/);
 });
 
-test("v5.4 cuadros coherentes: «Cierran pronto» ⊆ «Abiertas»; sin estado conocido no cuenta como abierta", () => {
+test("v5.4/v5.8 cuadros coherentes: «Cierran pronto» ⊆ «Abiertas»; mismo estado que la pantalla Ayudas", () => {
   const block = appJs.slice(appJs.indexOf("const GLANCE_MATCH = {"), appJs.indexOf("function renderList"));
-  const match = new Function(`function isPacLine(item) { return item.kind === "linea"; }\n${block}; return GLANCE_MATCH;`)();
+  const match = new Function(`function isPacLine(item) { return item.kind === "linea"; }
+function isPacAid(item) { return item.kind === "linea" || item.sourceId === "pac_lineas"; }
+function inTab() { return true; }
+function aidStatusOf(item) { const s = item?.aid?.status; return s === "cerrada" || s === "proxima" || s === "cierra_pronto" ? s : "abierta"; }
+function matchesAidStatus(item, chip) { const s = aidStatusOf(item); return chip === "abierta" ? s === "abierta" || s === "cierra_pronto" : s === chip; }
+${block}; return GLANCE_MATCH;`)();
   const today = [
     { id: "1", aid: { status: "abierta" } },
     { id: "2", aid: { status: "cierra_pronto" } },
@@ -94,9 +99,10 @@ test("v5.4 cuadros coherentes: «Cierran pronto» ⊆ «Abiertas»; sin estado c
   ];
   const open = today.filter(match.abierta).map((i) => i.id);
   const soon = today.filter(match.cierra_pronto).map((i) => i.id);
-  assert.deepEqual(open, ["1", "2", "3"]);
+  // v5.8: misma definición que Ayudas (aidStatusOf): abiertas = abiertas + cierran pronto + sin plazo conocido.
+  assert.deepEqual(open, ["1", "2", "3", "5", "7"]);
   assert.deepEqual(soon, ["2", "3"]);
   for (const id of soon) assert.ok(open.includes(id), "toda ayuda que cierra pronto está abierta");
   assert.equal(match.proxima, undefined, "v5.6: sin cuadro «Próximas»");
-  assert.ok(!open.includes("4") && !open.includes("5") && !open.includes("7"), "próximas y sin estado no cuentan como abiertas");
+  assert.ok(!open.includes("4") && !open.includes("6") && !open.includes("8"), "ni próximas, ni cerradas, ni líneas PAC");
 });

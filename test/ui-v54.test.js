@@ -21,14 +21,14 @@ test("v5.4 cabecera: solo «Resumen» y el engranaje «Ajustes»; sin Oscuro ni 
   // v5.5: se añade «Preferencias» entre «Resumen» y «Ajustes» (ver leidas-v55.test.js).
   const buttons = header.match(/<button[^>]*>/g) || [];
   const visible = buttons.filter((b) => !/admin-only/.test(b));
-  assert.equal(visible.length, 4, "Resumen, Preferencias, Herramientas (v5.6) y Ajustes");
+  assert.equal(visible.length, 3, "Resumen, Herramientas (v5.6) y Ajustes; v5.8 sin Preferencias");
   assert.match(header, /<button id="digestBtn"[^>]*aria-label="Resumen del día"/);
   assert.match(header, /<button id="settingsBtn"[^>]*aria-label="Ajustes"[^>]*aria-controls="prefSheet"/);
   // iconos SVG de trazo (no emoji) y texto visible en pantallas anchas
   const settings = header.slice(header.indexOf('id="settingsBtn"'));
   assert.match(settings, /<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"\/><path d="M19\.4 15/);
   assert.match(settings, /<span class="head-text">Ajustes<\/span>/);
-  const digest = header.slice(header.indexOf('id="digestBtn"'), header.indexOf('id="prefsBtn"'));
+  const digest = header.slice(header.indexOf('id="digestBtn"'), header.indexOf('id="toolsBtn"'));
   assert.match(digest, /<svg viewBox="0 0 24 24"/);
   assert.match(digest, /<span class="head-text">Resumen<\/span>/);
   assert.match(digest, /class="head-badge" hidden/);
@@ -46,15 +46,15 @@ test("v5.4 Ajustes: tema Claro/Oscuro/Automático con la misma persistencia y «
   assert.match(sheet, />Claro</);
   assert.match(sheet, />Oscuro</);
   assert.match(sheet, />Automático</);
-  assert.match(sheet, /class="settings-prefs private" id="prefsSection"/);
+  assert.match(sheet, /class="acc settings-prefs private" id="prefsSection"/);
   assert.match(sheet, /Mis preferencias/);
   assert.match(sheet, /id="filters"/);
-  assert.ok(sheet.indexOf("settings-theme") < sheet.indexOf("prefsSection"), "el tema va arriba");
+  assert.ok(sheet.indexOf("prefsSection") < sheet.indexOf("settings-theme") && sheet.indexOf("settings-theme") < sheet.indexOf("settings-read"), "v5.8: preferencias, tema, leídas");
   const theme = appJs.slice(appJs.indexOf("function savedTheme"), appJs.indexOf("async function archiveById"));
   assert.match(theme, /localStorage\.setItem\("alerta_theme", theme\)/);
   assert.match(theme, /localStorage\.removeItem\("alerta_theme"\)/, "Automático vuelve a seguir el sistema");
   assert.match(theme, /aria-checked/);
-  assert.match(appJs, /settingsBtn\?\.addEventListener\("click", \(\) => setSheet\(prefSheet\?\.hidden/);
+  assert.match(appJs, /settingsBtn\?\.addEventListener\("click", \(\) => setSheet\(Boolean\(prefSheet\?\.hidden\)/);
   // el panel se puede abrir también en las páginas sueltas (solo el tema; las preferencias son .private)
   assert.match(indexHtml, /<div id="prefSheet" class="pref-sheet" hidden>/);
 });
@@ -76,11 +76,12 @@ test("v5.4 Resumen: botón de cabecera, fuera del cuerpo de Inicio y contador so
   assert.match(appJs, /Cambiar en Mis preferencias/);
 });
 
-test("v5.7 barra de abajo: Inicio, Ayudas, Normativa y Precios (sin PAC, Resumen ni Preferencias)", () => {
-  const tabs = [...dock.matchAll(/data-dock="([a-z]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(tabs, ["inicio", "ayudas", "normativa", "campo"]);
-  assert.match(dock, /Precios/);
-  assert.match(css, /\.dock \{[\s\S]*?grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+test("v5.8 barra de abajo (móvil): Inicio, Resumen, Herramientas y Ajustes, con icono y texto pequeño", () => {
+  assert.doesNotMatch(dock, /data-dock="/);
+  const proxies = [...dock.matchAll(/data-dock-proxy="(\w+)"/g)].map((m) => m[1]);
+  assert.deepEqual(proxies, ["digestBtn", "toolsBtn", "settingsBtn"]);
+  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Inicio", "Resumen", "Herramientas", "Ajustes"]);
+  assert.match(css, /\.dock \{ grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/);
 });
 
 // v5.6: el botón «← Inicio» se quitó; se vuelve con el título de la cabecera (ver footer-v56.test.js).
