@@ -30,7 +30,6 @@ const refreshBtn = document.getElementById("refresh");
 const readAllBtn = document.getElementById("readAll");
 const clearReadBtn = document.getElementById("clearRead");
 const settingsBtn = document.getElementById("settingsBtn");
-const prefsBtn = document.getElementById("prefsBtn");
 const toolsBtn = document.getElementById("toolsBtn");
 const digestBtn = document.getElementById("digestBtn");
 const sectorChoices = document.getElementById("sectorChoices");
@@ -449,7 +448,8 @@ function icon(name) {
 
 function renderChoices() {
   if (!sectorChoices) return;
-  sectorChoices.innerHTML = choiceButtons(SECTORS, prefs.sector, "sector");
+  // v5.8: sin «Todos»; selección múltiple, la misma que los chips Agricultura / Ganadería / Pesca.
+  sectorChoices.innerHTML = choiceButtons(CHIP_SECTORS, currentSectors(), "sector");
   zoneChoices.innerHTML = choiceButtons(ZONES, prefs.zone, "zone");
   if (sectorBlocks) sectorBlocks.innerHTML = sectorBlocksHtml(prefs);
   if (infoChoices) infoChoices.innerHTML = choiceButtons(INFO_TYPES, prefs.info, "info", { numbered: true });
@@ -459,7 +459,13 @@ function renderChoices() {
 
 function togglePref(group, id) {
   const next = { ...prefs, water: [...prefs.water], crops: [...prefs.crops], farm: [...prefs.farm], fishing: [...prefs.fishing], info: [...prefs.info], infoOrder: [...prefs.infoOrder] };
-  if (group === "sector") next.sector = id;
+  if (group === "sector") {
+    // v5.8: varios sectores a la vez. Internamente, uno solo = ese sector; ninguno o varios = «todos» (para cultivos).
+    const now = currentSectors();
+    const chosen = now.includes(id) ? now.filter((entry) => entry !== id) : [...now, id];
+    saveChosenSectors(chosen);
+    next.sector = chosen.length === 1 ? chosen[0] : "todos";
+  }
   if (group === "zone") next.zone = id;
   if (group === "water") {
     const has = next.water.includes(id);
@@ -798,6 +804,19 @@ function calendarLink(item) {
   return ics ? `<p class="cal-mini"><a class="calendar" href="${escapeHtml(ics)}" download>${icon("plazo")}Añadir al calendario</a></p>` : "";
 }
 
+// v5.8: iconos de los chips de apartados (los de Ayudas, Normativa y Precios son los que tenía la barra de abajo).
+const tabIcon = (body) => `<svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+const PRICES_ICON = tabIcon(`<path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/>`);
+// v5.8: nombre corto bajo el icono en el móvil (el nombre completo va en aria-label y title).
+const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas" };
+const TAB_ICONS = {
+  ayudas: tabIcon(`<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.6-1 1.4-1.5 2.5-1.5 1.6 0 2.5.9 2.5 2s-.8 1.8-2.5 2-2.6.8-2.6 2 1 2 2.6 2c1.1 0 2-.5 2.5-1.4"/>`),
+  calendario: tabIcon(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M8 14h2M12 14h2M16 14h0M8 17h2M12 17h2"/>`),
+  normativa: tabIcon(`<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9.5 12h6M9.5 15.5h6"/>`),
+  campo: PRICES_ICON,
+  favoritas: tabIcon(`<path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>`),
+  archivadas: tabIcon(`<rect x="3.5" y="4" width="17" height="4" rx="1"/><path d="M5 8v11h14V8M10 12h4"/>`),
+};
 const SHARE_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
 
 const WHATSAPP_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5 5.6 16A8 8 0 1 1 8.4 18.6z"/><path d="M9.2 8.6c.3 2.6 2.3 4.9 5.2 5.6l1-1.2-1.7-.9-.8.8c-1-.4-1.9-1.3-2.3-2.3l.8-.8-.9-1.7z"/></svg>`;
@@ -1040,6 +1059,9 @@ function paintDigestBtn() {
   if (badge) {
     badge.hidden = !count;
     badge.textContent = count > 99 ? "99+" : String(count);
+    // v5.8: el mismo número en el botón «Resumen» de la barra de abajo (móvil).
+    const dockBadge = document.querySelector(".dock .dock-badge");
+    if (dockBadge) { dockBadge.hidden = badge.hidden; dockBadge.textContent = badge.textContent; }
   }
   digestBtn.setAttribute("aria-label", count ? `Resumen del día: ${count} ${count === 1 ? "novedad" : "novedades"}` : "Resumen del día");
 }
@@ -1110,14 +1132,16 @@ function digestCard(compact) {
 /** Bloque de inicio con lo que el agricultor ha puesto primero, en su orden. Solo títulos de las fuentes. */
 function priorityStrip(items) {
   const TAB_OF = { ayudas: "ayudas", pac: "ayudas", normativa: "normativa" };
+  const AID_GROUP_OF = { ayudas: "otras", pac: "pac" };
   const rows = prefs.info
     .map((id, index) => {
-      const list = items.filter((item) => itemInfoTypes(item).includes(id));
+      // v5.8: «Ayudas y subvenciones» = Ayudas › Otras ayudas; «PAC» = Ayudas › Ayudas PAC (mismo cálculo, sin repetir piezas).
+      const list = id === "ayudas" ? aidPool("otras") : id === "pac" ? aidPool("pac") : items.filter((item) => itemInfoTypes(item).includes(id));
       const typeLabel = INFO_TYPES.find((type) => type.id === id)?.label || id;
       const top = list.slice(0, 3)
         .map((item) => `<li><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title || "Sin título")}</a><small>${escapeHtml(item.sourceName || "Fuente oficial")}${item.publishedAt ? ` · ${escapeHtml(fmtDay(item.publishedAt))}` : ""}</small></li>`)
         .join("");
-      const more = TAB_OF[id] ? `<button type="button" class="link-btn" data-goto="${TAB_OF[id]}">Ver ${list.length}</button>` : "";
+      const more = TAB_OF[id] ? `<button type="button" class="link-btn" data-goto="${TAB_OF[id]}"${AID_GROUP_OF[id] ? ` data-aid-group-goto="${AID_GROUP_OF[id]}"` : ""}>Ver ${list.length}</button>` : "";
       return `<div class="prio-row"><h3><span class="prio">${index + 1}</span>${escapeHtml(typeLabel)} <span class="count">${list.length}</span></h3>${top ? `<ul>${top}</ul>` : `<p class="empty">Nada con los criterios de ahora.</p>`}${more}</div>`;
     })
     .join("");
@@ -1329,8 +1353,11 @@ function glanceCards(lists) {
 
 function renderBoard() {
   const items = sortedItems(baseItems());
-  const open = items.filter(GLANCE_MATCH.abierta);
-  const soon = items.filter(GLANCE_MATCH.cierra_pronto);
+  // v5.8: los cuadros cuentan con el mismo cálculo que Ayudas: abiertas y cierran pronto = Ayudas › Otras ayudas
+  // (abiertas incluye las que cierran pronto); líneas PAC = Ayudas › Ayudas PAC › abiertas.
+  const otras = aidPool("otras");
+  const open = otras.filter(GLANCE_MATCH.abierta);
+  const soon = otras.filter(GLANCE_MATCH.cierra_pronto);
   const loose = items
     .filter((item) => {
       if (item.aid?.status !== "sin_plazo") return false;
@@ -1338,7 +1365,7 @@ function renderBoard() {
       return (item.infoTypes || []).includes("ayudas");
     })
     .slice(0, 8);
-  const pacAll = items.filter(GLANCE_MATCH.pac);
+  const pacAll = aidPool("pac").filter(GLANCE_MATCH.pac);
   return `
     <div class="board">
       ${filterRow()}
@@ -1354,9 +1381,10 @@ function renderBoard() {
 const GLANCE_MATCH = {
   // Una ayuda que cierra pronto también está abierta (lib/preferences.js statusOf: ya abrió y no ha cerrado), así que
   // cuenta en el cuadro de abiertas. Lo que no tiene estado conocido (sin_plazo) no se cuenta como abierto.
-  abierta: (item) => item.kind !== "linea" && (item.aid?.status === "abierta" || item.aid?.status === "cierra_pronto"),
-  cierra_pronto: (item) => item.kind !== "linea" && item.aid?.status === "cierra_pronto",
-  pac: (item) => isPacLine(item),
+  // v5.8: mismo estado que la pantalla Ayudas (aidStatusOf / matchesAidStatus).
+  abierta: (item) => inTab(item, "ayudas") && !isPacAid(item) && matchesAidStatus(item, "abierta"),
+  cierra_pronto: (item) => inTab(item, "ayudas") && !isPacAid(item) && matchesAidStatus(item, "cierra_pronto"),
+  pac: (item) => inTab(item, "ayudas") && isPacAid(item) && matchesAidStatus(item, "abierta"),
 };
 
 // v5.7: grupo de la pestaña Ayudas («Ayudas PAC» | «Otras ayudas»), recordado en el dispositivo. Ya no hay pestaña PAC.
@@ -1383,13 +1411,18 @@ function saveAidGroup(next) {
  * Lo que enseña la pestaña Ayudas, de UN solo sitio para que cuadros, lista y número de la pestaña coincidan:
  * ayudas (y avisos PAC) del sector elegido, sin lo cerrado, del grupo elegido.
  */
-function ayudasView(today = madridTodayKey()) {
-  const group = currentAidGroup();
-  const chip = currentAidStatus();
-  const pool = sortedItems(baseItems({ allStatus: true }))
+// v5.8: el MISMO conjunto para la pantalla Ayudas y los cuadros de Inicio (sectores elegidos, sin cerradas).
+function aidPool(group, today = madridTodayKey()) {
+  return sortedItems(baseItems({ allStatus: true }))
     .filter((item) => inTab(item, "ayudas"))
     .filter((item) => aidStatusOf(item, today) !== "cerrada")
     .filter((item) => (group === "pac" ? isPacAid(item) : !isPacAid(item)));
+}
+
+function ayudasView(today = madridTodayKey()) {
+  const group = currentAidGroup();
+  const chip = currentAidStatus();
+  const pool = aidPool(group, today);
   const counts = Object.fromEntries(AID_STATUS_CHIPS.map((entry) => [entry.id, pool.filter((item) => matchesAidStatus(item, entry.id, today)).length]));
   return { group, chip, pool, counts, items: pool.filter((item) => matchesAidStatus(item, chip, today)) };
 }
@@ -1749,16 +1782,16 @@ function renderDigestTab() {
 
 function renderTabs() {
   const items = baseItems();
+  // v5.8: sin chip «Inicio» (está en la barra de abajo y en el logo). Orden: Ayudas, Calendario PAC, Normativa,
+  // Precios (antes «Hoy en el campo», con el icono de la barra de abajo) y Mis favoritas.
+  // v5.8: sin chip «Inicio» (se vuelve con el logo). Orden: Ayudas, Calendario PAC, Normativa, Precios y Mis favoritas,
+  // cada uno con icono. En el móvil (≤ 900 px) solo el icono, para que entren los 5 en una fila.
   const buttons = [
-    ["inicio", "Inicio"],
     ["ayudas", "Ayudas"],
-    // v5.7: sin pestaña «PAC»: está dentro de Ayudas («Ayudas PAC»).
     ["calendario", "Calendario PAC"],
-    ["campo", "Hoy en el campo"],
-    ["favoritas", "★ Mis favoritas"],
-    // v5.6: «Resumen» ya no es pestaña; se abre con el botón «Resumen» de la cabecera.
     ["normativa", "Normativa"],
-    // v5.7: sin pestañas «Jóvenes» ni «Noticias».
+    ["campo", "Precios"],
+    ["favoritas", "Mis favoritas"],
     ["archivadas", "Archivadas"],
   ].filter(([id]) => id !== "archivadas" || isAdmin());
   const noCount = new Set(["calendario", "campo", "herramientas"]);
@@ -1773,8 +1806,9 @@ function renderTabs() {
             : id === "ayudas"
               ? ayudasView().items.length // v5.7: el mismo número que la lista y el cuadro elegido
               : items.filter((item) => inTab(item, id)).length;
-      const main = ["inicio", "ayudas", "normativa"].includes(id) ? "tab-main" : "tab-extra";
-      return `<button class="tab ${main} ${active === id ? "active" : ""}" data-id="${id}" type="button">${title}${noCount.has(id) ? "" : `<span class="count">${count}</span>`}</button>`;
+      // v5.8: la misma fila en móvil y en pantallas anchas (ninguna se oculta en el móvil).
+      const main = "tab-extra";
+      return `<button class="tab ${main} ${active === id ? "active" : ""}" data-id="${id}" type="button" aria-label="${title}" title="${title}"${active === id ? ' aria-current="page"' : ""}>${TAB_ICONS[id] || ""}<span class="tab-label">${title}</span><span class="tab-short" aria-hidden="true">${TAB_SHORT[id] || title}</span>${noCount.has(id) ? "" : `<span class="count">${count}</span>`}</button>`;
     })
     .join("");
 }
@@ -1794,6 +1828,10 @@ function render() {
   toolsBtn?.classList.toggle("on", active === "herramientas");
   if (location.hash === "#resumen" && active !== "resumen") history.replaceState(null, "", location.pathname + location.search);
   paintPrefsNote();
+  document.querySelectorAll("[data-dock-on]").forEach((button) => {
+    button.classList.toggle("on", button.dataset.dockOn === active);
+    button.setAttribute("aria-current", button.dataset.dockOn === active ? "page" : "false");
+  });
   document.querySelectorAll("[data-dock]").forEach((button) => {
     const on = button.dataset.dock === active;
     button.classList.toggle("on", on);
@@ -1835,7 +1873,7 @@ const WIZARD = [
   {
     title: "¿Qué te interesa?",
     lead: "Lo elegido sale primero",
-    body: () => `<div class="choice-block"><p>Sector</p><div class="tiles">${choiceButtons(SECTORS, prefs.sector, "sector")}</div></div>
+    body: () => `<div class="choice-block"><p>Sector</p><div class="tiles">${choiceButtons(CHIP_SECTORS, currentSectors(), "sector")}</div></div>
       <div class="choice-block"><p>Información <span class="hint">Toca en orden de prioridad</span></p><div class="tiles">${choiceButtons(INFO_TYPES, prefs.info, "info", { numbered: true })}</div></div>`,
   },
   {
@@ -2024,47 +2062,41 @@ tabsEl.addEventListener("click", (event) => {
   render();
 });
 
-// Ajustes: un solo panel con el tema (Claro / Oscuro / Automático) y, debajo,
-// «Mis preferencias». Se abre con el botón del engranaje de la cabecera.
+// v5.8 · Ajustes: un panel con tres desplegables (Mis preferencias, Tema, Leídas y borradas).
+// Sin botón «Preferencias» en la cabecera: los enlaces a «Mis preferencias» abren Ajustes con ese desplegable abierto.
+function setAccordion(key, open) {
+  prefSheet?.querySelectorAll("[data-acc]").forEach((button) => {
+    const on = button.dataset.acc === key ? open : false;
+    button.setAttribute("aria-expanded", on ? "true" : "false");
+    const panel = document.getElementById(button.getAttribute("aria-controls"));
+    if (panel) panel.hidden = !on;
+  });
+}
 function setSheet(open, focusPrefs = false) {
   if (!prefSheet) return;
-  // v5.5: el botón «Preferencias» abre el mismo panel solo con «Mis preferencias».
-  const onlyPrefs = Boolean(open && focusPrefs && !document.body.classList.contains("public-page"));
   prefSheet.hidden = !open;
-  prefSheet.classList.toggle("prefs-only", onlyPrefs);
-  const title = document.getElementById("sheetTitle");
-  if (title) title.textContent = onlyPrefs ? "Mis preferencias" : "Ajustes";
-  settingsBtn?.setAttribute("aria-expanded", open && !onlyPrefs ? "true" : "false");
-  prefsBtn?.setAttribute("aria-expanded", onlyPrefs ? "true" : "false");
+  settingsBtn?.setAttribute("aria-expanded", open ? "true" : "false");
   if (open) {
     paintThemeChoice();
     paintReadSettings();
+    setAccordion("prefs", Boolean(focusPrefs && !document.body.classList.contains("public-page")));
     prefSheet.querySelector(".sheet-card")?.scrollTo(0, 0);
   }
 }
 
-settingsBtn?.addEventListener("click", () => setSheet(prefSheet?.hidden || prefSheet.classList.contains("prefs-only")));
-// Botón «Preferencias» de la cabecera (entre «Resumen» y «Ajustes»).
-prefsBtn?.addEventListener("click", (event) => {
+settingsBtn?.addEventListener("click", () => setSheet(Boolean(prefSheet?.hidden)));
+prefSheet?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-acc]");
+  if (!button) return;
   event.preventDefault();
-  if (QUIET.has(PATH) || PATH === "/admin" || document.body.classList.contains("public-page")) {
-    location.href = "/#preferencias";
-    return;
-  }
-  const isOpen = !prefSheet?.hidden && prefSheet?.classList.contains("prefs-only");
-  setSheet(!isOpen, true);
-});
-// En Ajustes, «Ir a Mis preferencias» deja el panel solo con las preferencias.
-prefSheet?.querySelector(".settings-link [data-open-prefs]")?.addEventListener("click", (event) => {
-  event.preventDefault();
-  setSheet(true, true);
+  setAccordion(button.dataset.acc, button.getAttribute("aria-expanded") !== "true");
 });
 if (location.hash === "#preferencias" && !QUIET.has(PATH) && PATH !== "/admin") {
   history.replaceState(null, "", location.pathname + location.search);
   setSheet(true, true);
 }
 // Botón «Resumen» de la cabecera: abre la vista completa del Resumen del día.
-// v5.6: «Herramientas» en la cabecera (entre «Preferencias» y «Ajustes»); ya no está en la barra de pestañas.
+// v5.6: «Herramientas» en la cabecera (v5.8: entre «Resumen» y «Ajustes»); ya no está en la barra de pestañas.
 toolsBtn?.addEventListener("click", (event) => {
   event.preventDefault();
   if (QUIET.has(PATH) || PATH === "/admin" || document.body.classList.contains("public-page")) {
@@ -2109,6 +2141,13 @@ document.querySelector(".top .brand")?.addEventListener("click", (event) => {
   if (location.hash) history.replaceState(null, "", location.pathname + location.search);
   render();
   window.scrollTo(0, 0);
+});
+// v5.8: Resumen, Herramientas y Ajustes de la barra de abajo hacen lo mismo que sus botones de la cabecera.
+document.querySelector(".dock")?.addEventListener("click", (event) => {
+  const proxy = event.target.closest("[data-dock-proxy]");
+  if (proxy) document.getElementById(proxy.dataset.dockProxy)?.click();
+  // v5.8: «Inicio» de la barra hace lo mismo que tocar el logo.
+  if (event.target.closest("[data-dock-home]")) document.querySelector(".top .brand")?.click();
 });
 document.querySelector(".dock")?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-dock]");
@@ -2294,8 +2333,9 @@ appEl.addEventListener("click", (event) => {
     listStatus = go.dataset.status || null;
     // v5.7: desde Inicio, los cuadros abren Ayudas con su estado; el cuadro de líneas PAC abre «Ayudas PAC».
     if (active === "pac") { active = "ayudas"; saveAidGroup("pac"); }
-    if (active === "ayudas" && (listStatus === "abierta" || listStatus === "cierra_pronto")) saveAidStatus(listStatus);
+    if (active === "ayudas" && (listStatus === "abierta" || listStatus === "cierra_pronto")) { saveAidGroup("otras"); saveAidStatus(listStatus); }
     if (active === "ayudas" && listStatus === "pac") { saveAidGroup("pac"); saveAidStatus("abierta"); }
+    if (active === "ayudas" && go.dataset.aidGroupGoto) saveAidGroup(go.dataset.aidGroupGoto);
     if (active === "ayudas") listStatus = null;
     render();
     window.scrollTo(0, 0);

@@ -16,7 +16,7 @@ import { buildIcs, hasSourceUrl, safeUrl, validDayKey } from "./lib/aid-view.js"
 import { pacTimeline } from "./lib/pac-calendar.js";
 import { getPrices, PRICE_CONFIG } from "./lib/prices.js";
 import { getLonjaPrices, LONJA } from "./lib/lonja.js";
-import { getNormativaVigente } from "./lib/normativa.js";
+import { getNormativaVigente, NORMATIVA } from "./lib/normativa.js";
 import {
   getStore,
   upsertItems,
@@ -71,8 +71,10 @@ export function referenceSources() {
       if (source.pdf) add({ name: `${source.nombre} (PDF)`, organism: source.organismo || "", url: source.pdf, usedIn: "Calendario de pagos de la PAC (fechas y citas)" });
     }
   } catch {}
-  add({ name: PRICE_CONFIG.fuente, organism: "Ministerio de Agricultura, Pesca y Alimentación", url: PRICE_CONFIG.pagina, usedIn: "Hoy en el campo (precios). El Excel semanal se descarga desde esta página." });
-  add({ name: LONJA.fuente, organism: LONJA.organismo, url: LONJA.tabla, usedIn: "Hoy en el campo (precios, fuente «Lonja de Salamanca»). Cotizaciones de cada sesión, tal como las publica la tabla oficial." });
+  add({ name: PRICE_CONFIG.fuente, organism: "Ministerio de Agricultura, Pesca y Alimentación", url: PRICE_CONFIG.pagina, usedIn: "Precios (antes «Hoy en el campo»). El Excel semanal se descarga desde esta página." });
+  add({ name: LONJA.fuente, organism: LONJA.organismo, url: LONJA.tabla, usedIn: "Precios (fuente «Lonja de Salamanca»). Cotizaciones de cada sesión, tal como las publica la tabla oficial." });
+  // v5.8: la fuente de «Normativa en vigor» (pestaña Normativa), también en /fuentes.
+  add({ name: NORMATIVA.fuente, organism: "Agencia Estatal Boletín Oficial del Estado", url: NORMATIVA.api, usedIn: "Normativa en vigor (pestaña Normativa). Normas consolidadas vigentes de agricultura, ganadería y pesca, con enlace al texto del BOE." });
   try {
     const tools = readConfig("herramientas.json");
     for (const group of tools.grupos || []) {

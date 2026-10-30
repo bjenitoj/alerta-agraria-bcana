@@ -114,24 +114,15 @@ test("v5.5 Ajustes: «Recuperar borradas (N)» (v5.6: sin «ocultas»)", () => {
   assert.match(appJs, /restoreAllDeleted\(\)/);
 });
 
-test("v5.5 cabecera: Resumen · Preferencias · Ajustes, con icono y aria-label", () => {
-  const ids = [...header.matchAll(/<button id="([a-zA-Z]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(ids.filter((id) => ["digestBtn", "prefsBtn", "settingsBtn"].includes(id)), ["digestBtn", "prefsBtn", "settingsBtn"]);
-  const prefs = header.slice(header.indexOf('id="prefsBtn"'), header.indexOf('id="settingsBtn"'));
-  assert.match(prefs, /aria-label="Mis preferencias"/);
-  assert.match(prefs, /aria-controls="prefSheet"/);
-  assert.match(prefs, /<svg viewBox="0 0 24 24" aria-hidden="true">/);
-  assert.match(prefs, /<span class="head-text">Preferencias<\/span>/);
-  // abre directamente «Mis preferencias»; en páginas sueltas va a /#preferencias
-  assert.match(appJs, /prefsBtn\?\.addEventListener\("click"/);
-  assert.match(appJs, /location\.href = "\/#preferencias"/);
+test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias abre Ajustes con Mis preferencias desplegado", () => {
+  assert.doesNotMatch(header, /id="prefsBtn"|>Preferencias</);
+  assert.doesNotMatch(appJs, /prefsBtn|prefs-only/);
   assert.match(appJs, /location\.hash === "#preferencias"/);
-  assert.match(fn("setSheet", "clearRead") || appJs, /classList\.toggle\("prefs-only", onlyPrefs\)/);
-  assert.match(css, /\.pref-sheet\.prefs-only \.settings-theme/);
-  assert.match(indexHtml, /data-open-prefs="1">Ir a Mis preferencias/);
+  assert.match(appJs, /setAccordion\("prefs", Boolean\(focusPrefs/);
+  assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=44 (v5.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=44/);
+test("caché v=49 (v5.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=49/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });

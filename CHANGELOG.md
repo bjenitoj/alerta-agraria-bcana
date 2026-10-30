@@ -1,5 +1,18 @@
 # Cambios
 
+## v5.8 · 30/10/2026 · Cabecera, apartados y Ajustes más claros
+
+- Cabecera: sin el botón «Preferencias». Quedan Resumen, Herramientas y Ajustes; las preferencias están dentro de Ajustes.
+- Chips de apartados: sin «Inicio» (está en la barra de abajo y en el logo). «Hoy en el campo» pasa a «Precios», con el mismo icono que la barra de abajo. Orden: Ayudas, Calendario PAC, Normativa, Precios y Mis favoritas, en MAYÚSCULAS.
+- En el móvil (con barra de abajo) arriba no se repiten Ayudas, Normativa ni Precios: solo Calendario PAC y Mis favoritas. En iPad y ordenador se ve la fila completa.
+- Ajustes en tres desplegables grandes, en este orden: Mis preferencias, Tema y Leídas y borradas (se guardan 15 días; «Recuperar borradas»). La explicación va en letra pequeña a la derecha del título. Sin el enlace «Ir a Mis preferencias».
+- Sector en Mis preferencias sin «Todos»: Agricultura, Ganadería y Pesca, varios a la vez (los mismos que los chips de sector).
+- /fuentes incluye «BOE · Legislación consolidada (datos abiertos)», la fuente de Normativa en vigor.
+- Navegación final. Web (> 900 px): cabecera con Resumen, Herramientas y Ajustes (icono y texto) y fila AYUDAS · CALENDARIO PAC · NORMATIVA · PRECIOS · MIS FAVORITAS con icono y texto; sin barra de abajo. Móvil (≤ 900 px, vertical y horizontal): arriba los mismos 5 apartados solo con icono (calendario y estrella para Calendario PAC y Mis favoritas), con número y nombre accesible; abajo Inicio, Resumen (con número), Herramientas y Ajustes, con icono y texto pequeño (Inicio también con el logo). Bajo cada icono de arriba, texto pequeño: Ayudas, Calendario, Normativa, Precios, Favoritas. Las páginas sueltas sin barra mantienen los botones de la cabecera.
+- Los cuadros de Inicio usan el mismo cálculo que la pantalla Ayudas (sectores elegidos, sin cerradas): «Abiertas» y «Cierran pronto» = Ayudas › Otras ayudas (abiertas incluye las que cierran pronto y las abiertas sin plazo conocido); «Líneas PAC» = Ayudas › Ayudas PAC › Abiertas.
+- Inicio, «Lo que has puesto primero»: «Ayudas y subvenciones» muestra solo Otras ayudas (mismo número que Ayudas › Otras ayudas) y «PAC» solo las ayudas PAC; ninguna pieza sale en los dos. «Ver N» abre Ayudas en el grupo correspondiente.
+- Caché `?v=49`.
+
 ## v5.7 · 28/10/2026 · Precios de la Lonja de Salamanca
 
 ### Nuevo
