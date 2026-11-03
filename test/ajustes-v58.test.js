@@ -54,11 +54,11 @@ test("v5.8 Ajustes: desplegables Mis preferencias, Tema, Leídas y borradas; sin
   assert.doesNotMatch(appJs, /choiceButtons\(SECTORS,/);
 });
 
-test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=51", () => {
+test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=52", () => {
   const boe = referenceSources().find((s) => s.url === "https://www.boe.es/datosabiertos/api/legislacion-consolidada");
   assert.ok(boe);
   assert.match(boe.usedIn, /Normativa en vigor/);
-  assert.match(indexHtml, /app\.js\?v=51/);
+  assert.match(indexHtml, /app\.js\?v=52/);
 });
 
 test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de abajo; la cabecera los oculta solo ≤ 900 px", () => {

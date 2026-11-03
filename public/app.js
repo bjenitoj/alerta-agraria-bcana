@@ -2112,38 +2112,120 @@ function renderMapaPrices() {
     </section>`;
 }
 
-function toolsHtml(data) {
+// v6.1: Herramientas en cuadrícula de iconos. Tocar el icono abre el enlace oficial; «i» enseña organismo y cita.
+const TOOL_ICONS = {
+  mapa: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/>',
+  camara: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  movil: '<rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/>',
+  oficina: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
+  planta: '<path d="M12 21V10"/><path d="M12 13c-4 0-6-3-6-7 4 0 6 3 6 7Z"/><path d="M12 10c0-4 2-6 6-6 0 4-2 6-6 6Z"/>',
+  lupa: '<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5.5 5.5"/>',
+  campana: '<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  boletin: '<path d="M5 3.5h10l4 4v13H5z"/><path d="M15 3.5v4h4M8 11h8M8 14.5h8M8 18h5"/>',
+  correo: '<rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="m3.5 6.5 8.5 7 8.5-7"/>',
+};
+function toolIcon(name) {
+  return `<svg class="tool-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${TOOL_ICONS[name] || TOOL_ICONS.oficina}</svg>`;
+}
+// v6.1 · Herramientas por zona, de abajo arriba como el resto: las nacionales siempre; las de una comunidad o
+// provincia solo si está elegida (o una zona suya por debajo). Solo «España» = solo las nacionales.
+function toolInZone(link, where) {
+  const amb = link.ambito || "nacional";
+  if (amb === "nacional") return true;
+  if (amb === "ccaa") return where.ccaa.includes(link.ccaa);
+  if (amb === "provincia") return where.province.includes(link.provincia);
+  if (amb === "comarca") return where.comarca.includes(link.comarca);
+  return false;
+}
+function toolsGuide(hidden, shown, where) {
+  const onlySpain = !where.ccaa.length;
+  const state = !hidden
+    ? `Con tu zona ves todas las herramientas que te corresponden (${shown}).`
+    : onlySpain
+      ? `Solo tienes marcado «España»: ves las nacionales; las de comunidad o provincia (${hidden}) quedan ocultas. Marca tu comunidad autónoma y tu provincia para verlas.`
+      : `Las herramientas de otras zonas (${hidden}) no se muestran. Marca su comunidad o provincia si quieres verlas.`;
+  return `<span class="tool-tile tools-zone">
+      <button type="button" class="tool-i" data-tool-info="tool-pop-zona" aria-expanded="false" aria-controls="tool-pop-zona" aria-label="Qué herramientas se muestran según tu zona">i</button>
+      <div class="tool-pop" id="tool-pop-zona" role="dialog" aria-label="Herramientas según tu zona" hidden>
+        <button type="button" class="tool-pop-close" data-tool-close aria-label="Cerrar">✕</button>
+        <h4>Herramientas según tu zona</h4>
+        <p>Las nacionales salen siempre. Las de una comunidad autónoma o provincia salen según la zona de Mis preferencias.</p>
+        <p>${escapeHtml(state)}</p>
+        <p><button type="button" class="primary" data-open-prefs="zona" data-zone-level="${onlySpain ? "ccaa" : "province"}">Elegir mi zona en Mis preferencias</button></p>
+      </div>
+    </span>`;
+}
+function toolsHtml(data, place) {
+  let n = 0;
+  let hidden = 0;
+  const where = normalizePlace(place);
   const groups = (data?.grupos || []).map((group) => {
-    const links = (group.enlaces || []).filter((link) => /^https?:\/\//i.test(String(link.url || "")));
+    const valid = (group.enlaces || []).filter((link) => /^https?:\/\//i.test(String(link.url || "")));
+    const links = valid.filter((link) => toolInZone(link, where));
+    hidden += valid.length - links.length;
     if (!links.length) return "";
     return `
-    <section class="source-group">
-      <h2>${escapeHtml(group.titulo)}</h2>
-      <div class="source-cards">${links.map((link) => `
-        <article class="source-card tool">
-          <h3>${escapeHtml(link.nombre)}</h3>
-          <p class="organism">${escapeHtml(link.organismo || "")}</p>
-          ${link.cita ? `<p><q>${escapeHtml(link.cita)}</q> <small>(texto de la página oficial)</small></p>` : ""}
-          <p><a class="official" href="${escapeHtml(link.url)}" target="_blank" rel="noopener">Abrir</a></p>
-        </article>`).join("")}</div>
+    <section class="tool-group">
+      <h3>${escapeHtml(group.titulo)}</h3>
+      <div class="tool-grid">${links.map((link) => {
+        const id = `tool-pop-${n++}`;
+        const quote = link.cita ? `<p><q>${link.citaRecortada ? "…" : ""}${escapeHtml(link.cita)}</q></p>` : "";
+        return `
+        <div class="tool-tile">
+          <a class="tool-link" href="${escapeHtml(link.url)}" target="_blank" rel="noopener" aria-label="${escapeHtml(link.nombre)} (abre la web oficial)">${toolIcon(link.icono)}<span>${escapeHtml(link.corto || link.nombre)}</span></a>
+          <button type="button" class="tool-i" data-tool-info="${id}" aria-expanded="false" aria-controls="${id}" aria-label="Información de ${escapeHtml(link.nombre)}">i</button>
+          <div class="tool-pop" id="${id}" role="dialog" aria-label="${escapeHtml(link.nombre)}" hidden>
+            <button type="button" class="tool-pop-close" data-tool-close aria-label="Cerrar">✕</button>
+            <h4>${escapeHtml(link.nombre)}</h4>
+            <p class="organism">${escapeHtml(link.organismo || "")}</p>
+            ${quote}
+            <p><a class="official" href="${escapeHtml(link.url)}" target="_blank" rel="noopener">Abrir</a></p>
+          </div>
+        </div>`;
+      }).join("")}</div>
     </section>`;
   }).join("");
   return `
-    <article class="prose">
-      <p class="eyebrow">Herramientas oficiales</p>
-      <h2>Herramientas oficiales</h2>
-      <p>Enlaces a webs y apps oficiales. ${escapeHtml(data?.nota || "")}</p>
+    <article class="prose tools-head">
+      <h2 class="tools-title">Herramientas oficiales ${toolsGuide(hidden, n, where)}</h2>
+      <p>Enlaces a webs y apps oficiales.</p>
     </article>
     ${groups || `<p class="empty">No se ha podido cargar la lista. ${data?.error ? "Prueba más tarde." : ""}</p>`}
     <p class="orientativo">${NOTICE}</p>`;
 }
+function closeToolPops(except = null) {
+  document.querySelectorAll(".tool-pop:not([hidden])").forEach((pop) => {
+    if (pop === except) return;
+    pop.hidden = true;
+    document.querySelector(`[data-tool-info="${pop.id}"]`)?.setAttribute("aria-expanded", "false");
+  });
+}
+document.addEventListener("click", (event) => {
+  const info = event.target.closest("[data-tool-info]");
+  if (info) {
+    const pop = document.getElementById(info.dataset.toolInfo);
+    if (!pop) return;
+    closeToolPops(pop);
+    pop.hidden = !pop.hidden;
+    if (!pop.hidden) { // que no se salga por la derecha
+      pop.style.left = "0"; pop.style.right = "auto";
+      if (pop.getBoundingClientRect().right > document.documentElement.clientWidth - 8) { pop.style.left = "auto"; pop.style.right = "0"; }
+      const r = pop.getBoundingClientRect();
+      if (r.left < 8) { pop.style.left = `${8 - pop.parentElement.getBoundingClientRect().left}px`; pop.style.right = "auto"; }
+    }
+    info.setAttribute("aria-expanded", pop.hidden ? "false" : "true");
+    return;
+  }
+  if (event.target.closest("[data-tool-close]") || !event.target.closest(".tool-pop")) closeToolPops();
+});
+document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeToolPops(); });
 
 function renderToolsTab() {
   if (!toolsData) {
     ensureTools(() => { if (!QUIET.has(PATH)) render(); });
     return `<p class="empty">Cargando herramientas…</p>`;
   }
-  return toolsHtml(toolsData);
+  return toolsHtml(toolsData, prefs?.place);
 }
 
 function renderArchive() {
@@ -2982,7 +3064,7 @@ async function renderPublic() {
   if (PATH === "/herramientas") {
     document.title = "Herramientas oficiales · Alerta Agraria";
     appEl.innerHTML = `<p class="empty">Cargando herramientas…</p>`;
-    appEl.innerHTML = toolsHtml(await ensureTools());
+    appEl.innerHTML = toolsHtml(await ensureTools(), prefs?.place);
     return;
   }
   document.title = "Fuentes oficiales · Alerta Agraria";

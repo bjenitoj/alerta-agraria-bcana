@@ -1198,3 +1198,31 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
 .pac-part { margin: 14px 0 6px; }
 .pac-past summary { cursor: pointer; font-weight: 700; margin: 12px 0; }
 @media (max-width: 600px) { .pac-cards { grid-template-columns: 1fr; } }
+
+/* v6.1: Calendario PAC, rótulos AHORA / PRÓXIMAS centrados. */
+.pac-card > .eyebrow { text-align: center; }
+/* v6.1: Herramientas en cuadrícula de iconos. */
+.tools-head { padding: 12px 14px; }
+.tools-head p { margin: 0; }
+.tool-group { margin: 12px 0; }
+.tool-group h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.tool-tile { position: relative; }
+.tool-link { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 6px 8px; border-radius: 14px; background: var(--card, #fffdf8); border: 1px solid rgba(0,0,0,.08); box-shadow: var(--shadow); color: inherit; text-decoration: none; min-height: 84px; text-align: center; }
+.tool-link span { font-size: 11px; font-weight: 700; line-height: 1.2; }
+.tool-icon { width: 30px; height: 30px; fill: none; stroke: var(--btn, #1f4d3a); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tool-i { position: absolute; top: 6px; right: 6px; box-sizing: border-box; width: 22px; height: 22px; min-width: 22px; min-height: 22px; max-width: 22px; max-height: 22px; aspect-ratio: 1; flex-shrink: 0; border-radius: 50%; border: 1.5px solid rgba(31, 77, 58, 0.45); background: #eaf3ec; color: var(--btn, #1f4d3a); font: italic 700 12px/1 Georgia, serif; padding: 0; margin: 0; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: none; }
+.tool-i::before { content: ""; position: absolute; inset: -11px; border-radius: 50%; }
+.tool-i[aria-expanded="true"] { background: var(--btn, #1f4d3a); border-color: var(--btn, #1f4d3a); color: #fff; }
+.tool-pop { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; width: min(280px, 80vw); background: #fffdf8; color: #1f2a24; border-radius: 12px; padding: 12px 34px 10px 12px; box-shadow: 0 10px 30px rgba(0,0,0,.25); font-size: 14px; }
+.tool-pop h4 { margin: 0 0 4px; font-size: 15px; }
+.tool-pop p { margin: 0 0 6px; }
+.tool-pop .organism { color: var(--muted); font-size: 13px; }
+.tool-pop-close { position: absolute; top: 4px; right: 4px; box-sizing: border-box; width: 36px; height: 36px; min-width: 36px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: #1b2a22; font-size: 20px; font-weight: 700; line-height: 1; cursor: pointer; padding: 0; box-shadow: none; }
+.tool-pop-close:hover, .tool-pop-close:focus-visible { background: #eaf3ec; }
+/* v6.1 · «i» de zona junto al título de Herramientas */
+.tools-title { display: flex; align-items: center; gap: 10px; }
+.tools-zone { display: inline-block; position: relative; width: 22px; height: 22px; flex-shrink: 0; font-size: 1rem; font-weight: 400; }
+.tools-zone .tool-i { top: 0; right: auto; left: 0; }
+.tools-zone .tool-pop { top: 30px; width: min(300px, calc(100vw - 32px)); z-index: 30; }
+.tools-zone .tool-pop .primary { width: 100%; }
