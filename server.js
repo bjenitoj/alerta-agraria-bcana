@@ -16,6 +16,8 @@ import { buildIcs, hasSourceUrl, safeUrl, validDayKey } from "./lib/aid-view.js"
 import { pacTimeline } from "./lib/pac-calendar.js";
 import { getPrices, PRICE_CONFIG } from "./lib/prices.js";
 import { getLonjaPrices, LONJA } from "./lib/lonja.js";
+import { getLeonPrices, LONJA_LEON } from "./lib/lonja-leon.js";
+import { getAlerts, ALERT_SOURCES } from "./lib/alerts.js";
 import { getNormativaVigente, NORMATIVA } from "./lib/normativa.js";
 import {
   getStore,
@@ -39,7 +41,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Módulos compartidos con el navegador (sin datos ni secretos).
-const SHARED_MODULES = new Set(["preferences.js", "aid-view.js", "pac-calendar.js"]);
+const SHARED_MODULES = new Set(["preferences.js", "aid-view.js", "pac-calendar.js", "places.js"]);
 
 function readConfig(name) {
   return JSON.parse(fs.readFileSync(path.join(__dirname, "config", name), "utf8"));
@@ -73,8 +75,11 @@ export function referenceSources() {
   } catch {}
   add({ name: PRICE_CONFIG.fuente, organism: "Ministerio de Agricultura, Pesca y Alimentación", url: PRICE_CONFIG.pagina, usedIn: "Precios (antes «Hoy en el campo»). El Excel semanal se descarga desde esta página." });
   add({ name: LONJA.fuente, organism: LONJA.organismo, url: LONJA.tabla, usedIn: "Precios (fuente «Lonja de Salamanca»). Cotizaciones de cada sesión, tal como las publica la tabla oficial." });
+  add({ name: LONJA_LEON.fuente, organism: LONJA_LEON.organismo, url: LONJA_LEON.pagina, usedIn: "Precios (fuente «Lonja de León», si León está en tu zona). Cotizaciones semanales por mesa, tal como las publica la Lonja." });
   // v5.8: la fuente de «Normativa en vigor» (pestaña Normativa), también en /fuentes.
   add({ name: NORMATIVA.fuente, organism: "Agencia Estatal Boletín Oficial del Estado", url: NORMATIVA.api, usedIn: "Normativa en vigor (pestaña Normativa). Normas consolidadas vigentes de agricultura, ganadería y pesca, con enlace al texto del BOE." });
+  // v5.9: fuentes de la pantalla Alertas.
+  for (const source of ALERT_SOURCES) add({ name: source.name, organism: source.organism, url: source.url, usedIn: "Alertas (avisos oficiales que no salen en otra sección)" });
   try {
     const tools = readConfig("herramientas.json");
     for (const group of tools.grupos || []) {
@@ -241,6 +246,20 @@ const lonjaLoader = options.lonjaLoader;
 app.get("/api/precios/lonja", async (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.json(await getLonjaPrices(lonjaLoader ? { loader: lonjaLoader } : {}));
+});
+
+// v5.9: cotizaciones de la Lonja de León (entradas semanales de lonjadeleon.es).
+const leonLoader = options.leonLoader;
+app.get("/api/precios/lonja-leon", async (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json(await getLeonPrices(leonLoader ? { loader: leonLoader } : {}));
+});
+
+// v5.9: Alertas (AEMET, ITACyL plagas, RASVE, incendios de la Junta). Solo lectura de páginas y feeds públicos.
+const alertsLoader = options.alertsLoader;
+app.get("/api/alertas", async (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json(await getAlerts(alertsLoader ? { loader: alertsLoader } : {}));
 });
 
 // Calendario sin estado: todo viene en la URL y no se guarda nada.

@@ -27,7 +27,7 @@ test("v5.4 Inicio: los nombres de los cuadros solo salen en los cuadros de color
     const outside = appJs.replace(chunk, "").replace(chips, "").replace(groups, ""); // v5.7: chips de estado de Ayudas
     assert.doesNotMatch(outside, new RegExp(`[>«"]${label}[<»"]`), `«${label}» fuera de los cuadros`);
   }
-  assert.match(body, /glanceCards\(\{ abierta: open, cierra_pronto: soon, pac: pacAll \}\)/);
+  assert.doesNotMatch(body, /glanceCards\(/, "v5.9: los cuadros salen solo en Ayudas");
 });
 
 test("v5.4 cuadros: botones con aria-expanded/aria-controls, cuenta real y flecha", () => {

@@ -59,11 +59,11 @@ test("v5.3: al cambiar de sector se quita lo que ya no aplica, pero la zona se q
   assert.deepEqual(agri.farm, []);
   assert.deepEqual(agri.fishing, []);
   const gan = normalizePrefs({ ...agri, sector: "ganaderia", farm: ["extensiva"] });
-  assert.equal(gan.zone, "salamanca", "la zona no se borra");
+  assert.deepEqual(gan.place.province, ["37"], "la zona no se borra (v5.9: CyL › Salamanca)");
   assert.deepEqual(gan.crops, [], "los cultivos no se quedan escondidos");
   assert.deepEqual(gan.farm, ["extensiva"]);
   const pesca = normalizePrefs({ ...gan, sector: "pesca", crops: [...gan.crops, "vacuno", "moluscos"], fishing: ["marisqueo"] });
-  assert.equal(pesca.zone, "salamanca");
+  assert.deepEqual(pesca.place.province, ["37"]);
   assert.deepEqual(pesca.crops, ["moluscos"]);
   assert.deepEqual(pesca.farm, []);
   assert.deepEqual(pesca.fishing, ["marisqueo"]);
@@ -98,8 +98,8 @@ test("v5.3: migración segura de preferencias guardadas antes", () => {
   assert.deepEqual(normalizePrefs({ farm: ["inventado"], fishing: "x" }).farm, []);
   assert.deepEqual(DEFAULT_PREFS.farm, []);
   assert.deepEqual(DEFAULT_PREFS.fishing, []);
-  assert.match(indexHtml, /app\.js\?v=49/);
-  assert.match(indexHtml, /styles\.css\?v=49/);
+  assert.match(indexHtml, /app\.js\?v=50/);
+  assert.match(indexHtml, /styles\.css\?v=50/);
 });
 
 test("v5.3: tipo de explotación y actividad solo cuentan si la palabra sale tal cual en el texto oficial", () => {

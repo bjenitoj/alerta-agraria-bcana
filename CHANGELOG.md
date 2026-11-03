@@ -1,5 +1,26 @@
 # Cambios
 
+## v5.9 · 03/11/2026 · Precios por sector, Inicio más limpio
+
+- Precios: chips Agricultura / Ganadería / Pesca junto a «Fuente» (los mismos de las demás pantallas; ninguno = todos).
+- Ganadería con precios oficiales del mismo Excel semanal del MAPA (precios medios nacionales): vacuno, ovino (corderos), porcino, pollo, huevos, conejo y lácteos, con la unidad de la hoja. En la Lonja de Salamanca, ovino, bovino y porcino van en Ganadería.
+- Pesca: no hay precio oficial semanal que podamos leer; se dice así y se enlaza a las estadísticas oficiales del MAPA. No se enseña ningún precio.
+- Inicio: los cuadros Abiertas / Cierran pronto / Líneas PAC salen solo dentro de Ayudas.
+- Inicio: «Lo que has puesto primero» pasa a «Mis preferencias».
+- Inicio › Alertas: solo lo que no sale ya en otra sección (Ayudas PAC, Otras ayudas, Normativa); si no hay nada, «Nada con los criterios de ahora». Sin fuentes nuevas.
+- Alertas con avisos oficiales que no salen en otra sección, en un chip ALERTAS (campana, con número) entre Precios y Mis favoritas, y una pantalla agrupada por fuente con su enlace oficial: AEMET (RSS público de avisos de Castilla y León, sin clave), ITACyL Portal de plagas (avisos fechados de los últimos 60 días), RASVE/MAPA (focos confirmados en los últimos 30 días) y Junta de CyL (última resolución de época de peligro de incendios, de los últimos 45 días). Si una fuente no se puede leer, se dice y se enlaza. El mismo número en el chip, el cuadro de Inicio y la pantalla.
+- Normativa: botón «Borrar leídas» como en las demás pantallas.
+- Mis preferencias › Zona: País (España) › Comunidad autónoma › Provincia › Comarca agraria (las 349 comarcas oficiales del MAPA). En Comunidad, Provincia y Comarca se pueden marcar varias (casillas dentro de un desplegable, cómodo en iPhone/iPad); cada lista ofrece lo que hay debajo de lo elegido arriba. Por defecto: España › Castilla y León › Salamanca. Lo guardado antes se traduce: «Salamanca y CyL» y «Salamanca» → CyL › Salamanca; «Castilla y León» → CyL; «España» → solo España.
+- De abajo arriba: por cada comarca elegida sale lo de esa comarca, su provincia, su comunidad y lo nacional; una provincia sin comarcas elegidas, lo de la provincia, su comunidad y lo nacional; una comunidad sola, lo de la comunidad y lo nacional; solo España, lo nacional. Nunca lo de zonas que no elegiste. Vale para Ayudas, Normativa, Alertas, Precios y todos los números (pestañas, Inicio, botones de Alertas).
+- Precios por zona: si hay varias fuentes para tus zonas (p. ej. Lonja de Salamanca y MAPA), «Fuente» las ofrece todas con su nivel y eliges tú; por defecto la más concreta. El MAPA nacional siempre está. Se dice qué zonas elegidas no tienen precios propios.
+- El cartel amarillo «En revisión» ya no tapa la fila de arriba de los botones grandes de Alertas y Ayudas al tocar uno.
+- Alertas solo de tu zona (la de «Mis preferencias»; la comarca se filtra por su provincia, porque ninguna de estas fuentes da comarca): con Salamanca salen los avisos de AEMET de zonas de Salamanca, las plagas del ITACyL y el peligro de incendios de la Junta (valen para toda Castilla y León) y los focos de RASVE en Salamanca. El número de la pestaña, el cuadro de Inicio y los 4 botones usan el mismo filtro.
+- Alertas: al entrar salen 4 botones grandes (Tiempo · AEMET, Plagas · ITACyL, Sanidad animal · RASVE, Incendios · Junta CyL) con su número, como los de Ayudas. Por defecto se ven todas; tocar uno enseña solo ese tipo y tocarlo otra vez vuelve a todas.
+- Favoritas para siempre: lo que marcas como Favorita se queda hasta que lo quites (no le afectan los 15 días de leídas/borradas, que la pieza desaparezca de la fuente o se borre en el servidor, ni que la ayuda cierre). Se guarda una copia (título, fuente, enlace y fecha) en este navegador; si la ayuda ha cerrado, la tarjeta lo dice con la etiqueta «Cerrada» en vez de esconderla.
+- Zona con límites: si por cómo publican las fuentes no se pueden enseñar avisos (solo comunidad marcada, o solo «España»), Alertas explica qué hacer y lleva a Ajustes › Mis preferencias › Zona; los botones dicen «Marca tu provincia» en vez de un 0 engañoso. En Precios, la nota añade «Cambiar mi zona» cuando falta fuente propia.
+- Precios: Lonja de León como fuente provincial de León (cereales, girasol, forrajes, patatas, vacuno, ovino y caprino, leches), con fecha, unidad y variación; sin cotización («S/C») no se enseña. También en /fuentes.
+- Caché `?v=50`.
+
 ## v5.8 · 30/10/2026 · Cabecera, apartados y Ajustes más claros
 
 - Cabecera: sin el botón «Preferencias». Quedan Resumen, Herramientas y Ajustes; las preferencias están dentro de Ajustes.

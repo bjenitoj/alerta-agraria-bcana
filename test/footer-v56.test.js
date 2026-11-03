@@ -54,8 +54,8 @@ test("v5.6 sin botón «← Inicio»: se vuelve tocando «Alerta Agraria» y con
   assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/);
   // v5.8: en el móvil se vuelve a Inicio con el logo (la barra ya no lleva «Inicio»).
   assert.doesNotMatch(indexHtml, /data-dock="inicio"/);
-  assert.match(indexHtml, /styles\.css\?v=49/);
-  assert.match(indexHtml, /app\.js\?v=49/);
+  assert.match(indexHtml, /styles\.css\?v=50/);
+  assert.match(indexHtml, /app\.js\?v=50/);
 });
 
 const card = appJs.slice(appJs.indexOf("function aidCard"), appJs.indexOf("function sortedItems"));
@@ -132,7 +132,7 @@ test("v5.6 solo abiertas siempre: sin «Solo abiertas», sin «Próximas», sin 
   assert.match(base, /if \(!options\.allStatus && !shownByStatus\(item, today\)\) return false;/);
   assert.match(appJs, /inSector\(item\) && shownByStatus\(item\);/, "Resumen");
   assert.match(appJs, /isLiveAid\(item\.aid, today\) && closesWithin/, "plazos que cierran");
-  assert.match(appJs, /return isLiveAid\(\(current \|\| fav\)\.aid, today\);/, "favoritas");
+  // v5.9: las favoritas ya NO se ocultan al cerrar (se ven con la etiqueta «Cerrada»): ver favoritas-v59.test.js.
   // v5.7: «Próximas» vuelve solo como chip de la pestaña Ayudas; en Inicio no hay cuadro de próximas.
   assert.doesNotMatch(appJs.slice(appJs.indexOf("const GLANCE = ["), appJs.indexOf("const GLANCE_LIMIT")), /proxima/);
   const row = appJs.slice(appJs.indexOf("function filterRow"), appJs.indexOf("let pacData"));

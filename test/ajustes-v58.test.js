@@ -17,7 +17,7 @@ test("v5.8 chips: sin Inicio; orden Ayudas, Calendario PAC, Normativa, Precios, 
   assert.doesNotMatch(tabs, /Hoy en el campo"\]/);
   const list = tabs.slice(tabs.indexOf("const buttons"), tabs.indexOf("].filter"));
   const ids = [...list.matchAll(/\["(\w+)", /g)].map((m) => m[1]);
-  assert.deepEqual(ids.filter((id) => id !== "archivadas"), ["ayudas", "calendario", "normativa", "campo", "favoritas"]);
+  assert.deepEqual(ids.filter((id) => id !== "archivadas"), ["ayudas", "calendario", "normativa", "campo", "alertas", "favoritas"], "v5.9: Alertas entre Precios y Mis favoritas");
   assert.match(tabs, /\["campo", "Precios"\]/);
   assert.match(appJs, /campo: PRICES_ICON,/);
   const dockSvg = '<path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/>'; // el icono que tenía «Precios» en la barra
@@ -54,11 +54,11 @@ test("v5.8 Ajustes: desplegables Mis preferencias, Tema, Leídas y borradas; sin
   assert.doesNotMatch(appJs, /choiceButtons\(SECTORS,/);
 });
 
-test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=49", () => {
+test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=50", () => {
   const boe = referenceSources().find((s) => s.url === "https://www.boe.es/datosabiertos/api/legislacion-consolidada");
   assert.ok(boe);
   assert.match(boe.usedIn, /Normativa en vigor/);
-  assert.match(indexHtml, /app\.js\?v=49/);
+  assert.match(indexHtml, /app\.js\?v=50/);
 });
 
 test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de abajo; la cabecera los oculta solo ≤ 900 px", () => {
