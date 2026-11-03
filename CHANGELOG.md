@@ -1,5 +1,14 @@
 # Cambios
 
+## v6.1 · 03/11/2026 · Herramientas en iconos
+
+- Herramientas según tu zona de Mis preferencias, de abajo arriba como el resto: las nacionales (FEGA, MAPA, BOE, BDNS) siempre; las de Castilla y León solo si la tienes marcada. Con solo «España», solo nacionales. Qué se muestra según la zona (y cuántas quedan ocultas) se explica en el botón «i» junto al título, con «Elegir mi zona en Mis preferencias». Una sección sin herramientas no sale.
+- Herramientas: cuadrícula compacta de iconos (SVG propios, sin logos). Tocar el icono abre la web oficial; el botón «i» enseña nombre, organismo y la cita literal, y se cierra con ✕ (más visible, zona táctil de 36 px), al tocar fuera o con Esc. El botón «i» es un círculo de 22 px dentro de la esquina del icono. Grupos como encabezados pequeños.
+- Herramientas: sin el rótulo «HERRAMIENTAS OFICIALES» encima del título; el texto queda en «Enlaces a webs y apps oficiales.». Fuera «(texto de la página oficial)» en todas las citas.
+- SIGPAC en Castilla y León: la cita empieza en «…muestra los municipios…» (sin «La siguiente lista»); la elipsis indica que es un fragmento literal.
+- Calendario PAC: los rótulos AHORA y PRÓXIMAS van centrados en su tarjeta.
+- Caché `?v=52`.
+
 ## v6.0 · 03/11/2026 · Guía de usuario y pantallas más limpias
 
 - Ajustes: nuevo desplegable «Guía de usuario», breve: qué sale al tocar cada pestaña y botón.
