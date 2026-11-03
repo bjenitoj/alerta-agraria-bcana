@@ -3,15 +3,47 @@
   "fuente": "Ministerio de Agricultura, Pesca y Alimentación · Precios medios nacionales (semanales)",
   "horasCache": 12,
   "productos": [
-    { "id": "trigo_blando", "nombre": "Trigo blando", "grupo": "Cereales", "patron": "^Trigo blando" },
-    { "id": "cebada_pienso", "nombre": "Cebada pienso", "grupo": "Cereales", "patron": "^Cebada pienso" },
-    { "id": "cebada_malta", "nombre": "Cebada malta", "grupo": "Cereales", "patron": "^Cebada malta" },
-    { "id": "maiz", "nombre": "Maíz grano", "grupo": "Cereales", "patron": "^Ma[ií]z grano" },
-    { "id": "girasol", "nombre": "Girasol convencional", "grupo": "Girasol", "patron": "^Pipa de girasol convencional" },
-    { "id": "girasol_ao", "nombre": "Girasol alto oleico", "grupo": "Girasol", "patron": "^Pipa de girasol alto oleico" },
-    { "id": "guisantes", "nombre": "Guisantes secos", "grupo": "Leguminosas", "patron": "^Guisantes secos" },
-    { "id": "lentejas", "nombre": "Lentejas", "grupo": "Leguminosas", "patron": "^Lentejas" },
-    { "id": "habas", "nombre": "Habas secas", "grupo": "Leguminosas", "patron": "^Habas secas" },
-    { "id": "garbanzos", "nombre": "Garbanzos", "grupo": "Leguminosas", "patron": "^Garbanzos" }
-  ]
+    { "id": "trigo_blando", "nombre": "Trigo blando", "grupo": "Cereales", "patron": "^Trigo blando", "sector": "agricultura" },
+    { "id": "cebada_pienso", "nombre": "Cebada pienso", "grupo": "Cereales", "patron": "^Cebada pienso", "sector": "agricultura" },
+    { "id": "cebada_malta", "nombre": "Cebada malta", "grupo": "Cereales", "patron": "^Cebada malta", "sector": "agricultura" },
+    { "id": "maiz", "nombre": "Maíz grano", "grupo": "Cereales", "patron": "^Ma[ií]z grano", "sector": "agricultura" },
+    { "id": "girasol", "nombre": "Girasol convencional", "grupo": "Girasol", "patron": "^Pipa de girasol convencional", "sector": "agricultura" },
+    { "id": "girasol_ao", "nombre": "Girasol alto oleico", "grupo": "Girasol", "patron": "^Pipa de girasol alto oleico", "sector": "agricultura" },
+    { "id": "guisantes", "nombre": "Guisantes secos", "grupo": "Leguminosas", "patron": "^Guisantes secos", "sector": "agricultura" },
+    { "id": "lentejas", "nombre": "Lentejas", "grupo": "Leguminosas", "patron": "^Lentejas", "sector": "agricultura" },
+    { "id": "habas", "nombre": "Habas secas", "grupo": "Leguminosas", "patron": "^Habas secas", "sector": "agricultura" },
+    { "id": "garbanzos", "nombre": "Garbanzos", "grupo": "Leguminosas", "patron": "^Garbanzos", "sector": "agricultura" },
+    { "id": "terneras", "nombre": "Terneras 180-300 kg", "grupo": "Vacuno", "sector": "ganaderia", "patron": "^Terneras 180-300" },
+    { "id": "machos_12_24", "nombre": "Machos 12-24 meses (R)", "grupo": "Vacuno", "sector": "ganaderia", "patron": "^Machos 12-24 meses" },
+    { "id": "animales_8_12", "nombre": "Animales 8-12 meses (R)", "grupo": "Vacuno", "sector": "ganaderia", "patron": "^Animales 8-12 meses" },
+    { "id": "bovino_vivo", "nombre": "Bovino vivo", "grupo": "Vacuno", "sector": "ganaderia", "patron": "^Bovino vivo" },
+    { "id": "cordero_7", "nombre": "Corderos ≤7 kg canal", "grupo": "Ovino", "sector": "ganaderia", "patron": "^Corderos Peso canal \\(<=7\\)" },
+    { "id": "cordero_10", "nombre": "Corderos 7-10 kg canal", "grupo": "Ovino", "sector": "ganaderia", "patron": "^Corderos Peso canal \\(>7 y <=10\\)" },
+    { "id": "cordero_13", "nombre": "Corderos 10-13 kg canal", "grupo": "Ovino", "sector": "ganaderia", "patron": "^Corderos Peso canal \\(>10 y <=13\\)" },
+    { "id": "cordero_16", "nombre": "Corderos 13-16 kg canal", "grupo": "Ovino", "sector": "ganaderia", "patron": "^Corderos Peso canal \\(>13 y <=16\\)" },
+    { "id": "porcino_s", "nombre": "Porcino >60% magro (S)", "grupo": "Porcino", "sector": "ganaderia", "patron": "^Porcino >60% magro" },
+    { "id": "porcino_e", "nombre": "Porcino 60-55% magro (E)", "grupo": "Porcino", "sector": "ganaderia", "patron": "^Porcino 60-55% magro" },
+    { "id": "porcino_u", "nombre": "Porcino 55-50% magro (U)", "grupo": "Porcino", "sector": "ganaderia", "patron": "^Porcino 55-50% magro" },
+    { "id": "pollo", "nombre": "Pollo", "grupo": "Aves y huevos", "sector": "ganaderia", "patron": "^Pollo \\(" },
+    { "id": "huevos_l", "nombre": "Huevos jaula acondicionada, clase L", "grupo": "Aves y huevos", "sector": "ganaderia", "patron": "^Huevos tipo jaula acondicionada - Clase L" },
+    { "id": "huevos_m", "nombre": "Huevos jaula acondicionada, clase M", "grupo": "Aves y huevos", "sector": "ganaderia", "patron": "^Huevos tipo jaula acondicionada - Clase M" },
+    { "id": "huevos_campero", "nombre": "Huevos camperos L y M", "grupo": "Aves y huevos", "sector": "ganaderia", "patron": "^Huevos Tipo Campero\\. Mezcla" },
+    { "id": "conejo", "nombre": "Conejo 1,8-2,2 kg vivo", "grupo": "Aves y huevos", "sector": "ganaderia", "patron": "^Conejo" },
+    { "id": "mantequilla", "nombre": "Mantequilla sin sal", "grupo": "Lácteos", "sector": "ganaderia", "patron": "^Mantequilla sin sal" },
+    { "id": "nata", "nombre": "Nata 30% m.g.", "grupo": "Lácteos", "sector": "ganaderia", "patron": "^Nata 30%" },
+    { "id": "suero", "nombre": "Suero de leche en polvo", "grupo": "Lácteos", "sector": "ganaderia", "patron": "^Suero de leche en polvo" }
+  ],
+  "pesca": {
+    "explicacion": "El Ministerio no publica un precio semanal de pescado en primera venta que podamos leer de forma automática. Para no darte un dato equivocado, no enseñamos ninguno: consulta las fuentes oficiales.",
+    "enlaces": [
+      {
+        "nombre": "MAPA · Estadísticas de capturas y desembarcos (valor de primera venta)",
+        "url": "https://www.mapa.gob.es/es/estadistica/temas/estadisticas-pesqueras/pesca-maritima/estadistica-capturas-desembarcos/"
+      },
+      {
+        "nombre": "MAPA · Estadística digital de pesca",
+        "url": "https://www.mapa.gob.es/es/estadistica/temas/estadistica-digital/powerbi-pesca"
+      }
+    ]
+  }
 }

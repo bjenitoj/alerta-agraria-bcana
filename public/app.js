@@ -18,6 +18,8 @@ import {
   prefsSummary,
   sectorScope,
 } from "/mod/preferences.js";
+import { CCAA, PLACES_SOURCE, normalizePlace, provinceOf, comarcaOf, ccaaOf } from "/mod/places.js";
+import { placeLabel } from "/mod/preferences.js";
 import { closesWithin, deadlineInfo, fmtDayKey, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
 
 const tabsEl = document.getElementById("tabs");
@@ -446,11 +448,62 @@ function icon(name) {
   return `<span class="type">${GLYPH[name] || ""}</span>`;
 }
 
+// v5.9 · Zona = 4 desplegables en cascada: País › Comunidad autónoma › Provincia › Comarca agraria (MAPA).
+// Cada nivel después de País es opcional («Todas»). Se guarda en prefs.place.
+function placeSelectsHtml(place) {
+  // v5.9: selección múltiple con casillas dentro de un desplegable (<details>): va bien en iPhone/iPad.
+  const where = normalizePlace(place);
+  const provinces = CCAA.filter((c) => where.ccaa.includes(c.id)).flatMap((c) => c.provinces.map((p) => ({ ...p, group: c.label })));
+  const comarcas = provinces.filter((p) => where.province.includes(p.id)).flatMap((p) => p.comarcas.map((c) => ({ ...c, group: p.label })));
+  const summary = (chosen, all) => (!chosen.length ? "Todas" : chosen.length <= 2 ? chosen.map((id) => titleCase(all.find((x) => x.id === id)?.label || "")).join(", ") : `${chosen.length} elegidas`);
+  const box = (level, label, options, chosen, open) => {
+    const disabled = !options.length;
+    let lastGroup = "";
+    const rows = options.map((o) => {
+      const head = o.group && o.group !== lastGroup && new Set(options.map((x) => x.group)).size > 1 ? `<p class="place-group">${escapeHtml(o.group)}</p>` : "";
+      lastGroup = o.group || "";
+      return `${head}<label class="place-check"><input type="checkbox" data-place-level="${level}" value="${escapeHtml(o.id)}"${chosen.includes(o.id) ? " checked" : ""}> <span>${escapeHtml(titleCase(o.label))}</span></label>`;
+    }).join("");
+    return `<details class="place-field place-multi" data-place-box="${level}"${open ? " open" : ""}${disabled ? " aria-disabled=\"true\"" : ""}>
+      <summary><span class="place-label">${label}</span><span class="place-value">${escapeHtml(disabled ? "Elige antes el nivel de arriba" : summary(chosen, options))}</span></summary>
+      ${disabled ? "" : `<div class="place-options">${rows}</div>`}
+    </details>`;
+  };
+  return `<div class="place-selects">
+    <label class="place-field"><span class="place-label">País</span><select data-place="country"><option value="es" selected>España</option></select></label>
+    ${box("ccaa", "Comunidad autónoma", CCAA, where.ccaa, openPlaceBoxes.has("ccaa"))}
+    ${box("province", "Provincia", provinces, where.province, openPlaceBoxes.has("province"))}
+    ${box("comarca", "Comarca agraria", comarcas, where.comarca, openPlaceBoxes.has("comarca"))}
+  </div><p class="hint">Puedes elegir varias en cada nivel. Se enseña lo de cada zona elegida y lo de encima (provincia, comunidad, España), nunca lo de zonas que no elegiste. Comarcas agrarias oficiales del <a href="${escapeHtml(PLACES_SOURCE.url)}" target="_blank" rel="noopener">MAPA ↗</a>.</p>`;
+}function placeText(place) {
+  return placeLabel(place).replace(/\(([^)]*)\)/g, (m, inner) => `(${inner.split(", ").map(titleCase).join(", ")})`);
+}function titleCase(text) {
+  return String(text || "").toLowerCase().replace(/(^|[\s(-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase()).replace(/\b(De|Del|La|Las|Los|Y|El)\b(?!$)/g, (w, x, i) => (i ? w.toLowerCase() : w));
+}
+const openPlaceBoxes = new Set();
+function changePlace(level, value, on) {
+  const where = normalizePlace(prefs.place);
+  const now = new Set(where[level]);
+  if (on) now.add(value); else now.delete(value);
+  where[level] = [...now];
+  savePrefs({ ...prefs, place: normalizePlace(where) });
+  renderChoices();
+  document.querySelectorAll("[data-wizard-place]").forEach((el) => { el.innerHTML = placeSelectsHtml(prefs.place); });
+  render();
+}document.addEventListener("change", (event) => {
+  const box = event.target.closest?.("input[data-place-level]");
+  if (box) changePlace(box.dataset.placeLevel, box.value, box.checked);
+});
+document.addEventListener("toggle", (event) => {
+  const box = event.target?.dataset?.placeBox;
+  if (box) { if (event.target.open) openPlaceBoxes.add(box); else openPlaceBoxes.delete(box); }
+}, true);
+
 function renderChoices() {
   if (!sectorChoices) return;
   // v5.8: sin «Todos»; selección múltiple, la misma que los chips Agricultura / Ganadería / Pesca.
   sectorChoices.innerHTML = choiceButtons(CHIP_SECTORS, currentSectors(), "sector");
-  zoneChoices.innerHTML = choiceButtons(ZONES, prefs.zone, "zone");
+  zoneChoices.innerHTML = placeSelectsHtml(prefs.place);
   if (sectorBlocks) sectorBlocks.innerHTML = sectorBlocksHtml(prefs);
   if (infoChoices) infoChoices.innerHTML = choiceButtons(INFO_TYPES, prefs.info, "info", { numbered: true });
   cropChoices.innerHTML = cropTilesHtml(prefs);
@@ -815,6 +868,7 @@ const TAB_ICONS = {
   normativa: tabIcon(`<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9.5 12h6M9.5 15.5h6"/>`),
   campo: PRICES_ICON,
   favoritas: tabIcon(`<path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>`),
+  alertas: tabIcon(`<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>`),
   archivadas: tabIcon(`<rect x="3.5" y="4" width="17" height="4" rx="1"/><path d="M5 8v11h14V8M10 12h4"/>`),
 };
 const SHARE_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
@@ -902,6 +956,22 @@ function showToast(text, onUndo) {
   }, { once: true });
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { toast.hidden = true; }, 8000);
+}
+
+// v5.9: tras tocar un botón grande (Alertas o Ayudas), que la fila de arriba no quede tapada por el cartel
+// amarillo «En revisión», que va fijo arriba: se mide su alto y se baja lo que haga falta.
+function bannerBottom() {
+  const banner = document.getElementById("reviewBanner");
+  if (!banner || banner.hidden) return 0;
+  const box = banner.getBoundingClientRect();
+  return box.top <= 1 && box.bottom > 0 ? box.bottom : 0;
+}
+function revealBelowBanner(selector) {
+  const el = document.querySelector(selector);
+  if (!el) return;
+  const top = el.getBoundingClientRect().top;
+  const limit = bannerBottom() + 8;
+  if (top < limit) window.scrollBy(0, top - limit);
 }
 
 function clearRead() {
@@ -1130,13 +1200,188 @@ function digestCard(compact) {
 }
 
 /** Bloque de inicio con lo que el agricultor ha puesto primero, en su orden. Solo títulos de las fuentes. */
+// v5.9: «Alertas» solo enseña lo que no sale ya en otra sección (Ayudas PAC, Otras ayudas, Normativa…).
+function inOtherSection(item) {
+  const types = itemInfoTypes(item);
+  if (types.includes("ayudas") || types.includes("pac") || types.includes("normativa")) return true;
+  return ["ayudas", "normativa"].some((tab) => inTab(item, tab)) || isPacAid(item);
+}
+function alertOnly(items) {
+  return items.filter((item) => itemInfoTypes(item).includes("alertas") && !inOtherSection(item));
+}
+
+// v5.9: avisos oficiales de riesgo (AEMET, ITACyL plagas, RASVE, incendios de la Junta), de /api/alertas.
+let alertsData = null;
+let alertsLoading = null;
+function ensureAlerts() {
+  if (alertsData || alertsLoading) return;
+  alertsLoading = fetch("/api/alertas", { cache: "no-store" })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => { alertsData = data || { ok: false, groups: [] }; })
+    .catch(() => { alertsData = { ok: false, groups: [] }; })
+    .finally(() => { alertsLoading = null; if (!QUIET.has(PATH)) render(); });
+}
+const normUrl = (url) => String(url || "").replace(/^https?:\/\//, "").replace(/[?#].*$/, "").replace(/\/$/, "").toLowerCase();
+/** Avisos oficiales del sector elegido que no están ya en otra sección (mismo enlace o mismo título). */
+// v5.9 · Alertas SOLO de tu zona (la de «Mis preferencias»). Reglas:
+// - Tiempo (AEMET): el aviso nombra una zona de AEMET; se sabe su provincia. Salamanca / «Salamanca y CyL»: solo
+//   zonas de Salamanca. «Castilla y León» o «España»: todas las de CyL (el canal leído es el de CyL).
+// - Plagas (ITACyL) e Incendios (Junta CyL): valen para toda Castilla y León, así que SÍ salen a quien tenga
+//   Salamanca (Salamanca está en CyL). Si un aviso de plagas nombra otra provincia de CyL y no Salamanca, no sale
+//   a quien tiene solo Salamanca.
+// - Sanidad animal (RASVE): por provincia / comunidad del foco. Salamanca: solo focos en SALAMANCA. «Salamanca y
+//   CyL» y «Castilla y León»: focos en CASTILLA Y LEÓN. «España»: todos.
+// - v5.9 (cascada): el lugar es prefs.place; por defecto España › Castilla y León › Salamanca. Solo «España» = todo.
+const CYL_PROVINCES = ["avila", "burgos", "leon", "palencia", "salamanca", "segovia", "soria", "valladolid", "zamora"];
+const AEMET_ZONE_PROVINCE = { sanabria: "zamora", bierzo: "leon", trevino: "burgos" };
+function plainText(text) {
+  return String(text || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+function alertZone() {
+  return normalizePlace(prefs?.place);
+}
+function provincesIn(text) {
+  const plain = plainText(text);
+  const found = CYL_PROVINCES.filter((p) => new RegExp(`\\b${p}\\b`).test(plain));
+  for (const [name, p] of Object.entries(AEMET_ZONE_PROVINCE)) if (plain.includes(name) && !found.includes(p)) found.push(p);
+  return found;
+}
+/**
+ * v5.9: qué fuentes de avisos quedan ocultas por cómo publican (por provincia o solo Castilla y León) con la zona elegida,
+ * y qué tiene que hacer el usuario. Vacío si no se oculta nada.
+ */
+function alertLimits(place = alertZone()) {
+  const where = normalizePlace(place);
+  const cyl = where.ccaa.includes("es-cl");
+  const cylProvince = where.province.some((id) => provinceOf(id)?.ccaa === "es-cl");
+  const anyProvince = where.province.length > 0;
+  const hidden = {};
+  const onlySpain = !where.ccaa.length;
+  const needProvince = onlySpain ? "Marca tu comunidad y tu provincia" : "Marca tu provincia";
+  const onlyCyl = "Por ahora solo para Castilla y León";
+  if (!cyl) { hidden.aemet = onlySpain ? needProvince : onlyCyl; hidden.plagas = onlySpain ? needProvince : onlyCyl; hidden.incendios = onlySpain ? needProvince : onlyCyl; }
+  else if (!cylProvince) hidden.aemet = needProvince;
+  if (!anyProvince) hidden.rasve = needProvince;
+  const partial = cyl && !cylProvince ? ["plagas"] : [];
+  const ids = Object.keys(hidden);
+  if (!ids.length && !partial.length) return { hidden, partial, message: "", level: "" };
+  const names = (list) => list.map((id) => ALERT_TYPE_BUTTONS.find((entry) => entry.id === id)?.label).filter(Boolean);
+  const join = (list) => list.length > 1 ? `${list.slice(0, -1).join(", ")} y ${list[list.length - 1]}` : list[0] || "";
+  let message;
+  if (onlySpain) {
+    message = `Solo tienes marcado «España». Los avisos de ${join(names(ids))} se publican por comunidad autónoma o por provincia, así que no podemos enseñarte ninguno. Marca tu comunidad autónoma y tu provincia en Mis preferencias para verlos.`;
+  } else {
+    const byProvince = ids.filter((id) => hidden[id] === needProvince);
+    const byRegion = ids.filter((id) => hidden[id] === onlyCyl);
+    message = [
+      byProvince.length ? `Los avisos de ${join(names(byProvince))} se publican por provincia. Marca tu provincia en Mis preferencias para verlos.` : "",
+      partial.length ? `De ${join(names(partial))} solo ves los avisos de toda la comunidad; los de cada provincia salen al marcar la tuya.` : "",
+      byRegion.length ? `Los avisos de ${join(names(byRegion))} que podemos leer son solo de Castilla y León; para tu comunidad no hay una fuente oficial legible.` : "",
+    ].filter(Boolean).join(" ");
+  }
+  return { hidden, partial, message, level: onlySpain ? "ccaa" : "province" };
+}
+function alertGuide(limits = alertLimits()) {
+  if (!limits.message) return "";
+  return `<section class="alert-guide" role="note"><p><strong>Para ver todos tus avisos</strong> ${escapeHtml(limits.message)}</p>
+    <button type="button" class="primary" data-open-prefs="zona" data-zone-level="${escapeHtml(limits.level)}">Elegir mi zona en Mis preferencias</button></section>`;
+}
+
+function alertInZone(alert, groupId, place = alertZone()) {
+  // v5.9 de abajo arriba: un aviso sale si es de una zona elegida o de una zona que está por encima de una elegida.
+  // Ninguna fuente de avisos da comarca: el aviso de una provincia sale a quien eligió esa provincia (o una comarca suya).
+  const where = normalizePlace(place);
+  const text = `${alert.title || ""} ${alert.summary || ""}`;
+  const cyl = where.ccaa.includes("es-cl");
+  const chosenProvinces = where.province.map((id) => plainText(provinceOf(id)?.label || ""));
+  if (groupId === "aemet") return cyl && provincesIn(alert.title).some((p) => chosenProvinces.includes(p));
+  if (groupId === "plagas") { const provs = provincesIn(text); return cyl && (!provs.length || provs.some((p) => chosenProvinces.includes(p))); }
+  if (groupId === "incendios") return cyl;
+  if (groupId === "rasve") {
+    const plain = plainText(alert.title);
+    return chosenProvinces.some((label) => new RegExp(`\\b${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(plain));
+  }
+  return true;
+}
+function officialAlerts(groupId = null) {
+  ensureAlerts();
+  const elsewhere = (state.items || []).filter(inOtherSection);
+  const urls = new Set(elsewhere.map((item) => normUrl(item.url)));
+  const titles = new Set(elsewhere.map((item) => String(item.title || "").toLowerCase().slice(0, 80)));
+  return (alertsData?.groups || [])
+    .filter((group) => !groupId || group.id === groupId)
+    .flatMap((group) => (group.items || []).filter((alert) => alertInZone(alert, group.id)))
+    .filter((alert) => /^https?:/i.test(String(alert.url || "")) && inSector(alert))
+    .filter((alert) => !urls.has(normUrl(alert.url)))
+    .filter((alert) => !titles.has(String(alert.title || "").toLowerCase().slice(0, 80)))
+    .map((alert) => ({ ...alert, publishedAt: alert.date }));
+}
+/** Lista única de Alertas: avisos oficiales + piezas con tema «alerta» que no salen en ninguna otra sección. */
+function alertList(items = sortedItems(baseItems())) {
+  return [...officialAlerts(), ...alertOnly(items)];
+}
+
+// v5.9: 4 botones grandes (como Abiertas / Cierran pronto / Próximas de Ayudas), uno por tipo de aviso.
+// Por defecto no hay ninguno marcado y se ven TODAS (así el número de cabecera coincide con la pestaña y con
+// Inicio). Tocar un botón enseña solo ese tipo; tocarlo otra vez vuelve a todas.
+const ALERT_TYPE_BUTTONS = [
+  { id: "aemet", label: "Tiempo", source: "AEMET" },
+  { id: "plagas", label: "Plagas", source: "ITACyL" },
+  { id: "rasve", label: "Sanidad animal", source: "RASVE" },
+  { id: "incendios", label: "Incendios", source: "Junta CyL" },
+];
+let alertType = "";
+function alertTypeButtons() {
+  const limits = alertLimits();
+  return `<div class="glance status-boxes alert-types" role="group" aria-label="Tipo de alerta">${ALERT_TYPE_BUTTONS.map((entry) => {
+    const on = entry.id === alertType;
+    return `<button type="button" class="stat status-box alert-type-${entry.id}${on ? " on" : ""}" data-alert-type="${entry.id}" aria-pressed="${on ? "true" : "false"}">${limits.hidden[entry.id]
+      ? `<strong class="alert-hint-mark" aria-hidden="true">!</strong><span>${escapeHtml(entry.label)}</span><small class="alert-hint">${escapeHtml(limits.hidden[entry.id])}</small>`
+      : `<strong>${officialAlerts(entry.id).length}</strong><span>${escapeHtml(entry.label)}</span><small>${escapeHtml(entry.source)}</small>`}</button>`;
+  }).join("")}</div>`;
+}
+
+function renderAlertas() {
+  ensureAlerts();
+  if (!alertsData) return filterRow() + `<p class="empty">Cargando los avisos oficiales…</p>`;
+  const limits = alertLimits();
+  const groups = (alertsData.groups || []).filter((group) => !alertType || group.id === alertType).map((group) => {
+    const list = officialAlerts(group.id);
+    const body = limits.hidden[group.id]
+      ? `<p class="alert-hint-text">${escapeHtml(limits.hidden[group.id])} para ver estos avisos. <button type="button" class="hint-link" data-open-prefs="zona" data-zone-level="${escapeHtml(limits.level)}">Ir a Mis preferencias › Zona</button></p>`
+      : !group.ok
+      ? `<p class="empty">Ahora mismo no podemos leer esta fuente. Para no darte un dato equivocado, no enseñamos ninguno.</p>`
+      : list.length
+        ? `<ul class="alert-list">${list.map((alert) => `<li><a href="${escapeHtml(alert.url)}" target="_blank" rel="noopener">${escapeHtml(alert.title)}</a><small>${escapeHtml(alert.summary || "")}${alert.date ? ` · ${escapeHtml(fmtDay(alert.date))}` : ""}</small></li>`).join("")}</ul>`
+        : `<p class="empty">Ningún aviso ahora para tu zona y sectores.</p>`;
+    return `<section class="alert-group" data-alert-group="${escapeHtml(group.id)}">
+      <h2>${escapeHtml(group.name)}${limits.hidden[group.id] ? "" : ` <span class="count">${list.length}</span>`}</h2>
+      ${group.stale ? `<p class="note">No hemos podido actualizar ahora; es la última copia buena.</p>` : ""}
+      ${body}
+      <p class="links">Fuente oficial: <a href="${escapeHtml(group.url)}" target="_blank" rel="noopener">${escapeHtml(group.organism)} ↗</a></p>
+    </section>`;
+  }).join("");
+  const other = alertOnly(sortedItems(baseItems()));
+  const zone = alertZone();
+  const zoneLabel = placeText(zone);
+  return filterRow() +
+    `<section class="view-head"><p class="eyebrow">Avisos oficiales</p><h2>Alertas <span>${alertList().length}</span></h2>
+      <p>Solo avisos de tu zona (<strong>${escapeHtml(zoneLabel)}</strong>, <button type="button" class="hint-link" data-open-prefs="1">cambiar</button>) que no salen en Ayudas, Normativa ni en otra sección.${alertsData.fetchedAt ? ` Leídos el ${escapeHtml(fmtStamp(alertsData.fetchedAt))}.` : ""}</p></section>` +
+    alertGuide(limits) +
+    alertTypeButtons() +
+    (alertType ? `<p class="note">Solo ${escapeHtml(ALERT_TYPE_BUTTONS.find((entry) => entry.id === alertType)?.label || "")}. <button type="button" class="link-btn" data-alert-type="">Ver todas (${alertList().length})</button></p>` : "") +
+    groups +
+    (other.length && !alertType ? `<section class="alert-group"><h2>Otras alertas <span class="count">${other.length}</span></h2><div class="list">${other.map((item) => aidCard(item)).join("")}</div></section>` : "") +
+    `<p class="orientativo">${NOTICE}</p>`;
+}
+
 function priorityStrip(items) {
-  const TAB_OF = { ayudas: "ayudas", pac: "ayudas", normativa: "normativa" };
+  const TAB_OF = { ayudas: "ayudas", pac: "ayudas", normativa: "normativa", alertas: "alertas" };
   const AID_GROUP_OF = { ayudas: "otras", pac: "pac" };
   const rows = prefs.info
     .map((id, index) => {
       // v5.8: «Ayudas y subvenciones» = Ayudas › Otras ayudas; «PAC» = Ayudas › Ayudas PAC (mismo cálculo, sin repetir piezas).
-      const list = id === "ayudas" ? aidPool("otras") : id === "pac" ? aidPool("pac") : items.filter((item) => itemInfoTypes(item).includes(id));
+      const list = id === "ayudas" ? aidPool("otras") : id === "pac" ? aidPool("pac") : id === "alertas" ? alertList(items) : items.filter((item) => itemInfoTypes(item).includes(id));
       const typeLabel = INFO_TYPES.find((type) => type.id === id)?.label || id;
       const top = list.slice(0, 3)
         .map((item) => `<li><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title || "Sin título")}</a><small>${escapeHtml(item.sourceName || "Fuente oficial")}${item.publishedAt ? ` · ${escapeHtml(fmtDay(item.publishedAt))}` : ""}</small></li>`)
@@ -1145,7 +1390,7 @@ function priorityStrip(items) {
       return `<div class="prio-row"><h3><span class="prio">${index + 1}</span>${escapeHtml(typeLabel)} <span class="count">${list.length}</span></h3>${top ? `<ul>${top}</ul>` : `<p class="empty">Nada con los criterios de ahora.</p>`}${more}</div>`;
     })
     .join("");
-  return `<section class="priorities" aria-label="Lo que has puesto primero"><p class="eyebrow">Lo que has puesto primero</p>${rows}</section>`;
+  return `<section class="priorities" aria-label="Mis preferencias"><p class="eyebrow">Mis preferencias</p>${rows}</section>`;
 }
 
 function planStrip() {
@@ -1218,15 +1463,78 @@ function ensurePrices() {
 
 // v5.7: segunda fuente de precios, la Lonja de Salamanca. Se lee solo si se elige en el desplegable.
 const PRICE_SOURCE_KEY = "alerta_precios_fuente";
+// v5.9: cada fuente dice a qué zona se aplica. Se muestra la más concreta para tu zona y se sube de nivel si no hay:
+// comarca › provincia › comunidad autónoma › España. Solo hay dos fuentes oficiales legibles: ninguna de comarca ni
+// de comunidad autónoma (no se inventa ninguna).
 const PRICE_SOURCES = [
-  { id: "mapa", label: "Ministerio (MAPA)" },
-  { id: "lonja", label: "Lonja de Salamanca" },
+  { id: "mapa", label: "Ministerio (MAPA)", level: "nacional", name: "precios medios nacionales del Ministerio (MAPA)" },
+  { id: "lonja", label: "Lonja de Salamanca", level: "provincia", ccaa: "es-cl", province: "37", name: "Lonja de Salamanca" },
+  { id: "lonja-leon", label: "Lonja de León", level: "provincia", ccaa: "es-cl", province: "24", name: "Lonja de León" },
 ];
-let priceSource = (() => {
-  try { return localStorage.getItem(PRICE_SOURCE_KEY) === "lonja" ? "lonja" : "mapa"; } catch { return "mapa"; }
+const PRICE_LEVEL_RANK = { comarca: 3, provincia: 2, ccaa: 1, nacional: 0 };
+const PRICE_LEVEL_TEXT = { comarca: "comarca", provincia: "provincia", ccaa: "comunidad autónoma", nacional: "España" };
+function priceSourcesFor(place = prefs?.place) {
+  const where = normalizePlace(place);
+  return PRICE_SOURCES.filter((source) => source.level === "nacional"
+    || (source.level === "ccaa" && where.ccaa.includes(source.ccaa))
+    || (source.level === "provincia" && where.province.includes(source.province))
+    || (source.level === "comarca" && where.comarca.includes(source.comarca)));
+}
+function priceSourceLabel(source) {
+  return `${source.label} · ${source.level === "nacional" ? "España" : PRICE_LEVEL_TEXT[source.level]}`;
+}
+let priceSourceChoice = (() => {
+  try { return localStorage.getItem(PRICE_SOURCE_KEY) || ""; } catch { return ""; }
 })();
+/** Fuente que se enseña: la elegida si vale para tu zona; si no, la más concreta que haya. */
+function effectivePriceSource(place = prefs?.place) {
+  const list = priceSourcesFor(place);
+  if (list.some((source) => source.id === priceSourceChoice)) return priceSourceChoice;
+  return [...list].sort((a, b) => PRICE_LEVEL_RANK[b.level] - PRICE_LEVEL_RANK[a.level])[0].id;
+}
+/** Frase con el nivel y la fuente de los precios, y qué zonas elegidas no tienen fuente propia. */
+function priceLevelNote(place = prefs?.place) {
+  const where = normalizePlace(place);
+  const source = PRICE_SOURCES.find((entry) => entry.id === effectivePriceSource(place));
+  const head = source.level === "nacional"
+    ? "Precios medios nacionales del Ministerio (MAPA), para toda España"
+    : `Precios de la ${source.name} (${PRICE_LEVEL_TEXT[source.level]})`;
+  const has = (level, id) => PRICE_SOURCES.some((entry) => entry.level === level && entry[level === "provincia" ? "province" : level] === id);
+  // Cada zona «hoja» elegida (comarca; provincia sin comarcas; comunidad sin provincias) busca su fuente de abajo arriba.
+  const leaves = [
+    ...where.comarca.map((id) => ({ name: `la comarca ${titleCase(comarcaOf(id)?.label || "")}`, chain: [["comarca", id], ["provincia", id.slice(0, 2)], ["ccaa", provinceOf(id.slice(0, 2))?.ccaa]] })),
+    ...where.province.filter((id) => !where.comarca.some((c) => c.startsWith(id))).map((id) => ({ name: provinceOf(id)?.label, chain: [["provincia", id], ["ccaa", provinceOf(id)?.ccaa]] })),
+    ...where.ccaa.filter((id) => !where.province.some((p) => provinceOf(p)?.ccaa === id)).map((id) => ({ name: ccaaOf(id)?.label, chain: [["ccaa", id]] })),
+  ];
+  const missing = [];
+  const upward = [];
+  for (const leaf of leaves) {
+    const found = leaf.chain.findIndex(([level, id]) => has(level, id));
+    if (found < 0) missing.push(leaf.name);
+    else if (found > 0) upward.push(`${leaf.name}: se usan los de ${PRICE_SOURCES.find((e) => e.level === leaf.chain[found][0] && e[leaf.chain[found][0] === "provincia" ? "province" : leaf.chain[found][0]] === leaf.chain[found][1])?.name}`);
+  }
+  const others = priceSourcesFor(place).length > 1 ? " Hay más de una fuente para tu zona: elige en «Fuente»." : "";
+  const fallback = (upward.length ? ` No hay precios propios de ${upward.join("; ")}.` : "")
+    + (missing.length ? ` No hay precios oficiales propios que podamos leer de ${missing.join(", ")}; ahí valen los nacionales del MAPA.` : "");
+  // v5.9: si falta algo, se dice qué hacer y se lleva a Mis preferencias › Zona.
+  const action = fallback || !where.province.length
+    ? ` <button type="button" class="hint-link" data-open-prefs="zona">Cambiar mi zona</button>` : "";
+  const hint = !where.province.length ? " Para ver precios de una lonja provincial, marca tu provincia en Mis preferencias." : "";
+  return `<p class="price-level"><strong>${escapeHtml(head)}.</strong>${escapeHtml(others + fallback + hint)}${action}</p>`;
+}
+let priceSource = effectivePriceSource();
 let lonjaData = null;
 let lonjaLoading = null;
+let leonData = null;
+let leonLoading = null;
+function ensureLeon() {
+  if (leonData || leonLoading) return;
+  leonLoading = fetch("/api/precios/lonja-leon", { cache: "no-store" })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => { leonData = data || { ok: false }; })
+    .catch(() => { leonData = { ok: false }; })
+    .finally(() => { leonLoading = null; if (!QUIET.has(PATH)) render(); });
+}
 
 function ensureLonja() {
   if (lonjaData || lonjaLoading) return;
@@ -1353,11 +1661,7 @@ function glanceCards(lists) {
 
 function renderBoard() {
   const items = sortedItems(baseItems());
-  // v5.8: los cuadros cuentan con el mismo cálculo que Ayudas: abiertas y cierran pronto = Ayudas › Otras ayudas
-  // (abiertas incluye las que cierran pronto); líneas PAC = Ayudas › Ayudas PAC › abiertas.
-  const otras = aidPool("otras");
-  const open = otras.filter(GLANCE_MATCH.abierta);
-  const soon = otras.filter(GLANCE_MATCH.cierra_pronto);
+  // v5.9: los cuadros Abiertas / Cierran pronto / Líneas PAC salen solo dentro de Ayudas, no en Inicio.
   const loose = items
     .filter((item) => {
       if (item.aid?.status !== "sin_plazo") return false;
@@ -1365,11 +1669,9 @@ function renderBoard() {
       return (item.infoTypes || []).includes("ayudas");
     })
     .slice(0, 8);
-  const pacAll = aidPool("pac").filter(GLANCE_MATCH.pac);
   return `
     <div class="board">
       ${filterRow()}
-      ${glanceCards({ abierta: open, cierra_pronto: soon, pac: pacAll })}
       ${priorityStrip(items)}
       ${fieldStrip()}
       ${planStrip()}
@@ -1480,7 +1782,7 @@ function renderNormativa(recent) {
     : !normativaData.ok && !vigentes.length
       ? `<p class="empty">Ahora mismo no podemos leer la legislación consolidada del BOE. Consúltala en <a href="https://www.boe.es/buscar/legislacion.php" target="_blank" rel="noopener">boe.es</a>.</p>`
       : vigentes.length ? `<div class="list">${vigentes.map(normaCard).join("")}</div>` : `<p class="empty">Nada para este sector.</p>`;
-  return filterRow() +
+  return filterRow() + (recent.length ? readTools() : "") +
     `<section class="norma-block"><h2>Publicado últimamente (BOE y BOCyL) <span class="count">${recent.length}</span></h2>${recentHtml}</section>` +
     `<section class="norma-block"><h2>Normas en vigor (BOE) <span class="count">${vigentes.length}</span></h2>
       <p class="hint">Leyes, reales decretos y órdenes de agricultura, ganadería y pesca que el BOE da como vigentes (legislación consolidada). Sin ayudas: esas están en Ayudas.</p>${vigorHtml}</section>`;
@@ -1536,20 +1838,24 @@ function closingSoonSection(dateKey) {
 function renderFavorites() {
   const today = madridTodayKey();
   const live = new Map((state.items || []).map((item) => [itemKey(item), item]));
-  // v5.6: las favoritas cerradas o aún no abiertas tampoco se enseñan (siguen guardadas por si vuelven a abrir).
-  const entries = Object.values(favorites).filter((fav) => {
-    const current = live.get(fav.key) || (state.items || []).find((item) => item.id === fav.id);
-    return isLiveAid((current || fav).aid, today);
-  }).sort((a, b) => String(a.aid?.closesAt || "9999").localeCompare(String(b.aid?.closesAt || "9999")));
+  // v5.9: una favorita se guarda sin fecha de caducidad (no le afectan los 15 días de leídas/borradas, ni que la
+  // pieza desaparezca de la fuente, ni que la ayuda cierre). Solo se quita al tocar otra vez «★ Favorita».
+  // Si la pieza ya no está en la lista de hoy, se enseña la copia guardada (título, fuente, enlace, fecha).
+  const entries = Object.values(favorites)
+    .filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || "")))
+    .sort((a, b) => String(b.savedAt || "").localeCompare(String(a.savedAt || "")));
   const cards = entries.map((fav) => {
     const current = live.get(fav.key) || (state.items || []).find((item) => item.id === fav.id);
-    return current ? aidCard(current) : aidCard(fav, { snapshot: true });
+    const aid = (current || fav).aid;
+    const closed = Boolean(aid) && (aid.status === "cerrada" || deadlineInfo(aid, today).kind === "closed");
+    const label = closed ? `<p class="fav-closed"><span class="badge deadline dl-closed">Cerrada</span> Esta ayuda ya ha cerrado. La guardas hasta que la quites de favoritas.</p>` : "";
+    return `<div class="fav-entry${closed ? " is-closed" : ""}">${label}${current ? aidCard(current) : aidCard(fav, { snapshot: true })}</div>`;
   });
   return `
     <section class="view-head">
       <p class="eyebrow">Solo en este móvil u ordenador</p>
       <h2>Mis favoritas <span>${entries.length}</span></h2>
-      <p>Toca «★ Favorita» en cualquier ayuda para guardarla aquí.${entries.length ? " Solo salen las que siguen abiertas o sin fecha." : ""}</p>
+      <p>Toca «★ Favorita» en cualquier pieza para guardarla aquí. Se quedan hasta que tú las quites, aunque cierren o desaparezcan de la fuente.</p>
       <p class="account-note">Se guarda solo en este navegador: no hay cuenta ni se envía nada.</p>
     </section>
     ${cards.length ? `<div class="list">${cards.join("")}</div>` : `<p class="empty">Todavía no tienes favoritas.</p>`}
@@ -1613,12 +1919,94 @@ function renderPacCalendar() {
 
 function priceSourcePicker() {
   return `<label class="price-source">Fuente:
-      <select id="priceSource" aria-label="Fuente de los precios">${PRICE_SOURCES.map((source) => `<option value="${source.id}"${priceSource === source.id ? " selected" : ""}>${escapeHtml(source.label)}</option>`).join("")}</select>
+      <select id="priceSource" aria-label="Fuente de los precios">${priceSourcesFor().map((source) => `<option value="${source.id}"${priceSource === source.id ? " selected" : ""}>${escapeHtml(priceSourceLabel(source))}</option>`).join("")}</select>
     </label>`;
 }
 
+// v5.9: sector en Precios (mismos chips que en las demás pantallas; ninguno = todos).
+const LONJA_AGRI_GROUPS = new Set(["cereales", "leguminosas", "oleaginosas", "forrajes"]);
+function priceSectorOf(item, source = priceSource) {
+  if (source === "lonja") return LONJA_AGRI_GROUPS.has(String(item.group || "").toLowerCase()) ? "agricultura" : "ganaderia";
+  return item.sector || "agricultura";
+}
+function priceSectorOn(id) {
+  const list = currentSectors();
+  return !list.length || list.includes(id);
+}
+
+/** Pesca: no hay precio oficial semanal legible. Mensaje honesto y enlaces oficiales; nunca un precio inventado. */
+function pescaPrices() {
+  const info = pricesData?.pesca || {};
+  const links = (info.enlaces || []).filter((link) => /^https?:/i.test(String(link.url || "")));
+  return `
+    <section class="price-group pesca-prices">
+      <h3>Pesca</h3>
+      <p>${escapeHtml(info.explicacion || "Ahora mismo no podemos leer precios oficiales de pesca. Para no darte un dato equivocado, no enseñamos ninguno.")}</p>
+      ${links.length ? `<p class="links pesca-links">${links.map((link) => `<a class="official" href="${escapeHtml(link.url)}" target="_blank" rel="noopener">${escapeHtml(link.nombre)}</a>`).join("")}</p>` : ""}
+    </section>`;
+}
+
 function renderField() {
-  return priceSourcePicker() + (priceSource === "lonja" ? renderLonja() : renderMapaPrices());
+  ensurePrices();
+  priceSource = effectivePriceSource();
+  const onlyPesca = currentSectors().length && currentSectors().every((id) => id === "pesca");
+  const body = onlyPesca ? "" : priceSource === "lonja" ? renderLonja() : priceSource === "lonja-leon" ? renderLeonPrices() : renderMapaPrices();
+  return `<div class="price-bar">${priceSourcePicker()}${filterRow()}</div>` + (onlyPesca ? "" : priceLevelNote()) + body + (priceSectorOn("pesca") ? pescaPrices() : "");
+}
+
+/** v5.9: Lonja de León. Solo productos con precio; la variación es actual − anterior, tal como vienen en la tabla. */
+function renderLeonPrices() {
+  ensureLeon();
+  const page = "https://www.lonjadeleon.es/category/cotizaciones/";
+  if (!leonData) return `<p class="empty">Cargando los precios de la Lonja de León…</p>`;
+  if (!leonData.ok) {
+    return `
+      <section class="view-head">
+        <p class="eyebrow">Hoy en el campo</p>
+        <h2>Lonja de León</h2>
+        <p>${escapeHtml(leonData.explanation || "Ahora mismo no podemos leer los precios de la Lonja de León. Para no darte un dato equivocado, no enseñamos ninguno.")}</p>
+        <p><a class="official" href="${page}" target="_blank" rel="noopener">Ver cotizaciones de la Lonja de León</a></p>
+      </section>`;
+  }
+  const items = (leonData.items || []).filter((item) => priceSectorOn(item.sector === "ganaderia" ? "ganaderia" : "agricultura"));
+  const mesas = [...new Set(items.map((item) => item.mesa))];
+  const links = (leonData.links || []).filter((link) => /^https:\/\/www\.lonjadeleon\.es\//.test(String(link.url || "")));
+  const tables = mesas.map((mesa) => {
+    const rows = items.filter((item) => item.mesa === mesa);
+    const groups = [...new Set(rows.map((item) => item.group))];
+    const link = links.find((entry) => entry.mesa === mesa);
+    return `
+    <section class="price-group">
+      <h3>${escapeHtml(mesa)}${rows[0]?.date ? ` <small>· ${escapeHtml(fmtDay(rows[0].date))}</small>` : ""}</h3>
+      <table class="prices-table">
+        <thead><tr><th>Producto</th><th>Precio</th><th>Variación</th></tr></thead>
+        <tbody>${groups.map((group) => {
+          const list = rows.filter((item) => item.group === group);
+          const head = group.toLowerCase() !== String(mesa).toLowerCase() ? `<tr class="price-sub"><th colspan="3" scope="rowgroup">${escapeHtml(group)}</th></tr>` : "";
+          return head + list.map((item) => `
+          <tr>
+            <th scope="row">${escapeHtml(item.name)}</th>
+            <td><strong>${escapeHtml(item.last)}</strong> ${escapeHtml(item.unit)}</td>
+            <td>${lonjaTrend(item)}</td>
+          </tr>`).join("");
+        }).join("")}</tbody>
+      </table>
+      ${link ? `<p class="links"><a href="${escapeHtml(link.url)}" target="_blank" rel="noopener">Tabla oficial de ${escapeHtml(mesa.toLowerCase())}</a></p>` : ""}
+    </section>`;
+  }).join("");
+  return `
+    <section class="field-view">
+      <div class="view-head">
+        <p class="eyebrow">Hoy en el campo</p>
+        <h2>Lonja de León</h2>
+        <p><strong>Sesión del ${escapeHtml(fmtDay(leonData.session || ""))}</strong></p>
+        ${leonData.stale ? `<p class="note">No hemos podido actualizar ahora mismo. Te enseñamos la última copia buena, del ${escapeHtml(fmtStamp(leonData.fetchedAt))}.</p>` : ""}
+      </div>
+      ${tables || `<p class="empty">No hay precios de la Lonja de León para los sectores elegidos.</p>`}
+      <p class="note">Fuente: Lonja de León. Precios orientativos tal como los publica la Lonja; los productos sin cotización («S/C») no se enseñan. Variación respecto a la cotización anterior. Leídos el ${escapeHtml(fmtStamp(leonData.fetchedAt))}.</p>
+      <p class="links"><a href="${page}" target="_blank" rel="noopener">Cotizaciones de la Lonja de León</a></p>
+      <p class="orientativo">${NOTICE}</p>
+    </section>`;
 }
 
 /** «▲ 50,00» / «▼ 2,00» / «=»: la columna «Diferencia» de la tabla oficial, sin recalcular nada. */
@@ -1642,7 +2030,7 @@ function renderLonja() {
         <p><a class="official" href="${escapeHtml(table)}" target="_blank" rel="noopener">Ver cotizaciones de la Lonja (Diputación de Salamanca)</a></p>
       </section>`;
   }
-  const items = lonjaData.items || [];
+  const items = (lonjaData.items || []).filter((item) => priceSectorOn(priceSectorOf(item, "lonja")));
   const mesas = [...new Set(items.map((item) => item.mesa))];
   const tables = mesas.map((mesa) => {
     const rows = items.filter((item) => item.mesa === mesa);
@@ -1693,13 +2081,14 @@ function renderMapaPrices() {
         <p><a class="official" href="${escapeHtml(page)}" target="_blank" rel="noopener">Ver precios medios nacionales (MAPA)</a></p>
       </section>`;
   }
-  const groups = [...new Set((pricesData.items || []).map((item) => item.group))];
+  const shown = (pricesData.items || []).filter((item) => priceSectorOn(priceSectorOf(item, "mapa")));
+  const groups = [...new Set(shown.map((item) => item.group))];
   const tables = groups.map((group) => `
     <section class="price-group">
       <h3>${escapeHtml(group)}</h3>
       <table class="prices-table">
         <thead><tr><th>Producto</th><th>Precio</th><th>Variación</th></tr></thead>
-        <tbody>${(pricesData.items || []).filter((item) => item.group === group).map((item) => `
+        <tbody>${shown.filter((item) => item.group === group).map((item) => `
           <tr>
             <th scope="row">${escapeHtml(item.sheetLabel || item.name)}</th>
             <td>${item.value != null ? `<strong>${euro(item.value)}</strong> ${escapeHtml(item.unit)}` : `<span class="muted">«-» en la tabla esta semana${item.lastValue != null ? ` (semana ${item.lastWeek}: ${euro(item.lastValue)} ${escapeHtml(item.unit)})` : ""}</span>`}</td>
@@ -1791,6 +2180,7 @@ function renderTabs() {
     ["calendario", "Calendario PAC"],
     ["normativa", "Normativa"],
     ["campo", "Precios"],
+    ["alertas", "Alertas"],
     ["favoritas", "Mis favoritas"],
     ["archivadas", "Archivadas"],
   ].filter(([id]) => id !== "archivadas" || isAdmin());
@@ -1802,7 +2192,9 @@ function renderTabs() {
         : id === "archivadas"
           ? (state.archive || []).length
           : id === "favoritas"
-            ? Object.values(favorites).filter((fav) => isLiveAid(fav.aid)).length
+            ? Object.values(favorites).filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || ""))).length // v5.9: todas, también cerradas
+            : id === "alertas"
+              ? alertList(items).length // v5.9: el mismo número que la pantalla Alertas y el cuadro de Inicio
             : id === "ayudas"
               ? ayudasView().items.length // v5.7: el mismo número que la lista y el cuadro elegido
               : items.filter((item) => inTab(item, id)).length;
@@ -1847,6 +2239,7 @@ function render() {
   else if (active === "favoritas") html = renderFavorites();
   else if (active === "calendario") html = renderPacCalendar();
   else if (active === "campo") html = renderField();
+  else if (active === "alertas") html = renderAlertas();
   else if (active === "herramientas") html = renderToolsTab();
   else if (active === "archivadas") html = renderArchive();
   else html = renderList(active);
@@ -1880,7 +2273,7 @@ const WIZARD = [
     // El segundo bloque cambia con el sector del paso 1.
     title: () => PLACE_TITLE[prefs.sector] || "¿Dónde está tu explotación?",
     lead: "",
-    body: () => `<div class="choice-block"><p>Zona</p><div class="tiles${prefs.sector === "todos" ? " tiles-compact" : ""}">${choiceButtons(ZONES, prefs.zone, "zone")}</div></div>
+    body: () => `<div class="choice-block"><p>Zona</p><div data-wizard-place>${placeSelectsHtml(prefs.place)}</div></div>
       ${sectorBlocksHtml(prefs)}`,
   },
   {
@@ -2244,8 +2637,9 @@ appEl.addEventListener("change", async (event) => {
 
 appEl.addEventListener("change", (event) => {
   if (event.target.id !== "priceSource") return;
-  priceSource = event.target.value === "lonja" ? "lonja" : "mapa";
-  try { localStorage.setItem(PRICE_SOURCE_KEY, priceSource); } catch { /* queda en esta visita */ }
+  priceSourceChoice = PRICE_SOURCES.some((source) => source.id === event.target.value) ? event.target.value : "mapa";
+  priceSource = effectivePriceSource();
+  try { localStorage.setItem(PRICE_SOURCE_KEY, priceSourceChoice); } catch { /* queda en esta visita */ }
   render();
 });
 
@@ -2305,11 +2699,21 @@ appEl.addEventListener("click", (event) => {
     render();
     return;
   }
+  const alertTypeBtn = event.target.closest("[data-alert-type]");
+  if (alertTypeBtn) {
+    event.preventDefault();
+    const next = alertTypeBtn.dataset.alertType;
+    alertType = next && next !== alertType ? next : "";
+    render();
+    revealBelowBanner(".alert-types");
+    return;
+  }
   const aidChip = event.target.closest("[data-aid-status]");
   if (aidChip) {
     event.preventDefault();
     saveAidStatus(aidChip.dataset.aidStatus);
     render();
+    revealBelowBanner(".status-boxes");
     return;
   }
   const sectorChip = event.target.closest("[data-sector-chip]");
@@ -2320,10 +2724,15 @@ appEl.addEventListener("click", (event) => {
     render();
     return;
   }
-  if (event.target.closest("[data-open-prefs]")) {
+  const openPrefs = event.target.closest("[data-open-prefs]");
+  if (openPrefs) {
     event.preventDefault();
+    // v5.9: «zona» lleva a Ajustes › Mis preferencias › Zona y abre el desplegable que falta (comunidad o provincia).
+    const level = openPrefs.dataset.openPrefs === "zona" ? (openPrefs.dataset.zoneLevel || (normalizePlace(prefs.place).ccaa.length ? "province" : "ccaa")) : "";
+    if (level) openPlaceBoxes.add(level);
     setSheet(true, true);
     render();
+    if (level) requestAnimationFrame(() => document.querySelector(`[data-place-box="${level}"]`)?.scrollIntoView({ block: "center" }));
     return;
   }
   const go = event.target.closest("[data-goto]");

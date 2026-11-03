@@ -45,7 +45,7 @@ test("la contraseña se guarda como hash scrypt y las preferencias vuelven con l
   assert.equal(created.user.plan, "gratis");
   assert.equal(created.user.email, "ana@campo.test");
   assert.equal(created.user.prefs.sector, "ganaderia");
-  assert.equal(created.user.prefs.zone, "salamanca");
+  assert.deepEqual(created.user.prefs.place.province, ["37"]); // v5.9: zona «salamanca» → CyL › Salamanca
   assert.equal(created.user.password, undefined);
 
   const raw = fs.readFileSync(path.join(dir, "cuentas.json"), "utf8");

@@ -75,15 +75,17 @@ test("v5.7 Lonja: con caché y sin inventar si falla", async () => {
 
 test("v5.7 Precios: desplegable de fuente (MAPA por defecto, recuerda la elección) y Lonja en Fuentes oficiales", () => {
   assert.match(appJs, /const PRICE_SOURCE_KEY = "alerta_precios_fuente";/);
-  assert.match(appJs, /localStorage\.getItem\(PRICE_SOURCE_KEY\) === "lonja" \? "lonja" : "mapa"/);
-  assert.match(appJs, /\{ id: "mapa", label: "Ministerio \(MAPA\)" \},\s*\{ id: "lonja", label: "Lonja de Salamanca" \}/);
-  assert.match(appJs, /localStorage\.setItem\(PRICE_SOURCE_KEY, priceSource\)/);
+  // v5.9: la fuente depende de la zona (ver precios-zona-v59.test.js); se sigue recordando la elección.
+  assert.match(appJs, /localStorage\.getItem\(PRICE_SOURCE_KEY\)/);
+  assert.match(appJs, /\{ id: "mapa", label: "Ministerio \(MAPA\)"/);
+  assert.match(appJs, /\{ id: "lonja", label: "Lonja de Salamanca"/);
+  assert.match(appJs, /localStorage\.setItem\(PRICE_SOURCE_KEY, priceSourceChoice\)/);
   assert.match(appJs, /<thead><tr><th>Producto<\/th><th>Precio<\/th><th>Variación<\/th><\/tr><\/thead>/);
   assert.match(appJs, /Sesión del \$\{escapeHtml\(lonjaData\.session/);
   assert.match(serverJs, /app\.get\("\/api\/precios\/lonja"/);
   const lonja = publicSourceView({}).sources.find((source) => source.id === "lonja_salamanca");
   assert.equal(lonja.status, "precios", "ya no sale en «Preparadas, aún no consultadas»");
-  assert.match(indexHtml, /\?v=49/);
+  assert.match(indexHtml, /\?v=50/);
 });
 
 test("v5.7 sin pestañas «Jóvenes» ni «Noticias»; «noticias» fuera de Mis preferencias; valores viejos no rompen", async () => {
@@ -102,7 +104,7 @@ test("v5.7 sin pestañas «Jóvenes» ni «Noticias»; «noticias» fuera de Mis
   // Una pieza de Ayudas sigue en Ayudas aunque también fuera noticia.
   assert.deepEqual(itemInfoTypes({ category: "noticias_oficiales", infoTypes: ["ayudas", "noticias"] }), ["ayudas"]);
   assert.deepEqual(itemInfoTypes({ category: "jovenes_modernizacion", kind: "ayuda", infoTypes: ["noticias"] }), ["ayudas"]);
-  assert.match(indexHtml, /\?v=49/);
+  assert.match(indexHtml, /\?v=50/);
 });
 
 test("v5.7 «solo abiertas» solo para ayudas; Normativa siempre y por fecha; Ayudas con bloques y chips de estado", () => {
@@ -118,5 +120,5 @@ test("v5.7 «solo abiertas» solo para ayudas; Normativa siempre y por fecha; Ay
   assert.match(appJs, /\{ id: "pac", label: "Ayudas PAC" \},\s*\{ id: "otras", label: "Otras ayudas" \},/);
   assert.match(appJs, /if \(tab === "ayudas"\) return renderAyudas\(\);/);
   assert.match(appJs, /class="glance status-boxes"/);
-  assert.match(indexHtml, /\?v=49/);
+  assert.match(indexHtml, /\?v=50/);
 });

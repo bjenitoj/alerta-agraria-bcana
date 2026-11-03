@@ -91,7 +91,7 @@ test("v5.5 sector: listas, pestañas, «Ver todas», Resumen y plazos usan el mi
   const list = between("function renderList", "function closingSoonList");
   assert.match(list, /baseItems\(\)\.filter\(\(item\) => \(match \? match\(item\) : inTab\(item, tab\)\)\)/);
   assert.match(between("function aidPool", "function ayudasView"), /baseItems\(\{ allStatus: true \}\)/);
-  assert.match(between("function renderBoard", "const GLANCE_MATCH"), /aidPool\("otras"\)/, "v5.8: Inicio usa el mismo cálculo que Ayudas");
+  assert.doesNotMatch(between("function renderBoard", "const GLANCE_MATCH"), /glanceCards\(/, "v5.9: Inicio ya no tiene los cuadros");
   assert.match(between("function renderTabs", "function "), /const items = baseItems\(\);/);
   assert.match(between("function paintDigestBtn", "function "), /digestBadgeCount\(\)/, "Resumen (botón de cabecera) cuenta piezas, no días");
   assert.match(between("function digestData", "function digestBadgeCount"), /inSector\(item\)/);
