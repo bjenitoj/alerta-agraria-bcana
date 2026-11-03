@@ -1,5 +1,17 @@
 # Cambios
 
+## v6.0 · 03/11/2026 · Guía de usuario y pantallas más limpias
+
+- Ajustes: nuevo desplegable «Guía de usuario», breve: qué sale al tocar cada pestaña y botón.
+- Alertas: «Avisos oficiales de tu zona» y «Alertas (n)»; sin el párrafo explicativo. Siguen los 4 botones.
+- Precios: fuera la nota «Fuente… Leídos el…» en MAPA, Lonja de Salamanca y Lonja de León; siguen los enlaces oficiales y el aviso orientativo.
+- Normativa: fuera el texto «Toca una noticia para marcarla como leída».
+- Calendario PAC: sin «Campaña 2026» ni la cita del MAPA bajo el título; tarjetas AHORA (naranja) y PRÓXIMAS (verde, hasta 3) y lista partida en Ahora / Próximas (Terminados plegados). Solo datos de config/pac-calendario.json, con sus citas y fuentes.
+- Cabecera: «Para tu explotación»; «Última consulta» y la fecha en dos líneas centradas.
+- Todos los números que cuentan cosas van entre paréntesis en todas las pantallas: pestañas «AYUDAS (31)», cuadros de Inicio «PAC (31)» y «Ver (31)», cuadros de estado de Ayudas, cabeceras de Normativa, Alertas, Favoritas y Resumen, y el número del botón Resumen. No cambian los cuadros grandes de Alertas, las cuentas atrás, los precios ni las fechas.
+- Un solo nombre para el calendario de pagos: el cuadro de Inicio pasa de «PAGOS PAC 2026» a «CALENDARIO PAC», como la pestaña. La Guía de usuario explica qué enseña Calendario PAC.
+- Caché `?v=51`.
+
 ## v5.9 · 03/11/2026 · Precios por sector, Inicio más limpio
 
 - Precios: chips Agricultura / Ganadería / Pesca junto a «Fuente» (los mismos de las demás pantallas; ninguno = todos).

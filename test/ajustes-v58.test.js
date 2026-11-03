@@ -44,8 +44,8 @@ test("v5.8 cuadros de Inicio sin mayúsculas forzadas", () => {
 test("v5.8 Ajustes: desplegables Mis preferencias, Tema, Leídas y borradas; sin «Todos»", () => {
   const sheet = indexHtml.slice(indexHtml.indexOf('<div id="prefSheet"'), indexHtml.indexOf('<nav class="tabs'));
   const keys = [...sheet.matchAll(/data-acc="(\w+)"/g)].map((m) => m[1]);
-  assert.deepEqual(keys, ["prefs", "tema", "leidas"]);
-  assert.equal((sheet.match(/class="acc-panel"[^>]* hidden>/g) || []).length, 3, "cerrados al abrir");
+  assert.deepEqual(keys, ["prefs", "tema", "leidas", "guia"]);
+  assert.equal((sheet.match(/class="acc-panel"[^>]* hidden>/g) || []).length, 4, "cerrados al abrir");
   assert.match(sheet, /<span class="acc-title">Leídas y borradas<\/span><span class="acc-note">Se guardan 15 días/);
   assert.match(sheet, /Recuperar borradas/);
   assert.doesNotMatch(sheet, /Ir a Mis preferencias/);
@@ -54,11 +54,11 @@ test("v5.8 Ajustes: desplegables Mis preferencias, Tema, Leídas y borradas; sin
   assert.doesNotMatch(appJs, /choiceButtons\(SECTORS,/);
 });
 
-test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=50", () => {
+test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=51", () => {
   const boe = referenceSources().find((s) => s.url === "https://www.boe.es/datosabiertos/api/legislacion-consolidada");
   assert.ok(boe);
   assert.match(boe.usedIn, /Normativa en vigor/);
-  assert.match(indexHtml, /app\.js\?v=50/);
+  assert.match(indexHtml, /app\.js\?v=51/);
 });
 
 test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de abajo; la cabecera los oculta solo ≤ 900 px", () => {

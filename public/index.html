@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=50" />
+  <link rel="stylesheet" href="/styles.css?v=51" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -56,7 +56,7 @@
       <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#1b4332"/><circle cx="24" cy="17" r="7" fill="#e8b84a"/><path d="M6 34c7-9 12-8 18 1 6-11 13-10 18 0v8H6z" fill="#f4e7c4"/><path d="M24 24v11" stroke="#e8b84a" stroke-width="2" stroke-linecap="round"/></svg>
       <span>
         <strong>Alerta Agraria</strong>
-        <small>Ayudas, PAC y tu explotación</small>
+        <small>Para tu explotación</small>
       </span>
     </a>
     <div class="top-tools">
@@ -136,6 +136,26 @@
           </div>
         </div>
       </section>
+      <!-- v6.0: 4) Guía de usuario, breve: qué sale al tocar cada pestaña o botón. -->
+      <section class="acc settings-guide">
+        <button type="button" class="acc-btn" id="guideTitle" data-acc="guia" aria-expanded="false" aria-controls="acc-guia"><span class="acc-text"><span class="acc-title">Guía de usuario</span><span class="acc-note">Qué sale al tocar cada botón</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="acc-panel" id="acc-guia" role="region" aria-labelledby="guideTitle" hidden>
+          <dl class="guide-list">
+            <dt>Resumen</dt><dd>Las novedades oficiales del día y lo que cierra pronto.</dd>
+            <dt>Herramientas</dt><dd>Enlaces a las herramientas y trámites oficiales.</dd>
+            <dt>Ajustes</dt><dd>Mis preferencias (sector, información, zona y cultivos), tema y leídas.</dd>
+            <dt>Ayudas</dt><dd>Ayudas PAC y otras ayudas, por estado (abiertas, cierran pronto…). Nunca las cerradas.</dd>
+            <dt>Calendario PAC</dt><dd>El pago en curso (Ahora) con su fecha de fin y los 2-3 siguientes (Próximas) con fecha; debajo, el detalle con citas y fuentes oficiales. En Inicio, un cuadro con el pago en curso.</dd>
+            <dt>Normativa</dt><dd>Lo último del BOE y BOCyL y las normas en vigor.</dd>
+            <dt>Precios</dt><dd>Precios oficiales de tu zona; elige la fuente en «Fuente».</dd>
+            <dt>Alertas</dt><dd>Avisos oficiales de tu zona: tiempo, plagas, sanidad animal e incendios.</dd>
+            <dt>Mis favoritas</dt><dd>Lo que marcaste con «★ Favorita». Se guarda en este dispositivo.</dd>
+            <dt>Agricultura · Ganadería · Pesca</dt><dd>Filtran lo que ves por sector. Ninguno marcado = todos.</dd>
+            <dt>★ Favorita · Compartir</dt><dd>Guarda la ficha en Mis favoritas · la envía por el menú del móvil o WhatsApp.</dd>
+            <dt>Borrar leídas</dt><dd>Quita de la vista 15 días lo ya leído. Las favoritas no se borran.</dd>
+          </dl>
+        </div>
+      </section>
     </div>
   </div>
 
@@ -191,6 +211,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=50"></script>
+  <script type="module" src="/app.js?v=51"></script>
 </body>
 </html>
