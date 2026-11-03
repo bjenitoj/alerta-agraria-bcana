@@ -74,7 +74,7 @@ test("v5.5 sector: el número del cuadro = piezas del cuadro abierto = «Ver tod
       g.open(card.id);
       const html = g.glanceCards(lists);
       const n = lists[card.id].length;
-      assert.match(html, new RegExp(`data-stat="${card.id}"[^>]*><strong>${n}</strong>`));
+      assert.match(html, new RegExp(`data-stat="${card.id}"[^>]*><strong>\\(${n}\\)</strong>`));
       const panel = html.slice(html.indexOf('id="statPanel"'));
       assert.equal((panel.match(/<article class="card"/g) || []).length, Math.min(n, 10));
       if (n) assert.match(panel, new RegExp(`data-status="${card.status}">Ver todas \\(${n}\\)</button>`));

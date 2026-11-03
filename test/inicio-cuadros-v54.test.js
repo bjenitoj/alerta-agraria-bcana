@@ -37,9 +37,9 @@ test("v5.4 cuadros: botones con aria-expanded/aria-controls, cuenta real y flech
   assert.equal(buttons.length, 3);
   assert.doesNotMatch(html, /data-stat="proxima"/);
   for (const label of LABELS) assert.match(html, new RegExp(`<span>${label}</span>`));
-  assert.match(html, /data-stat="abierta"[^>]*><strong>2<\/strong>/);
-  assert.match(html, /data-stat="cierra_pronto"[^>]*><strong>0<\/strong>/);
-  assert.match(html, /data-stat="pac"[^>]*><strong>1<\/strong>/);
+  assert.match(html, /data-stat="abierta"[^>]*><strong>\(2\)<\/strong>/);
+  assert.match(html, /data-stat="cierra_pronto"[^>]*><strong>\(0\)<\/strong>/);
+  assert.match(html, /data-stat="pac"[^>]*><strong>\(1\)<\/strong>/);
   assert.match(html, /class="chev"/);
   assert.match(html, /<div id="statPanel" class="stat-panel" role="region" aria-label="Detalle" hidden><\/div>/, "cerrado por defecto");
 });

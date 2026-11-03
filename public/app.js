@@ -909,7 +909,7 @@ function deletableReadCount() {
 /** Barra pequeña con «Borrar leídas (N)», como en la app original. */
 function readTools() {
   const n = deletableReadCount();
-  return `<div class="read-tools"><button type="button" class="ghost clear-read" data-clear-read="1"${n ? "" : " disabled"}>Borrar leídas (${n})</button><span class="hint">${n ? "Se quitan de la vista 15 días. Las favoritas no se borran." : "Toca una noticia para marcarla como leída."}</span></div>`;
+  return `<div class="read-tools"><button type="button" class="ghost clear-read" data-clear-read="1"${n ? "" : " disabled"}>Borrar leídas (${n})</button>${n ? `<span class="hint">Se quitan de la vista 15 días. Las favoritas no se borran.</span>` : ""}</div>`;
 }
 
 function paintReadTools() {
@@ -1128,7 +1128,7 @@ function paintDigestBtn() {
   digestBtn.classList.toggle("on", active === "resumen");
   if (badge) {
     badge.hidden = !count;
-    badge.textContent = count > 99 ? "99+" : String(count);
+    badge.textContent = `(${count > 99 ? "99+" : count})`;
     // v5.8: el mismo número en el botón «Resumen» de la barra de abajo (móvil).
     const dockBadge = document.querySelector(".dock .dock-badge");
     if (dockBadge) { dockBadge.hidden = badge.hidden; dockBadge.textContent = badge.textContent; }
@@ -1173,7 +1173,7 @@ function digestCard(compact) {
       + (visible.length > 4 ? `<p class="more">Hay ${visible.length} en este resumen. El resto está en la pestaña Resumen.</p>` : "");
   } else {
     body = groups
-      .map((group) => `<h4 class="digest-group">${escapeHtml(label(group.id))} <span>${group.items.length}</span></h4>${group.items.map((item) => aidCard(item)).join("")}`)
+      .map((group) => `<h4 class="digest-group">${escapeHtml(label(group.id))} <span>(${group.items.length})</span></h4>${group.items.map((item) => aidCard(item)).join("")}`)
       .join("");
   }
   return `
@@ -1355,7 +1355,7 @@ function renderAlertas() {
         ? `<ul class="alert-list">${list.map((alert) => `<li><a href="${escapeHtml(alert.url)}" target="_blank" rel="noopener">${escapeHtml(alert.title)}</a><small>${escapeHtml(alert.summary || "")}${alert.date ? ` · ${escapeHtml(fmtDay(alert.date))}` : ""}</small></li>`).join("")}</ul>`
         : `<p class="empty">Ningún aviso ahora para tu zona y sectores.</p>`;
     return `<section class="alert-group" data-alert-group="${escapeHtml(group.id)}">
-      <h2>${escapeHtml(group.name)}${limits.hidden[group.id] ? "" : ` <span class="count">${list.length}</span>`}</h2>
+      <h2>${escapeHtml(group.name)}${limits.hidden[group.id] ? "" : ` <span class="count">(${list.length})</span>`}</h2>
       ${group.stale ? `<p class="note">No hemos podido actualizar ahora; es la última copia buena.</p>` : ""}
       ${body}
       <p class="links">Fuente oficial: <a href="${escapeHtml(group.url)}" target="_blank" rel="noopener">${escapeHtml(group.organism)} ↗</a></p>
@@ -1365,13 +1365,12 @@ function renderAlertas() {
   const zone = alertZone();
   const zoneLabel = placeText(zone);
   return filterRow() +
-    `<section class="view-head"><p class="eyebrow">Avisos oficiales</p><h2>Alertas <span>${alertList().length}</span></h2>
-      <p>Solo avisos de tu zona (<strong>${escapeHtml(zoneLabel)}</strong>, <button type="button" class="hint-link" data-open-prefs="1">cambiar</button>) que no salen en Ayudas, Normativa ni en otra sección.${alertsData.fetchedAt ? ` Leídos el ${escapeHtml(fmtStamp(alertsData.fetchedAt))}.` : ""}</p></section>` +
+    `<section class="view-head"><p class="eyebrow">Avisos oficiales de tu zona</p><h2 title="${escapeHtml(zoneLabel)}">Alertas (${alertList().length})</h2></section>` +
     alertGuide(limits) +
     alertTypeButtons() +
     (alertType ? `<p class="note">Solo ${escapeHtml(ALERT_TYPE_BUTTONS.find((entry) => entry.id === alertType)?.label || "")}. <button type="button" class="link-btn" data-alert-type="">Ver todas (${alertList().length})</button></p>` : "") +
     groups +
-    (other.length && !alertType ? `<section class="alert-group"><h2>Otras alertas <span class="count">${other.length}</span></h2><div class="list">${other.map((item) => aidCard(item)).join("")}</div></section>` : "") +
+    (other.length && !alertType ? `<section class="alert-group"><h2>Otras alertas <span class="count">(${other.length})</span></h2><div class="list">${other.map((item) => aidCard(item)).join("")}</div></section>` : "") +
     `<p class="orientativo">${NOTICE}</p>`;
 }
 
@@ -1386,8 +1385,8 @@ function priorityStrip(items) {
       const top = list.slice(0, 3)
         .map((item) => `<li><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title || "Sin título")}</a><small>${escapeHtml(item.sourceName || "Fuente oficial")}${item.publishedAt ? ` · ${escapeHtml(fmtDay(item.publishedAt))}` : ""}</small></li>`)
         .join("");
-      const more = TAB_OF[id] ? `<button type="button" class="link-btn" data-goto="${TAB_OF[id]}"${AID_GROUP_OF[id] ? ` data-aid-group-goto="${AID_GROUP_OF[id]}"` : ""}>Ver ${list.length}</button>` : "";
-      return `<div class="prio-row"><h3><span class="prio">${index + 1}</span>${escapeHtml(typeLabel)} <span class="count">${list.length}</span></h3>${top ? `<ul>${top}</ul>` : `<p class="empty">Nada con los criterios de ahora.</p>`}${more}</div>`;
+      const more = TAB_OF[id] ? `<button type="button" class="link-btn" data-goto="${TAB_OF[id]}"${AID_GROUP_OF[id] ? ` data-aid-group-goto="${AID_GROUP_OF[id]}"` : ""}>Ver (${list.length})</button>` : "";
+      return `<div class="prio-row"><h3><span class="prio">${index + 1}</span>${escapeHtml(typeLabel)} <span class="count">(${list.length})</span></h3>${top ? `<ul>${top}</ul>` : `<p class="empty">Nada con los criterios de ahora.</p>`}${more}</div>`;
     })
     .join("");
   return `<section class="priorities" aria-label="Mis preferencias"><p class="eyebrow">Mis preferencias</p>${rows}</section>`;
@@ -1591,7 +1590,7 @@ function fieldStrip() {
       ? `<span class="count-big">${escapeHtml(String(days))}<small>${next.state === "en_curso" ? "días para que termine" : "días para empezar"}</small></span>`
       : "";
     pac = `<div class="strip-card pac-next">
-        <span class="eyebrow">Pagos PAC ${escapeHtml(pacData.campaign || "")}</span>
+        <span class="eyebrow">Calendario PAC</span>
         <strong>${escapeHtml(next.title)}</strong>
         ${big}
         <span>${escapeHtml(next.countdown)}</span>
@@ -1599,7 +1598,7 @@ function fieldStrip() {
         <button type="button" class="link-btn" data-goto="calendario">Ver el calendario con las citas</button>
       </div>`;
   } else if (!next) {
-    pac = `<div class="strip-card pac-next"><span class="eyebrow">Pagos PAC</span><strong>${pacData?.error ? "Calendario no disponible" : "Cargando calendario…"}</strong></div>`;
+    pac = `<div class="strip-card pac-next"><span class="eyebrow">Calendario PAC</span><strong>${pacData?.error ? "Calendario no disponible" : "Cargando calendario…"}</strong></div>`;
   }
   const wanted = ["trigo_blando", "cebada_pienso", "maiz", "girasol"];
   const fileUrl = pricesData?.fileUrl || "";
@@ -1641,7 +1640,7 @@ function isPacLine(item) {
 function glanceCards(lists) {
   const cards = GLANCE.map((card) => {
     const on = openStat === card.id;
-    return `<button type="button" class="stat ${card.id}${on ? " open" : ""}" data-stat="${card.id}" aria-expanded="${on ? "true" : "false"}" aria-controls="statPanel"><strong>${lists[card.id].length}</strong><span>${card.label}</span>${CHEVRON}</button>`;
+    return `<button type="button" class="stat ${card.id}${on ? " open" : ""}" data-stat="${card.id}" aria-expanded="${on ? "true" : "false"}" aria-controls="statPanel"><strong>(${lists[card.id].length})</strong><span>${card.label}</span>${CHEVRON}</button>`;
   }).join("");
   const card = GLANCE.find((entry) => entry.id === openStat);
   let panel = "";
@@ -1737,7 +1736,7 @@ function renderAyudas() {
   }).join("");
   const boxes = AID_STATUS_CHIPS.map((entry) => {
     const on = entry.id === view.chip;
-    return `<button type="button" class="stat status-box ${entry.id}${on ? " on" : ""}" data-aid-status="${entry.id}" aria-pressed="${on ? "true" : "false"}"><strong>${view.counts[entry.id]}</strong><span>${escapeHtml(entry.label)}</span></button>`;
+    return `<button type="button" class="stat status-box ${entry.id}${on ? " on" : ""}" data-aid-status="${entry.id}" aria-pressed="${on ? "true" : "false"}"><strong>(${view.counts[entry.id]})</strong><span>${escapeHtml(entry.label)}</span></button>`;
   }).join("");
   const label = AID_STATUS_CHIPS.find((entry) => entry.id === view.chip)?.label || "";
   const body = view.items.length
@@ -1783,8 +1782,8 @@ function renderNormativa(recent) {
       ? `<p class="empty">Ahora mismo no podemos leer la legislación consolidada del BOE. Consúltala en <a href="https://www.boe.es/buscar/legislacion.php" target="_blank" rel="noopener">boe.es</a>.</p>`
       : vigentes.length ? `<div class="list">${vigentes.map(normaCard).join("")}</div>` : `<p class="empty">Nada para este sector.</p>`;
   return filterRow() + (recent.length ? readTools() : "") +
-    `<section class="norma-block"><h2>Publicado últimamente (BOE y BOCyL) <span class="count">${recent.length}</span></h2>${recentHtml}</section>` +
-    `<section class="norma-block"><h2>Normas en vigor (BOE) <span class="count">${vigentes.length}</span></h2>
+    `<section class="norma-block"><h2>Publicado últimamente (BOE y BOCyL) <span class="count">(${recent.length})</span></h2>${recentHtml}</section>` +
+    `<section class="norma-block"><h2>Normas en vigor (BOE) <span class="count">(${vigentes.length})</span></h2>
       <p class="hint">Leyes, reales decretos y órdenes de agricultura, ganadería y pesca que el BOE da como vigentes (legislación consolidada). Sin ayudas: esas están en Ayudas.</p>${vigorHtml}</section>`;
 }
 
@@ -1832,7 +1831,7 @@ function closingSoonSection(dateKey) {
         </li>`;
       }).join("")}</ul>`
     : `<p class="empty">Ninguna ayuda de la lista cierra en menos de 15 días.</p>`;
-  return `<section class="closing-soon"><h3>Plazos que cierran en menos de 15 días <span>${list.length}</span></h3>${rows}</section>`;
+  return `<section class="closing-soon"><h3>Plazos que cierran en menos de 15 días <span>(${list.length})</span></h3>${rows}</section>`;
 }
 
 function renderFavorites() {
@@ -1854,7 +1853,7 @@ function renderFavorites() {
   return `
     <section class="view-head">
       <p class="eyebrow">Solo en este móvil u ordenador</p>
-      <h2>Mis favoritas <span>${entries.length}</span></h2>
+      <h2>Mis favoritas <span>(${entries.length})</span></h2>
       <p>Toca «★ Favorita» en cualquier pieza para guardarla aquí. Se quedan hasta que tú las quites, aunque cierren o desaparezcan de la fuente.</p>
       <p class="account-note">Se guarda solo en este navegador: no hay cuenta ni se envía nada.</p>
     </section>
@@ -1889,28 +1888,33 @@ function renderPacCalendar() {
   ensurePac();
   if (!pacData) return `<p class="empty">Cargando el calendario de la PAC…</p>`;
   if (pacData.error) return `<p class="empty">No se ha podido cargar el calendario. Consulta el <a href="https://www.fega.gob.es/es/pepac-2023-2027/ayudas-directas/informacion-campanas-pac" target="_blank" rel="noopener">FEGA</a>.</p>`;
-  const next = pacData.next;
-  const days = next ? (next.state === "en_curso" ? next.daysToEnd : next.daysToStart) : null;
-  const big = next
-    ? `<div class="countdown-hero">
-        <p class="eyebrow">${next.state === "en_curso" ? "Ahora mismo" : "Lo siguiente"}</p>
-        <h2>${escapeHtml(next.title)}</h2>
-        ${days != null ? `<p class="count-big">${escapeHtml(String(days))}<small>${next.state === "en_curso" ? "días para que termine" : "días para empezar"}</small></p>` : ""}
-        <p>${escapeHtml(next.countdown)}</p>
-      </div>`
-    : "";
-  const notice = pacData.notice
-    ? `<p>${escapeHtml(pacData.notice.context)} <q>${escapeHtml(pacData.notice.text)}</q> <small>— ${sourceAnchor(pacData.notice.source.url, pacData.notice.source.nombre)}</small></p>`
-    : "";
+  // v6.0: dos tarjetas (AHORA en naranja, PRÓXIMAS en verde) y la lista partida en Ahora / Próximas / Terminados.
+  const list = pacData.milestones || [];
+  const now = list.filter((item) => item.state === "en_curso");
+  const upcoming = list.filter((item) => item.state === "proximo");
+  const past = list.filter((item) => item.state === "pasado");
+  const brief = (item) => {
+    const text = String(item.quotes?.[0]?.text || "").trim();
+    return text.length > 110 ? `${text.slice(0, 107).replace(/\s+\S*$/, "")}…` : text;
+  };
+  const when = (item) => item.state === "en_curso"
+    ? (item.to ? `Hasta el ${shortDay(item.to)} ${item.to.slice(0, 4)}` : "")
+    : item.fromMonthOnly || item.fromApprox ? `${item.fromText} (orientativa)` : `Desde el ${shortDay(item.from)} ${item.from.slice(0, 4)}`;
+  const cardRow = (item) => `<li><strong>${escapeHtml(item.title)}</strong><span class="pac-when">${escapeHtml(item.state === "proximo" && !item.fromApprox && !item.fromMonthOnly ? `${when(item)} · ${item.countdown}` : item.countdown)}</span>${brief(item) ? `<q>${escapeHtml(brief(item))}</q>` : ""}</li>`;
+  const cards = `<div class="pac-cards">
+      <section class="pac-card pac-now"><p class="eyebrow">Ahora</p>${now.length ? `<ul>${now.map(cardRow).join("")}</ul>` : `<p>Ningún plazo en curso ahora mismo.</p>`}</section>
+      <section class="pac-card pac-next-card"><p class="eyebrow">Próximas</p>${upcoming.length ? `<ul>${upcoming.slice(0, 3).map(cardRow).join("")}</ul>` : `<p>No hay fechas próximas en el calendario.</p>`}</section>
+    </div>`;
+  const part = (title, items, cls) => items.length ? `<h3 class="pac-part ${cls}">${title}</h3><ol class="timeline">${items.map(milestoneRow).join("")}</ol>` : "";
   return `
     <section class="pac-calendar">
       <div class="view-head">
-        <p class="eyebrow">Campaña ${escapeHtml(pacData.campaign)}</p>
         <h2>${escapeHtml(pacData.title)}</h2>
-        ${notice}
       </div>
-      ${big}
-      <ol class="timeline">${(pacData.milestones || []).map(milestoneRow).join("")}</ol>
+      ${cards}
+      ${part("Ahora", now, "now")}
+      ${part("Próximas", upcoming, "next")}
+      ${past.length ? `<details class="pac-past"><summary>Terminados (${past.length})</summary><ol class="timeline">${past.map(milestoneRow).join("")}</ol></details>` : ""}
       <p class="note">Cada fecha lleva la cita literal de su fuente. «Orientativa»: la fuente no da el día exacto. Revisado el ${escapeHtml(fmtDay(pacData.updated))} en estas fuentes oficiales:</p>
       <ul class="sources-list">${(pacData.sources || []).map((source) => `<li>${sourceAnchor(source.url, source.nombre)}${source.pdf ? ` · ${sourceAnchor(source.pdf, "PDF")}` : ""}</li>`).join("")}</ul>
       <p class="orientativo">${NOTICE}</p>
@@ -2003,7 +2007,6 @@ function renderLeonPrices() {
         ${leonData.stale ? `<p class="note">No hemos podido actualizar ahora mismo. Te enseñamos la última copia buena, del ${escapeHtml(fmtStamp(leonData.fetchedAt))}.</p>` : ""}
       </div>
       ${tables || `<p class="empty">No hay precios de la Lonja de León para los sectores elegidos.</p>`}
-      <p class="note">Fuente: Lonja de León. Precios orientativos tal como los publica la Lonja; los productos sin cotización («S/C») no se enseñan. Variación respecto a la cotización anterior. Leídos el ${escapeHtml(fmtStamp(leonData.fetchedAt))}.</p>
       <p class="links"><a href="${page}" target="_blank" rel="noopener">Cotizaciones de la Lonja de León</a></p>
       <p class="orientativo">${NOTICE}</p>
     </section>`;
@@ -2062,7 +2065,6 @@ function renderLonja() {
         ${lonjaData.stale ? `<p class="note">No hemos podido actualizar ahora mismo. Te enseñamos la última copia buena, del ${escapeHtml(fmtStamp(lonjaData.fetchedAt))}.</p>` : ""}
       </div>
       ${tables}
-      <p class="note">Fuente: ${escapeHtml(lonjaData.source || "Lonja Agropecuaria de Salamanca")}. Precios tal como los publica la tabla oficial; «Sin cotización» = la Lonja no cotizó ese producto en la sesión. Leídos el ${escapeHtml(fmtStamp(lonjaData.fetchedAt))}.</p>
       <p class="links"><a href="${escapeHtml(table)}" target="_blank" rel="noopener">Tabla oficial de cotizaciones</a>${/^https?:/i.test(String(lonjaData.pageUrl || "")) ? ` · <a href="${escapeHtml(lonjaData.pageUrl)}" target="_blank" rel="noopener">Página de la Lonja</a>` : ""}</p>
       <p class="orientativo">${NOTICE}</p>
     </section>`;
@@ -2105,7 +2107,6 @@ function renderMapaPrices() {
         ${pricesData.stale ? `<p class="note">No hemos podido actualizar ahora mismo. Te enseñamos la última copia buena, del ${escapeHtml(fmtStamp(pricesData.fetchedAt))}.</p>` : ""}
       </div>
       ${tables}
-      <p class="note">Fuente: ${escapeHtml(pricesData.source)}. Leídos el ${escapeHtml(fmtStamp(pricesData.fetchedAt))}.</p>
       <p class="links"><a href="${escapeHtml(page)}" target="_blank" rel="noopener">Página oficial del MAPA</a> · <a href="${escapeHtml(pricesData.fileUrl)}" target="_blank" rel="noopener">Tabla oficial (Excel)</a></p>
       <p class="orientativo">${NOTICE}</p>
     </section>`;
@@ -2200,7 +2201,7 @@ function renderTabs() {
               : items.filter((item) => inTab(item, id)).length;
       // v5.8: la misma fila en móvil y en pantallas anchas (ninguna se oculta en el móvil).
       const main = "tab-extra";
-      return `<button class="tab ${main} ${active === id ? "active" : ""}" data-id="${id}" type="button" aria-label="${title}" title="${title}"${active === id ? ' aria-current="page"' : ""}>${TAB_ICONS[id] || ""}<span class="tab-label">${title}</span><span class="tab-short" aria-hidden="true">${TAB_SHORT[id] || title}</span>${noCount.has(id) ? "" : `<span class="count">${count}</span>`}</button>`;
+      return `<button class="tab ${main} ${active === id ? "active" : ""}" data-id="${id}" type="button" aria-label="${title}" title="${title}"${active === id ? ' aria-current="page"' : ""}>${TAB_ICONS[id] || ""}<span class="tab-label">${title}</span><span class="tab-short" aria-hidden="true">${TAB_SHORT[id] || title}</span>${noCount.has(id) ? "" : `<span class="count">(${count})</span>`}</button>`;
     })
     .join("");
 }
@@ -2210,8 +2211,10 @@ function render() {
   stampEl.textContent = state.collecting
     ? "Consultando fuentes oficiales…"
     : state.lastCollectAt
-      ? `Última consulta: ${fmtStamp(state.lastCollectAt)}`
+      ? ""
       : "Todavía no hay consulta";
+  // v6.0: «Última consulta» y la fecha en dos líneas, centradas.
+  if (!state.collecting && state.lastCollectAt) stampEl.innerHTML = `<span>Última consulta</span><span>${escapeHtml(fmtStamp(state.lastCollectAt))}</span>`;
   refreshBtn.disabled = Boolean(state.collecting);
   if (clearReadBtn) clearReadBtn.hidden = active === "archivadas";
   renderChoices();

@@ -17,7 +17,7 @@ test("v5.9 Alertas: por defecto todas; tocar filtra y volver a tocar quita el fi
   assert.match(appJs, /let alertType = "";/);
   assert.match(appJs, /filter\(\(group\) => !alertType \|\| group\.id === alertType\)/);
   assert.match(appJs, /alertType = next && next !== alertType \? next : "";/);
-  assert.match(appJs, /<h2>Alertas <span>\$\{alertList\(\)\.length\}<\/span>/, "cabecera = chip = Inicio");
+  assert.match(appJs, />Alertas \(\$\{alertList\(\)\.length\}\)<\/h2>/, "cabecera = chip = Inicio");
 });
 
 test("v5.9: tras tocar un botón grande, el cartel «En revisión» no tapa la fila de arriba (Alertas y Ayudas)", () => {
