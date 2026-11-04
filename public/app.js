@@ -1103,7 +1103,8 @@ function inTab(item, tab) {
 /** Piezas del resumen de un día, SOLO de los tipos elegidos. Sin resumen guardado devuelve null. */
 function digestData(date) {
   const digests = [...(state.digests || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
-  const current = digests.find((entry) => entry.date === date) || digests[0];
+  // v6.2: un día del desplegable sin resumen guardado (p. ej. el anterior al primero) es un resumen vacío, sin inventar nada.
+  const current = digests.find((entry) => entry.date === date) || (date && digests.length ? { date, items: [], missing: true } : digests[0]);
   if (!current) return null;
   const shown = (item) => hasSourceUrl(item) && !isDeletedItem(item) && inSector(item) && shownByStatus(item);
   const aids = (current.items || []).filter(hasSourceUrl);
@@ -1113,6 +1114,18 @@ function digestData(date) {
   const sorted = [...aids, ...others].filter(shown).sort((a, b) => compareItems(a, b, prefs, current.date));
   const groups = digestSelection(sorted, prefs).filter((group) => group.items.length);
   return { digests, current, aids, aidIds, sorted, groups, visible: groups.flatMap((group) => group.items) };
+}
+
+/** v6.2: días del desplegable: los resúmenes guardados y, siempre, hoy y el día anterior (más recientes primero). */
+function prevDay(key) {
+  const d = new Date(`${key}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+function digestDays(digests, today = madridDay(new Date())) {
+  const days = new Set(digests.map((entry) => entry.date).filter(Boolean));
+  if (today) { days.add(today); days.add(prevDay(today)); }
+  return [...days].sort((a, b) => b.localeCompare(a));
 }
 
 /** Número para el botón «Resumen» de la cabecera: lo que trae el último resumen en los tipos elegidos. */
@@ -1144,8 +1157,8 @@ function digestCard(compact) {
   if (!current) {
     return `<aside class="digest"><div class="digest-head"><span class="mark">${GLYPH.plazo}</span><div><p class="eyebrow">Novedades oficiales</p><h2>Resumen del día</h2><p class="orientativo">Información orientativa. Consulta siempre la publicación oficial.</p></div></div>${closingSoonSection("")}<p class="empty">Todavía no hay resumen. Se genera solo al terminar la consulta del día.</p></aside>`;
   }
-  const options = digests
-    .map((entry) => `<option value="${escapeHtml(entry.date)}" ${entry.date === current.date ? "selected" : ""}>${escapeHtml(fmtDay(entry.date))}</option>`)
+  const options = digestDays(digests)
+    .map((day) => `<option value="${escapeHtml(day)}" ${day === current.date ? "selected" : ""}>${escapeHtml(fmtDay(day))}</option>`)
     .join("");
   // Ayudas nuevas del resumen (las guarda el servidor) + el resto de piezas oficiales publicadas ese día.
   // El resumen enseña SOLO los tipos de información elegidos en «Mis preferencias», en su orden.
@@ -1153,17 +1166,8 @@ function digestCard(compact) {
   const chosen = prefsSummary(prefs).info;
   const wantsAids = prefs.info.includes("ayudas");
   const wantsDeadlines = wantsAids || prefs.info.includes("pac");
-  let emptyText = "";
-  if (!visible.length) {
-    const visibleAids = sorted.filter((item) => aidIds.has(item.id));
-    if (wantsAids && aids.length && !visibleAids.length) {
-      emptyText = `Este resumen tiene ${aids.length} ${aids.length === 1 ? "ayuda" : "ayudas"}, pero no se ven con los filtros de ahora (solo salen las abiertas o sin plazo).`;
-    } else if (wantsAids && !aids.length && current.notice) {
-      emptyText = current.notice;
-    } else {
-      emptyText = `No hay novedades de ${chosen.join(", ")} en este resumen.`;
-    }
-  }
+  // v6.2: si no hay nada que enseñar, una sola línea corta (sin explicar filtros).
+  const emptyText = visible.length ? "" : (current.missing || !(current.items || []).length ? "Ese día no hubo novedades." : "No hay novedades que mostrar.");
   const emptyNote = emptyText ? `<p class="empty">${escapeHtml(emptyText)}</p>` : "";
   const notice = wantsAids && current.notice && aids.length ? `<p class="hint">${escapeHtml(current.notice)}</p>` : "";
   const label = (id) => INFO_TYPES.find((type) => type.id === id)?.label || id;
@@ -1385,8 +1389,9 @@ function priorityStrip(items) {
       const top = list.slice(0, 3)
         .map((item) => `<li><a href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title || "Sin título")}</a><small>${escapeHtml(item.sourceName || "Fuente oficial")}${item.publishedAt ? ` · ${escapeHtml(fmtDay(item.publishedAt))}` : ""}</small></li>`)
         .join("");
-      const more = TAB_OF[id] ? `<button type="button" class="link-btn" data-goto="${TAB_OF[id]}"${AID_GROUP_OF[id] ? ` data-aid-group-goto="${AID_GROUP_OF[id]}"` : ""}>Ver (${list.length})</button>` : "";
-      return `<div class="prio-row"><h3><span class="prio">${index + 1}</span>${escapeHtml(typeLabel)} <span class="count">(${list.length})</span></h3>${top ? `<ul>${top}</ul>` : `<p class="empty">Nada con los criterios de ahora.</p>`}${more}</div>`;
+      const total = id === "normativa" ? normativaCount(items) : list.length;
+      const more = TAB_OF[id] ? `<button type="button" class="link-btn" data-goto="${TAB_OF[id]}"${AID_GROUP_OF[id] ? ` data-aid-group-goto="${AID_GROUP_OF[id]}"` : ""}>Ver (${total})</button>` : "";
+      return `<div class="prio-row"><h3><span class="prio">${index + 1}</span>${escapeHtml(typeLabel)} <span class="count">(${total})</span></h3>${top ? `<ul>${top}</ul>` : `<p class="empty">Nada con los criterios de ahora.</p>`}${more}</div>`;
     })
     .join("");
   return `<section class="priorities" aria-label="Mis preferencias"><p class="eyebrow">Mis preferencias</p>${rows}</section>`;
@@ -1769,10 +1774,69 @@ function normaCard(norma) {
     <p class="meta">${escapeHtml(norma.rango)} · ${escapeHtml(norma.departamento)} · BOE ${escapeHtml(fmtDayKey(norma.publishedAt || ""))}</p>
     <p class="hint">En vigor según el BOE (legislación consolidada).</p></article>`;
 }
+// v6.2 · Normas en vigor: por sector (el que pone el servidor según título y materias del BOE; común = varios),
+// por zona (las de una comunidad, por su departamento oficial, solo si está elegida) y agrupadas por tipo de norma.
+function normaCcaa(norma) {
+  const dep = plainText(norma?.departamento || "");
+  if (!/^(comunidad|comunitat|ciudad de|junta|gobierno de|xunta|generalitat)/.test(dep)) return null;
+  return CCAA.find((c) => dep.includes(plainText(c.label)))?.id || "otra";
+}
+function normaInZone(norma, place = prefs?.place) {
+  const ccaa = normaCcaa(norma);
+  return !ccaa || normalizePlace(place).ccaa.includes(ccaa);
+}
+const NORMA_TYPES = [
+  ["reglamento-ue", "Reglamentos UE", /^Reglamento (de Ejecución |Delegado )?\((UE|CE|CEE)\)/i],
+  ["directiva-ue", "Directivas UE", /^Directiva\b/i],
+  ["ley", "Leyes", /^Ley (Orgánica |Foral )?\d/i],
+  ["rdl", "Reales Decretos-leyes", /^Real Decreto-ley\b/i],
+  ["rd", "Reales Decretos", /^Real Decreto( Legislativo)? \d/i],
+  ["orden", "Órdenes", /^Orden\b/i],
+  ["decreto", "Decretos", /^Decreto( Legislativo| Foral)? \d/i],
+  ["resolucion", "Resoluciones", /^Resolución\b/i],
+];
+function normaType(norma) {
+  const title = String(norma?.title || "").trim();
+  return NORMA_TYPES.find(([, , re]) => re.test(title))?.[0] || "otras";
+}
+function normaGroups(list) {
+  const byDate = (a, b) => String(b.publishedAt || "").localeCompare(String(a.publishedAt || ""));
+  return [...NORMA_TYPES.map(([id, label]) => [id, label]), ["otras", "Otras"]]
+    .map(([id, label]) => ({ id, label, items: list.filter((n) => normaType(n) === id).sort(byDate) }))
+    .filter((group) => group.items.length);
+}
+function vigentesFiltered(q = qEl?.value.trim().toLowerCase() || "") {
+  return (normativaData?.items || []).filter((norma) => inSector(norma) && normaInZone(norma) && (!q || norma.title.toLowerCase().includes(q)));
+}
+/** Recuento de Normativa (chip e Inicio): lo publicado últimamente + las normas en vigor, con los mismos filtros. */
+function normativaCount(items) {
+  loadNormativa();
+  return items.filter((item) => inTab(item, "normativa")).length + vigentesFiltered().length;
+}
+
+// v6.2 · Normas en vigor: una banda de color por tipo de norma (icono + recuento), plegable al tocarla.
+const NORMA_ICON = {
+  "reglamento-ue": `<circle cx="12" cy="12" r="8"/><path d="M12 6.5v.01M15.5 8v.01M17.5 12v.01M15.5 16v.01M12 17.5v.01M8.5 16v.01M6.5 12v.01M8.5 8v.01"/>`,
+  "directiva-ue": `<circle cx="12" cy="12" r="8"/><path d="M9 12l2 2 4-4"/>`,
+  ley: `<path d="M12 4v16M6 20h12M5 8h14M5 8l-2 6a3 3 0 0 0 4 0zM19 8l-2 6a3 3 0 0 0 4 0z"/>`,
+  rdl: `<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>`,
+  rd: `<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h7"/>`,
+  orden: `<path d="M9 5h10M9 12h10M9 19h10"/><circle cx="5" cy="5" r="1"/><circle cx="5" cy="12" r="1"/><circle cx="5" cy="19" r="1"/>`,
+  decreto: `<path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6M9 16h3"/>`,
+  resolucion: `<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>`,
+  otras: `<circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>`,
+};
+const normaIcon = (id) => `<svg class="norma-ico" viewBox="0 0 24 24" aria-hidden="true">${NORMA_ICON[id] || NORMA_ICON.otras}</svg>`;
+function normaGroupsHtml(groups) {
+  return `<div class="norma-groups">${groups.map((group, index) => `<details class="norma-fold t-${group.id}"${index === 0 ? " open" : ""}>
+      <summary class="norma-band">${normaIcon(group.id)}<span class="norma-band-name">${escapeHtml(group.label)}</span> <span class="count">(${group.items.length})</span><span class="norma-chev" aria-hidden="true"></span></summary>
+      <div class="list">${group.items.map(normaCard).join("")}</div></details>`).join("")}</div>`;
+}
+
 function renderNormativa(recent) {
   loadNormativa();
   const q = qEl?.value.trim().toLowerCase() || "";
-  const vigentes = (normativaData?.items || []).filter((norma) => inSector(norma) && (!q || norma.title.toLowerCase().includes(q)));
+  const vigentes = vigentesFiltered(q);
   const recentHtml = recent.length
     ? `<div class="list">${recent.map((item) => aidCard(item)).join("")}</div>`
     : `<p class="empty">No hay normas nuevas de BOE o BOCyL en los últimos días.</p>`;
@@ -1780,11 +1844,13 @@ function renderNormativa(recent) {
     ? `<p class="empty">Cargando las normas en vigor del BOE…</p>`
     : !normativaData.ok && !vigentes.length
       ? `<p class="empty">Ahora mismo no podemos leer la legislación consolidada del BOE. Consúltala en <a href="https://www.boe.es/buscar/legislacion.php" target="_blank" rel="noopener">boe.es</a>.</p>`
-      : vigentes.length ? `<div class="list">${vigentes.map(normaCard).join("")}</div>` : `<p class="empty">Nada para este sector.</p>`;
+      : vigentes.length
+        ? normaGroupsHtml(normaGroups(vigentes))
+        : `<p class="empty">Nada para este sector.</p>`;
   return filterRow() + (recent.length ? readTools() : "") +
     `<section class="norma-block"><h2>Publicado últimamente (BOE y BOCyL) <span class="count">(${recent.length})</span></h2>${recentHtml}</section>` +
     `<section class="norma-block"><h2>Normas en vigor (BOE) <span class="count">(${vigentes.length})</span></h2>
-      <p class="hint">Leyes, reales decretos y órdenes de agricultura, ganadería y pesca que el BOE da como vigentes (legislación consolidada). Sin ayudas: esas están en Ayudas.</p>${vigorHtml}</section>`;
+      <p class="hint">Leyes, reales decretos y órdenes que el BOE da como vigentes (legislación consolidada), de tus sectores y tu zona, agrupadas por tipo. Sin ayudas: esas están en Ayudas.</p>${vigorHtml}</section>`;
 }
 
 function renderList(tab) {
@@ -2280,7 +2346,9 @@ function renderTabs() {
               ? alertList(items).length // v5.9: el mismo número que la pantalla Alertas y el cuadro de Inicio
             : id === "ayudas"
               ? ayudasView().items.length // v5.7: el mismo número que la lista y el cuadro elegido
-              : items.filter((item) => inTab(item, id)).length;
+              : id === "normativa"
+                ? normativaCount(items) // v6.2: lo mismo que la pantalla (recientes + en vigor, por sector y zona)
+                : items.filter((item) => inTab(item, id)).length;
       // v5.8: la misma fila en móvil y en pantallas anchas (ninguna se oculta en el móvil).
       const main = "tab-extra";
       return `<button class="tab ${main} ${active === id ? "active" : ""}" data-id="${id}" type="button" aria-label="${title}" title="${title}"${active === id ? ' aria-current="page"' : ""}>${TAB_ICONS[id] || ""}<span class="tab-label">${title}</span><span class="tab-short" aria-hidden="true">${TAB_SHORT[id] || title}</span>${noCount.has(id) ? "" : `<span class="count">(${count})</span>`}</button>`;
@@ -2475,7 +2543,16 @@ function syncReviewBanner(on) {
     document.body.prepend(div);
   } else if (on === false && banner) banner.remove();
   document.body.dataset.review = on ? "on" : "off";
+  measureReviewBanner();
 }
+
+/** v6.2 estilo: la cabecera fija se queda justo debajo del cartel «En revisión» (su alto cambia con el ancho). */
+function measureReviewBanner() {
+  const banner = document.getElementById("reviewBanner");
+  document.documentElement.style.setProperty("--rb-h", (banner && banner.offsetParent ? banner.offsetHeight : 0) + "px");
+}
+addEventListener("resize", measureReviewBanner);
+measureReviewBanner();
 
 async function load(options = {}) {
   if (loading) return;
