@@ -72,7 +72,7 @@ test("pestaña Normativa: sin estados, por fecha, chips de sector, en vigor desd
   assert.match(serverJs, /app\.get\("\/api\/normativa\/vigente"/);
   const fn = appJs.slice(appJs.indexOf("function renderNormativa"), appJs.indexOf("function renderList"));
   assert.match(fn, /filterRow\(\)/);
-  assert.match(fn, /inSector\(norma\)/);
+  assert.match(fn, /vigentesFiltered\(q\)/); // v6.2: sector y zona en vigentesFiltered
   assert.match(fn, /Normas en vigor \(BOE\)/);
   assert.doesNotMatch(fn, /isLiveAid|aidStatusOf|abierta|cerrada/);
   assert.match(appJs, /tab === "normativa" \? byPublication\(filtered\)/);
@@ -102,7 +102,7 @@ test("v5.7 Ayudas: elegir «Ayudas PAC» u «Otras ayudas», cuadros de estado g
   assert.match(css, /@media \(max-width: 420px\) \{\s*\.glance\.status-boxes/);
   assert.doesNotMatch(indexHtml, /data-dock="pac"/);
   assert.doesNotMatch(indexHtml, /data-dock="/, "v5.8: la barra de abajo ya no lleva apartados");
-  assert.match(indexHtml, /\?v=52/);
+  assert.match(indexHtml, /\?v=54/);
 });
 
 test("v5.7 listados de la Junta: ni portadas genéricas ni trozos sueltos de una página son ayudas", async () => {
@@ -136,5 +136,5 @@ test("v5.7 girar: el manifest permite cualquier orientación y nada la bloquea",
   assert.match(css, /@media \(orientation: landscape\) and \(max-height: 500px\)/);
   assert.match(css, /env\(safe-area-inset-left, 0px\)/);
   assert.match(css, /overflow-x: clip/);
-  assert.match(indexHtml, /\?v=52/);
+  assert.match(indexHtml, /\?v=54/);
 });

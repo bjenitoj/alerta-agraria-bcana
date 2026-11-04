@@ -1226,3 +1226,74 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
 .tools-zone .tool-i { top: 0; right: auto; left: 0; }
 .tools-zone .tool-pop { top: 30px; width: min(300px, calc(100vw - 32px)); z-index: 30; }
 .tools-zone .tool-pop .primary { width: 100%; }
+/* v6.2 · Normas en vigor: banda plegable por tipo, con el color de cada tipo (paleta verde, naranja, crema) */
+.norma-groups { --tc: var(--green); --tbg: #e6efe8; }
+.t-reglamento-ue, .t-directiva-ue { --tc: #1d4e89; --tbg: #e5edf6; }
+.t-ley { --tc: #1b4332; --tbg: #dfece3; }
+.t-rdl, .t-rd { --tc: #9a3412; --tbg: #fbe7d7; }
+.t-orden { --tc: #b45309; --tbg: #fdf0d5; }
+.t-decreto, .t-resolucion { --tc: #8c4a32; --tbg: #f4e4da; }
+.t-otras { --tc: #5c5346; --tbg: #eee7dc; }
+.norma-ico { width: 22px; height: 22px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.norma-fold { margin: 14px 0; border-radius: 14px; overflow: hidden; background: color-mix(in srgb, var(--tbg) 40%, var(--card, #fffdf8)); border: 1px solid color-mix(in srgb, var(--tc) 35%, transparent); }
+.norma-fold:not([open]) > .norma-band { border-bottom: 0; }
+.norma-band { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: linear-gradient(90deg, var(--tbg) 0%, color-mix(in srgb, var(--tbg) 45%, var(--card, #fffdf8)) 70%, var(--card, #fffdf8) 100%); color: var(--tc); border-bottom: 1px solid color-mix(in srgb, var(--tc) 22%, transparent); font-weight: 800; font-size: 1.05rem; cursor: pointer; list-style: none; }
+.norma-band::-webkit-details-marker { display: none; }
+.norma-band .count { font-weight: 700; }
+.norma-band .norma-ico { color: var(--tc); stroke-width: 2; }
+.norma-chev { margin-left: auto; width: 10px; height: 10px; border-right: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: rotate(45deg); transition: transform .2s; }
+.norma-fold:not([open]) .norma-chev { transform: rotate(-45deg); }
+.norma-fold > .list { padding: 10px; }
+
+/* ===== v6.2 · Estilo «Con color» (diseño por defecto) ===== */
+:root:root:root {
+  --bg: #f7f3ea; --bg-2: #fdfaf3; --card: #fffdf8; --line: #eadfca; --ink: #13261b; --muted: #4a5d51;
+  --green: #12704a; --green-2: #1f9a62; --btn: #12704a; --link: #0f6a44; --wheat: #f0a63a; --soon: #d9530f; --open: #12804f;
+  --shadow: 0 2px 4px rgba(18, 112, 74, .05), 0 10px 26px rgba(18, 112, 74, .09);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 17px; line-height: 1.55;
+  background: radial-gradient(circle at 100% 0%, rgba(240, 166, 58, .16), transparent 30%), radial-gradient(circle at 0% 30%, rgba(31, 154, 98, .08), transparent 35%), var(--bg); }
+h1, h2, h3 { letter-spacing: -0.02em; }
+.prose h2 { font-size: 38px; color: var(--green); }
+.top { position: sticky; top: var(--rb-h, 0px); z-index: 50; padding: 10px 0; width: 100%; padding-left: max(14px, calc((100% - 1180px) / 2)); padding-right: max(14px, calc((100% - 1180px) / 2));
+  background: linear-gradient(100deg, rgba(18, 112, 74, .16), rgba(31, 154, 98, .08) 45%, rgba(253, 250, 243, .92)); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(18, 112, 74, .15); }
+.brand strong { font-size: 19px; color: var(--green); }
+.card, .strip-card, .prio-row, .stat, .prose, .tool-link { border-color: transparent; border-radius: 20px; box-shadow: var(--shadow); }
+.card { padding: 18px 20px; margin-bottom: 16px; background: linear-gradient(135deg, rgba(31, 154, 98, .06), var(--card) 55%); }
+.card.status-cierra_pronto { background: linear-gradient(135deg, rgba(217, 83, 15, .08), var(--card) 55%); }
+.card.status-proxima { background: linear-gradient(135deg, rgba(29, 78, 137, .07), var(--card) 55%); }
+.norma-card { background: var(--card); }
+.card h3 { font-size: 20px; }
+.digest { border-color: transparent; border-radius: 22px; background: linear-gradient(180deg, rgba(240, 166, 58, .22), var(--card) 90px); }
+.strip-card { background: linear-gradient(135deg, rgba(240, 166, 58, .14), var(--card) 60%); }
+.prio-row { background: linear-gradient(135deg, rgba(31, 154, 98, .10), var(--card) 60%); }
+.tab, .chip { border: 0; background: rgba(18, 112, 74, .09); color: var(--green); font-weight: 700; }
+.tab.active, .chip.on, .choice.on, .dock button.on { background: linear-gradient(135deg, #12704a, #1f9a62); color: #fff; box-shadow: 0 6px 16px rgba(18, 112, 74, .3); }
+.chip.open-toggle.on { background: linear-gradient(135deg, #d9530f, #f0a63a); }
+.tabs { gap: 10px; padding: 16px 0; }
+.search input { border-radius: 16px; border: 1.5px solid rgba(18, 112, 74, .2); }
+.tool-link { background: linear-gradient(160deg, rgba(31, 154, 98, .10), var(--card) 70%); }
+.dock { background: rgba(253, 250, 243, .94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+details > :not(summary) { animation: estilo-abrir .22s ease; }
+@keyframes estilo-abrir { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { details > :not(summary) { animation: none; } }
+
+/* Siempre en claro: el estilo nuevo está pensado para fondo claro; así en un iPhone/iPad en modo oscuro nada queda ilegible. */
+:root:root:root { color-scheme: light; --btn-ink: #ffffff; --earth: #8c4a32; --next: #1d4e89; --quiet: #5c5346; --dock: #fffdf8; }
+:root[data-theme="dark"] .act.whatsapp { color: inherit; }
+:root[data-theme="dark"] .review-banner { background: linear-gradient(90deg, #fbeec8, #f6e3ad); color: #5a3b06; border-bottom-color: #e3c776; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .review-banner { background: linear-gradient(90deg, #fbeec8, #f6e3ad); color: #5a3b06; border-bottom-color: #e3c776; } }
+
+/* Iconos con borde fino: cada icono va en un cuadrado redondeado de fondo claro con un borde de 1px en un tono más oscuro de su color. */
+.tab-icon, .chip svg, .dock svg, .tool-icon, .norma-ico, .head-btn svg {
+  box-sizing: content-box;
+  padding: 3px;
+  border: 1px solid color-mix(in srgb, currentColor 60%, #0b3d26);
+  border-radius: 8px;
+  background: color-mix(in srgb, currentColor 10%, #ffffff);
+}
+.tool-icon { padding: 6px; border-radius: 12px; }
+.tab.active .tab-icon, .chip.on svg, .dock button.on svg, .head-btn.on svg {
+  background: rgba(255, 255, 255, .18);
+  border-color: rgba(255, 255, 255, .75);
+}

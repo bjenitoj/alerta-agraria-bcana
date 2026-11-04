@@ -1,5 +1,18 @@
 # Cambios
 
+## v6.2 · 04/11/2026 · Resumen del día y estilo nuevo
+
+- Resumen: el desplegable «Día» ofrece siempre hoy y el día anterior, además de los resúmenes guardados. Un día sin resumen guardado o sin novedades sale vacío con «Ese día no hubo novedades.» (no se inventa nada).
+- Resumen: fuera la frase «Este resumen tiene N ayudas, pero no se ven con los filtros de ahora…». Si no hay nada visible sale solo «No hay novedades que mostrar.».
+- Primer resumen: el aviso ya no dice «no había un día anterior»; ahora «Primer resumen guardado: recoge las ayudas que las fuentes muestran hoy. Desde mañana solo entrarán las nuevas.». El servidor sigue guardando hasta 60 días.
+- Normativa en vigor por sector: cada norma lleva su sector según su título y las materias oficiales que le pone el BOE (análisis de legislación consolidada). Una norma común a varios sectores (o general) sale con cualquiera de ellos. Con solo Agricultura ya no salen normas de pesca ni de ganadería.
+- Normativa en vigor por zona: las leyes de una comunidad autónoma (por su departamento oficial en el BOE) solo salen si esa comunidad está en tu zona.
+- Normativa en vigor agrupada por tipo de norma (sacado del título oficial), cada tipo en una banda de su color, difuminada (tinte suave con el texto y el icono en el color del tipo), que se pliega al tocarla (la primera abierta): Reglamentos UE, Directivas UE, Leyes, Reales Decretos-leyes, Reales Decretos, Órdenes, Decretos, Resoluciones y Otras, cada grupo con su recuento entre paréntesis, de la más reciente a la más antigua. Solo salen los grupos con alguna norma.
+- Una norma cuyo título habla de producción ganadera o de animales y no de cultivos ni de agricultura es de Ganadería aunque diga «agrario» (p. ej. las de peritación de producciones ganaderas del Seguro Agrario Combinado): ya no sale con solo Agricultura.
+- El recuento (n) del chip NORMATIVA y del cuadro de Inicio es el de la pantalla: lo publicado últimamente más las normas en vigor, con los filtros de sector y zona.
+- Estilo nuevo «Con color» como diseño de la app: verde y naranja más vivos, cabecera fina y fija con un degradado verde suave, chips como pastillas de color, tarjetas redondeadas con sombra suave y un tinte ligero por apartado, y pliegues con una transición corta. Los iconos (chips de arriba, barra de abajo, Herramientas, Inicio, Alertas y bandas de Normativa) van en un cuadrado redondeado de fondo claro con un borde fino en un tono más oscuro de su color. La app se ve siempre en claro (también con el iPhone o iPad en modo oscuro) para que todo se lea bien. Mismos textos, fuentes y recuentos.
+- Caché `?v=54`.
+
 ## v6.1 · 03/11/2026 · Herramientas en iconos
 
 - Herramientas según tu zona de Mis preferencias, de abajo arriba como el resto: las nacionales (FEGA, MAPA, BOE, BDNS) siempre; las de Castilla y León solo si la tienes marcada. Con solo «España», solo nacionales. Qué se muestra según la zona (y cuántas quedan ocultas) se explica en el botón «i» junto al título, con «Elegir mi zona en Mis preferencias». Una sección sin herramientas no sale.
