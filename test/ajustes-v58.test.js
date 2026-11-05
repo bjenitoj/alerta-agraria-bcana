@@ -12,18 +12,18 @@ const appJs = read("public/app.js");
 const css = read("public/styles.css");
 const tabs = appJs.slice(appJs.indexOf("function renderTabs"), appJs.indexOf("function render()"));
 
-test("v5.8 chips: sin Inicio; orden Ayudas, Calendario PAC, Normativa, Precios, Mis favoritas; Precios con el icono de abajo", () => {
+test("v5.8 chips: sin Inicio; orden Ayudas, Calendario PAC, Nueva PAC, Normativa, Precios, Alertas; Precios con el icono de abajo", () => {
   assert.doesNotMatch(tabs, /\["inicio", "Inicio"\]/);
   assert.doesNotMatch(tabs, /Hoy en el campo"\]/);
   const list = tabs.slice(tabs.indexOf("const buttons"), tabs.indexOf("].filter"));
-  const ids = [...list.matchAll(/\["(\w+)", /g)].map((m) => m[1]);
-  assert.deepEqual(ids.filter((id) => id !== "archivadas"), ["ayudas", "calendario", "normativa", "campo", "alertas", "favoritas"], "v5.9: Alertas entre Precios y Mis favoritas");
+  const ids = [...list.matchAll(/\["([a-z-]+)", /g)].map((m) => m[1]);
+  assert.deepEqual(ids.filter((id) => id !== "archivadas"), ["ayudas", "calendario", "nueva-pac", "normativa", "campo", "alertas"], "v6.3: Favoritas sube a cabecera/barra entre Resumen y Herramientas");
   assert.match(tabs, /\["campo", "Precios"\]/);
   assert.match(appJs, /campo: PRICES_ICON,/);
   const dockSvg = '<path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/>'; // el icono que tenía «Precios» en la barra
   assert.ok(appJs.includes(`const PRICES_ICON = tabIcon(\`${dockSvg}\`);`));
   assert.match(css, /\.tabs \.tab \{ display: inline-flex; align-items: center; text-transform: uppercase;/);
-  assert.match(tabs, /\["favoritas", "Mis favoritas"\]/, "estrella como icono, no como texto");
+  assert.doesNotMatch(tabs, /\["favoritas"/, "v6.3: Favoritas ya no es chip; está entre Resumen y Herramientas");
 });
 
 test("v5.8 móvil: los mismos 5 chips que en la web, solo icono, con nombre accesible", () => {
@@ -54,17 +54,17 @@ test("v5.8 Ajustes: desplegables Mis preferencias, Tema, Leídas y borradas; sin
   assert.doesNotMatch(appJs, /choiceButtons\(SECTORS,/);
 });
 
-test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=54", () => {
+test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=56", () => {
   const boe = referenceSources().find((s) => s.url === "https://www.boe.es/datosabiertos/api/legislacion-consolidada");
   assert.ok(boe);
   assert.match(boe.usedIn, /Normativa en vigor/);
-  assert.match(indexHtml, /app\.js\?v=54/);
+  assert.match(indexHtml, /app\.js\?v=56/);
 });
 
 test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de abajo; la cabecera los oculta solo ≤ 900 px", () => {
   const dock = indexHtml.slice(indexHtml.indexOf('<nav class="dock'), indexHtml.indexOf("</nav>", indexHtml.indexOf('<nav class="dock')));
   const order = [...dock.matchAll(/data-dock(?:-proxy)?="(\w+)"/g)].map((m) => m[1]);
-  assert.deepEqual(order, ["digestBtn", "toolsBtn", "settingsBtn"]);
+  assert.deepEqual(order, ["digestBtn", "favBtn", "toolsBtn", "settingsBtn"]);
   assert.ok(dock.indexOf('data-dock-home="1" data-dock-on="inicio"') < dock.indexOf("digestBtn"), "Inicio primero");
   assert.match(dock, /class="dock-badge" hidden/);
   assert.match(appJs, /document\.getElementById\(proxy\.dataset\.dockProxy\)\?\.click\(\)/);
@@ -74,13 +74,13 @@ test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de 
   assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/, "el logo lleva a Inicio");
 });
 
-test("v5.8 móvil: chips con texto pequeño bajo el icono y barra Inicio · Resumen · Herramientas · Ajustes", () => {
+test("v5.8 móvil: chips con texto pequeño bajo el icono y barra Inicio · Resumen · Favoritas · Herramientas · Ajustes", () => {
   assert.match(tabs, /<span class="tab-short" aria-hidden="true">\$\{TAB_SHORT\[id\] \|\| title\}<\/span>/);
-  assert.match(appJs, /const TAB_SHORT = \{ calendario: "Calendario", favoritas: "Favoritas" \};/);
+  assert.match(appJs, /const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas"(?:, "nueva-pac": "Nueva PAC")? };/);
   assert.match(css, /\.tabs \.tab \.tab-short \{ display: none; \}/);
   const dock = indexHtml.slice(indexHtml.indexOf('<nav class="dock'), indexHtml.indexOf("</nav>", indexHtml.indexOf('<nav class="dock')));
-  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Inicio", "Resumen", "Herramientas", "Ajustes"]);
-  assert.match(css, /\.dock \{ grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/);
+  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Inicio", "Resumen", "Favoritas", "Herramientas", "Ajustes"]);
+  assert.match(css, /\.dock \{ grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
   assert.match(appJs, /event\.target\.closest\("\[data-dock-home\]"\)\) document\.querySelector\("\.top \.brand"\)\?\.click\(\)/);
 });
 

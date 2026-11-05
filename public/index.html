@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=54" />
+  <link rel="stylesheet" href="/styles.css?v=56" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -61,6 +61,7 @@
     </a>
     <div class="top-tools">
       <button id="digestBtn" type="button" class="ghost head-btn digest-btn" aria-label="Resumen del día"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="head-text">Resumen</span><span class="head-badge" hidden></span></button>
+      <button id="favBtn" type="button" class="ghost head-btn fav-btn" aria-label="Favoritas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg><span class="head-text">Favoritas</span><span class="head-badge" hidden></span></button>
       <button id="toolsBtn" type="button" class="ghost head-btn tools-btn" aria-label="Herramientas oficiales"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span class="head-text">Herramientas</span></button>
       <button id="settingsBtn" type="button" class="ghost head-btn settings-btn" aria-label="Ajustes" aria-haspopup="dialog" aria-controls="prefSheet" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="head-text">Ajustes</span></button>
       <p class="stamp" id="stamp">Cargando…</p>
@@ -142,6 +143,7 @@
         <div class="acc-panel" id="acc-guia" role="region" aria-labelledby="guideTitle" hidden>
           <dl class="guide-list">
             <dt>Resumen</dt><dd>Las novedades oficiales del día y lo que cierra pronto.</dd>
+            <dt>Favoritas</dt><dd>Lo que marcaste con «★ Favorita». Se guarda en este dispositivo.</dd>
             <dt>Herramientas</dt><dd>Enlaces a las herramientas y trámites oficiales.</dd>
             <dt>Ajustes</dt><dd>Mis preferencias (sector, información, zona y cultivos), tema y leídas.</dd>
             <dt>Ayudas</dt><dd>Ayudas PAC y otras ayudas, por estado (abiertas, cierran pronto…). Nunca las cerradas.</dd>
@@ -149,9 +151,8 @@
             <dt>Normativa</dt><dd>Lo último del BOE y BOCyL y las normas en vigor.</dd>
             <dt>Precios</dt><dd>Precios oficiales de tu zona; elige la fuente en «Fuente».</dd>
             <dt>Alertas</dt><dd>Avisos oficiales de tu zona: tiempo, plagas, sanidad animal e incendios.</dd>
-            <dt>Mis favoritas</dt><dd>Lo que marcaste con «★ Favorita». Se guarda en este dispositivo.</dd>
             <dt>Agricultura · Ganadería · Pesca</dt><dd>Filtran lo que ves por sector. Ninguno marcado = todos.</dd>
-            <dt>★ Favorita · Compartir</dt><dd>Guarda la ficha en Mis favoritas · la envía por el menú del móvil o WhatsApp.</dd>
+            <dt>★ Favorita · Compartir</dt><dd>Guarda la ficha en Favoritas · la envía por el menú del móvil o WhatsApp.</dd>
             <dt>Borrar leídas</dt><dd>Quita de la vista 15 días lo ya leído. Las favoritas no se borran.</dd>
           </dl>
         </div>
@@ -183,6 +184,10 @@
       <span class="dock-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="dock-badge" hidden></span></span>
       <span class="dock-label">Resumen</span>
     </button>
+    <button type="button" data-dock-proxy="favBtn" data-dock-on="favoritas" aria-label="Favoritas" title="Favoritas">
+      <span class="dock-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg><span class="dock-badge" hidden></span></span>
+      <span class="dock-label">Favoritas</span>
+    </button>
     <button type="button" data-dock-proxy="toolsBtn" data-dock-on="herramientas" aria-label="Herramientas oficiales" title="Herramientas">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
       <span class="dock-label">Herramientas</span>
@@ -211,6 +216,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=54"></script>
+  <script type="module" src="/app.js?v=56"></script>
 </body>
 </html>

@@ -21,14 +21,15 @@ test("v5.4 cabecera: solo «Resumen» y el engranaje «Ajustes»; sin Oscuro ni 
   // v5.5: se añade «Preferencias» entre «Resumen» y «Ajustes» (ver leidas-v55.test.js).
   const buttons = header.match(/<button[^>]*>/g) || [];
   const visible = buttons.filter((b) => !/admin-only/.test(b));
-  assert.equal(visible.length, 3, "Resumen, Herramientas (v5.6) y Ajustes; v5.8 sin Preferencias");
+  assert.equal(visible.length, 4, "Resumen, Favoritas, Herramientas y Ajustes");
   assert.match(header, /<button id="digestBtn"[^>]*aria-label="Resumen del día"/);
   assert.match(header, /<button id="settingsBtn"[^>]*aria-label="Ajustes"[^>]*aria-controls="prefSheet"/);
   // iconos SVG de trazo (no emoji) y texto visible en pantallas anchas
   const settings = header.slice(header.indexOf('id="settingsBtn"'));
   assert.match(settings, /<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"\/><path d="M19\.4 15/);
   assert.match(settings, /<span class="head-text">Ajustes<\/span>/);
-  const digest = header.slice(header.indexOf('id="digestBtn"'), header.indexOf('id="toolsBtn"'));
+  const digest = header.slice(header.indexOf('id="digestBtn"'), header.indexOf('id="favBtn"'));
+  assert.match(header, /id="favBtn"[\s\S]*id="toolsBtn"/);
   assert.match(digest, /<svg viewBox="0 0 24 24"/);
   assert.match(digest, /<span class="head-text">Resumen<\/span>/);
   assert.match(digest, /class="head-badge" hidden/);
@@ -76,12 +77,12 @@ test("v5.4 Resumen: botón de cabecera, fuera del cuerpo de Inicio y contador so
   assert.match(appJs, /Cambiar en Mis preferencias/);
 });
 
-test("v5.8 barra de abajo (móvil): Inicio, Resumen, Herramientas y Ajustes, con icono y texto pequeño", () => {
+test("v5.8 barra de abajo (móvil): Inicio, Resumen, Favoritas, Herramientas y Ajustes, con icono y texto pequeño", () => {
   assert.doesNotMatch(dock, /data-dock="/);
   const proxies = [...dock.matchAll(/data-dock-proxy="(\w+)"/g)].map((m) => m[1]);
-  assert.deepEqual(proxies, ["digestBtn", "toolsBtn", "settingsBtn"]);
-  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Inicio", "Resumen", "Herramientas", "Ajustes"]);
-  assert.match(css, /\.dock \{ grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/);
+  assert.deepEqual(proxies, ["digestBtn", "favBtn", "toolsBtn", "settingsBtn"]);
+  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Inicio", "Resumen", "Favoritas", "Herramientas", "Ajustes"]);
+  assert.match(css, /\.dock \{ grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
 });
 
 // v5.6: el botón «← Inicio» se quitó; se vuelve con el título de la cabecera (ver footer-v56.test.js).

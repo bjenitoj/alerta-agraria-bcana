@@ -34,6 +34,7 @@ const clearReadBtn = document.getElementById("clearRead");
 const settingsBtn = document.getElementById("settingsBtn");
 const toolsBtn = document.getElementById("toolsBtn");
 const digestBtn = document.getElementById("digestBtn");
+const favBtn = document.getElementById("favBtn");
 const sectorChoices = document.getElementById("sectorChoices");
 const zoneChoices = document.getElementById("zoneChoices");
 const sectorBlocks = document.getElementById("sectorBlocks");
@@ -736,6 +737,7 @@ function toggleFavorite(id) {
   if (existing) delete favorites[existing];
   else if (item) favorites[item.id] = snapshot(item);
   writeJson(FAV_KEY, favorites);
+  paintFavBtn();
 }
 
 function findItem(id) {
@@ -861,7 +863,7 @@ function calendarLink(item) {
 const tabIcon = (body) => `<svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
 const PRICES_ICON = tabIcon(`<path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/>`);
 // v5.8: nombre corto bajo el icono en el móvil (el nombre completo va en aria-label y title).
-const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas" };
+const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas", "nueva-pac": "Nueva PAC" };
 const TAB_ICONS = {
   ayudas: tabIcon(`<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.6-1 1.4-1.5 2.5-1.5 1.6 0 2.5.9 2.5 2s-.8 1.8-2.5 2-2.6.8-2.6 2 1 2 2.6 2c1.1 0 2-.5 2.5-1.4"/>`),
   calendario: tabIcon(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M8 14h2M12 14h2M16 14h0M8 17h2M12 17h2"/>`),
@@ -869,6 +871,7 @@ const TAB_ICONS = {
   campo: PRICES_ICON,
   favoritas: tabIcon(`<path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>`),
   alertas: tabIcon(`<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>`),
+  "nueva-pac": tabIcon(`<path d="M5 19V9l7-5 7 5v10"/><path d="M10 19v-5h4v5"/><path d="M9 11h.01M15 11h.01M12 14.5v-2"/>`),
   archivadas: tabIcon(`<rect x="3.5" y="4" width="17" height="4" rx="1"/><path d="M5 8v11h14V8M10 12h4"/>`),
 };
 const SHARE_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
@@ -1149,6 +1152,23 @@ function paintDigestBtn() {
   digestBtn.setAttribute("aria-label", count ? `Resumen del día: ${count} ${count === 1 ? "novedad" : "novedades"}` : "Resumen del día");
 }
 
+
+function favCount() {
+  return Object.values(favorites).filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || ""))).length;
+}
+function paintFavBtn() {
+  const n = favCount();
+  for (const root of [favBtn, ...document.querySelectorAll('[data-dock-proxy="favBtn"]')]) {
+    if (!root) continue;
+    root.classList?.toggle?.("on", active === "favoritas");
+    const badge = root.querySelector(".head-badge, .dock-badge");
+    if (badge) {
+      badge.hidden = !n;
+      badge.textContent = n ? `(${n})` : "";
+    }
+    root.setAttribute("aria-label", n ? `Favoritas (${n})` : "Favoritas");
+  }
+}
 function digestCard(compact) {
   const digests = [...(state.digests || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
   if (!digestDate && digests[0]) digestDate = digests[0].date;
@@ -1343,6 +1363,67 @@ function alertTypeButtons() {
       ? `<strong class="alert-hint-mark" aria-hidden="true">!</strong><span>${escapeHtml(entry.label)}</span><small class="alert-hint">${escapeHtml(limits.hidden[entry.id])}</small>`
       : `<strong>${officialAlerts(entry.id).length}</strong><span>${escapeHtml(entry.label)}</span><small>${escapeHtml(entry.source)}</small>`}</button>`;
   }).join("")}</div>`;
+}
+
+// v6.3 · Nueva PAC (reforma post-2027). Datos de /api/nueva-pac; solo fuentes oficiales.
+let nuevaPacData = null;
+let nuevaPacLoading = null;
+function ensureNuevaPac() {
+  if (nuevaPacData || nuevaPacLoading) return;
+  nuevaPacLoading = fetch("/api/nueva-pac", { cache: "no-store" })
+    .then((res) => res.json())
+    .then((data) => { nuevaPacData = data; nuevaPacLoading = null; if (active === "nueva-pac") render(); else renderTabs(); })
+    .catch(() => { nuevaPacData = { ok: false, news: [], stages: [], documents: [] }; nuevaPacLoading = null; if (active === "nueva-pac") render(); });
+}
+
+function renderNuevaPac() {
+  ensureNuevaPac();
+  if (!nuevaPacData) return `<p class="empty">Cargando la información oficial de la nueva PAC…</p>`;
+  const stages = nuevaPacData.stages || [];
+  const news = nuevaPacData.news || [];
+  const docs = nuevaPacData.documents || [];
+  const current = stages.find((s) => s.status === "actual");
+  const stageHtml = stages.map((stage) => {
+    const cls = stage.status === "actual" ? "on" : stage.status === "hecho" ? "done" : "";
+    const mark = stage.status === "actual" ? "Actual" : stage.status === "hecho" ? "Hecho" : "Pendiente";
+    return `<li class="np-stage ${cls}"><div class="np-stage-top"><strong>${escapeHtml(stage.name)}</strong><span class="np-mark">${mark}</span></div><p>${escapeHtml(stage.blurb)}</p><p class="links"><a href="${escapeHtml(stage.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(stage.sourceLabel)}${stage.date ? ` · ${escapeHtml(stage.date)}` : ""} ↗</a></p></li>`;
+  }).join("");
+  const newsHtml = news.length
+    ? `<ul class="np-news">${news.map((item) => {
+        const type = item.type || "Otro";
+        const sourceLink = item.sourceUrl
+          ? `<a class="np-source" href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(item.sourceName || "Fuente oficial")} ↗</a>`
+          : `<span class="np-source">${escapeHtml(item.sourceName || "Fuente oficial")}</span>`;
+        const sum = item.summary ? `<p class="np-summary">${escapeHtml(item.summary)}</p>` : "";
+        return `<li class="np-news-item">
+          <div class="np-news-top"><span class="np-type t-${escapeHtml(type.toLowerCase())}">${escapeHtml(type)}</span>${item.date ? `<time datetime="${escapeHtml(item.date)}">${escapeHtml(fmtDay(item.date))}</time>` : ""}</div>
+          <a class="np-title" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>
+          ${sum}
+          <p class="np-meta">Fuente: ${sourceLink}</p>
+        </li>`;
+      }).join("")}</ul>`
+    : `<p class="empty">Ahora mismo no hay noticias de la reforma en las fuentes que responden.</p>`;
+  const docsHtml = `<ul class="np-docs">${docs.map((doc) => `<li><a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener">${escapeHtml(doc.title)}</a><small>${escapeHtml(doc.sourceLabel || "")}</small></li>`).join("")}</ul>`;
+  const unavail = (nuevaPacData.unavailable || []).length
+    ? `<p class="note">Fuentes oficiales previstas que ahora no responden desde aquí (no inventamos su contenido): ${(nuevaPacData.unavailable || []).map((u) => escapeHtml(u.name)).join("; ")}.</p>`
+    : "";
+  return `
+    <section class="view-head"><p class="eyebrow">Reforma de la PAC después de 2027</p><h2>Nueva PAC</h2></section>
+    <section class="np-block card">
+      <h3>En qué punto está</h3>
+      <p class="np-current">${current ? `Ahora mismo, según las fuentes oficiales: <strong>${escapeHtml(current.name)}</strong>.` : "Las fuentes oficiales no marcan una etapa actual con claridad."}</p>
+      <ol class="np-stages">${stageHtml}</ol>
+    </section>
+    <section class="np-block">
+      <h3>Últimas noticias <span class="count">(${news.length})</span></h3>
+      ${newsHtml}
+    </section>
+    <section class="np-block">
+      <h3>Documentos oficiales <span class="count">(${docs.length})</span></h3>
+      ${docsHtml}
+    </section>
+    ${unavail}
+    <p class="orientativo">Solo fuentes oficiales. Las convocatorias y pagos de la PAC en vigor siguen en Ayudas y en Calendario PAC.</p>`;
 }
 
 function renderAlertas() {
@@ -1663,6 +1744,25 @@ function glanceCards(lists) {
     </section>`;
 }
 
+
+/** v6.3: Favoritas en Inicio (arriba, tras el bloque del campo). En cabecera/barra queda entre Resumen y Herramientas. */
+function homeFavorites() {
+  const entries = Object.values(favorites)
+    .filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || "")))
+    .sort((a, b) => String(a.aid?.closesAt || "9999").localeCompare(String(b.aid?.closesAt || "9999")));
+  const n = entries.length;
+  const list = entries.slice(0, 4).map((fav) => {
+    const item = { ...fav, id: fav.id };
+    return `<li><a href="${escapeHtml(fav.url)}" target="_blank" rel="noopener">${escapeHtml(fav.title)}</a><small>${escapeHtml(fav.sourceName || "Fuente oficial")}</small></li>`;
+  }).join("");
+  return `<section class="home-favs" aria-label="Favoritas">
+    <div class="home-favs-head"><h2>Favoritas <span>(${n})</span></h2>
+    <button type="button" class="link-btn" data-goto="favoritas">Ver todas (${n})</button></div>
+    ${n ? `<ul class="home-favs-list">${list}</ul>` : `<p class="empty">Todavía no tienes favoritas. Marca una ficha con «★ Favorita».</p>`}
+  </section>`;
+}
+
+
 function renderBoard() {
   const items = sortedItems(baseItems());
   // v5.9: los cuadros Abiertas / Cierran pronto / Líneas PAC salen solo dentro de Ayudas, no en Inicio.
@@ -1678,6 +1778,7 @@ function renderBoard() {
       ${filterRow()}
       ${priorityStrip(items)}
       ${fieldStrip()}
+      ${homeFavorites()}
       ${planStrip()}
       ${loose.length ? `<section class="loose"><h2>Sin plazo concreto</h2>${loose.map((item) => aidCard(item)).join("")}</section>` : ""}
     </div>`;
@@ -1919,7 +2020,7 @@ function renderFavorites() {
   return `
     <section class="view-head">
       <p class="eyebrow">Solo en este móvil u ordenador</p>
-      <h2>Mis favoritas <span>(${entries.length})</span></h2>
+      <h2>Favoritas <span>(${entries.length})</span></h2>
       <p>Toca «★ Favorita» en cualquier pieza para guardarla aquí. Se quedan hasta que tú las quites, aunque cierren o desaparezcan de la fuente.</p>
       <p class="account-note">Se guarda solo en este navegador: no hay cuenta ni se envía nada.</p>
     </section>
@@ -2321,16 +2422,16 @@ function renderDigestTab() {
 function renderTabs() {
   const items = baseItems();
   // v5.8: sin chip «Inicio» (está en la barra de abajo y en el logo). Orden: Ayudas, Calendario PAC, Normativa,
-  // Precios (antes «Hoy en el campo», con el icono de la barra de abajo) y Mis favoritas.
-  // v5.8: sin chip «Inicio» (se vuelve con el logo). Orden: Ayudas, Calendario PAC, Normativa, Precios y Mis favoritas,
+  // Precios (antes «Hoy en el campo», con el icono de la barra de abajo) y Favoritas (arriba, entre Resumen y Herramientas).
+  // v5.8: sin chip «Inicio» (se vuelve con el logo). Orden: Ayudas, Calendario PAC, Normativa, Precios y Favoritas,
   // cada uno con icono. En el móvil (≤ 900 px) solo el icono, para que entren los 5 en una fila.
   const buttons = [
     ["ayudas", "Ayudas"],
     ["calendario", "Calendario PAC"],
+    ["nueva-pac", "Nueva PAC"], // v6.3: colocación provisional; fácil de mover en este array
     ["normativa", "Normativa"],
     ["campo", "Precios"],
     ["alertas", "Alertas"],
-    ["favoritas", "Mis favoritas"],
     ["archivadas", "Archivadas"],
   ].filter(([id]) => id !== "archivadas" || isAdmin());
   const noCount = new Set(["calendario", "campo", "herramientas"]);
@@ -2348,6 +2449,8 @@ function renderTabs() {
               ? ayudasView().items.length // v5.7: el mismo número que la lista y el cuadro elegido
               : id === "normativa"
                 ? normativaCount(items) // v6.2: lo mismo que la pantalla (recientes + en vigor, por sector y zona)
+                : id === "nueva-pac"
+                  ? (nuevaPacData?.news || []).length // v6.3: noticias de la reforma post-2027
                 : items.filter((item) => inTab(item, id)).length;
       // v5.8: la misma fila en móvil y en pantallas anchas (ninguna se oculta en el móvil).
       const main = "tab-extra";
@@ -2368,9 +2471,12 @@ function render() {
   refreshBtn.disabled = Boolean(state.collecting);
   if (clearReadBtn) clearReadBtn.hidden = active === "archivadas";
   renderChoices();
+  ensureNuevaPac();
   renderTabs();
   paintDigestBtn();
+  paintFavBtn();
   toolsBtn?.classList.toggle("on", active === "herramientas");
+  favBtn?.classList.toggle("on", active === "favoritas");
   if (location.hash === "#resumen" && active !== "resumen") history.replaceState(null, "", location.pathname + location.search);
   paintPrefsNote();
   document.querySelectorAll("[data-dock-on]").forEach((button) => {
@@ -2393,6 +2499,7 @@ function render() {
   else if (active === "calendario") html = renderPacCalendar();
   else if (active === "campo") html = renderField();
   else if (active === "alertas") html = renderAlertas();
+  else if (active === "nueva-pac") html = renderNuevaPac();
   else if (active === "herramientas") html = renderToolsTab();
   else if (active === "archivadas") html = renderArchive();
   else html = renderList(active);
@@ -2671,6 +2778,19 @@ digestBtn?.addEventListener("click", (event) => {
     return;
   }
   active = "resumen";
+  setSheet(false);
+  render();
+  window.scrollTo(0, 0);
+});
+// v6.3: Favoritas entre Resumen y Herramientas (cabecera y barra de abajo).
+favBtn?.addEventListener("click", (event) => {
+  event.preventDefault();
+  if (QUIET.has(PATH) || PATH === "/admin" || document.body.classList.contains("public-page")) {
+    location.href = "/";
+    return;
+  }
+  active = "favoritas";
+  listStatus = null;
   setSheet(false);
   render();
   window.scrollTo(0, 0);

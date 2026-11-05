@@ -18,6 +18,7 @@ import { getPrices, PRICE_CONFIG } from "./lib/prices.js";
 import { getLonjaPrices, LONJA } from "./lib/lonja.js";
 import { getLeonPrices, LONJA_LEON } from "./lib/lonja-leon.js";
 import { getAlerts, ALERT_SOURCES } from "./lib/alerts.js";
+import { getNuevaPac } from "./lib/nueva-pac.js";
 import { getNormativaVigente, NORMATIVA } from "./lib/normativa.js";
 import {
   getStore,
@@ -260,6 +261,13 @@ const alertsLoader = options.alertsLoader;
 app.get("/api/alertas", async (_req, res) => {
   res.setHeader("Cache-Control", "no-store");
   res.json(await getAlerts(alertsLoader ? { loader: alertsLoader } : {}));
+});
+
+// v6.3: Nueva PAC (reforma post-2027). Solo fuentes oficiales; caché propia.
+const nuevaPacLoader = options.nuevaPacLoader;
+app.get("/api/nueva-pac", async (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json(await getNuevaPac(nuevaPacLoader ? { loader: nuevaPacLoader } : {}));
 });
 
 // Calendario sin estado: todo viene en la URL y no se guarda nada.
