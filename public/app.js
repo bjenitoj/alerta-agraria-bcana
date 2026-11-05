@@ -2494,6 +2494,15 @@ function renderTabs() {
     .join("");
 }
 
+// v6.4: la fila de categorías (Ayudas, Calendario, Nueva PAC, Varios, Precios…) no sale
+// dentro de Resumen, Favoritas, Herramientas ni Ajustes. Sí en Inicio y en esas categorías.
+const NO_CATEGORY_TABS = new Set(["resumen", "favoritas", "herramientas"]);
+function paintCategoryTabs() {
+  if (!tabsEl) return;
+  const sheetOpen = Boolean(prefSheet && !prefSheet.hidden);
+  tabsEl.hidden = NO_CATEGORY_TABS.has(active) || sheetOpen;
+}
+
 function render() {
   if (QUIET.has(PATH) || PATH === "/admin") return;
   // v6.4: un enlace antiguo a Normativa o Alertas abre Varios en esa pantalla.
@@ -2534,6 +2543,7 @@ function render() {
   if (active === "jovenes" || active === "noticias") active = "inicio";
   // v5.7: la pestaña PAC pasa a Ayudas > Ayudas PAC.
   if (active === "pac") { active = "ayudas"; saveAidGroup("pac"); }
+  paintCategoryTabs();
   if (active === "inicio") html = renderBoard();
   else if (active === "resumen") html = renderDigestTab();
   else if (active === "favoritas") html = renderFavorites();
@@ -2780,6 +2790,7 @@ function setSheet(open, focusPrefs = false) {
   if (!prefSheet) return;
   prefSheet.hidden = !open;
   settingsBtn?.setAttribute("aria-expanded", open ? "true" : "false");
+  paintCategoryTabs();
   if (open) {
     paintThemeChoice();
     paintReadSettings();

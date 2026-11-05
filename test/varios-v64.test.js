@@ -61,10 +61,23 @@ test("v6.4 navegación: el chip abre el selector; las tarjetas y los «Ver» ent
   assert.match(appJs, /const TAB_OF = \{ ayudas: "ayudas", pac: "ayudas", normativa: "normativa", alertas: "alertas" \}/);
 });
 
-test("v6.4 guía y caché v=58", () => {
+test("v6.4 guía y caché v=59", () => {
   assert.match(guide, /<dt>Varios<\/dt><dd>Una sola pestaña: elige Normativa o Alertas\.<\/dd>/);
   assert.match(guide, /<dt>Normativa<\/dt><dd>Dentro de Varios:/);
   assert.match(guide, /<dt>Alertas<\/dt><dd>Dentro de Varios:/);
-  assert.match(indexHtml, /styles\.css\?v=58/);
-  assert.match(indexHtml, /app\.js\?v=58/);
+  assert.match(indexHtml, /styles\.css\?v=59/);
+  assert.match(indexHtml, /app\.js\?v=59/);
+});
+
+test("v6.4 sin chips de categorías en Resumen, Favoritas, Herramientas y Ajustes", () => {
+  const fn = appJs.slice(appJs.indexOf("function paintCategoryTabs"), appJs.indexOf("function render("));
+  assert.match(fn, /const sheetOpen = Boolean\(prefSheet && !prefSheet\.hidden\);/);
+  assert.match(fn, /tabsEl\.hidden = NO_CATEGORY_TABS\.has\(active\) \|\| sheetOpen;/);
+  assert.match(appJs, /const NO_CATEGORY_TABS = new Set\(\["resumen", "favoritas", "herramientas"\]\);/);
+  const render = appJs.slice(appJs.indexOf("function render()"), appJs.indexOf("function showGate"));
+  assert.match(render, /paintCategoryTabs\(\);/);
+  const sheet = appJs.slice(appJs.indexOf("function setSheet"), appJs.indexOf("settingsBtn?.addEventListener"));
+  assert.match(sheet, /prefSheet\.hidden = !open;/);
+  assert.match(sheet, /paintCategoryTabs\(\);/);
+  assert.match(css, /\.tabs\[hidden\] \{ display: none; \}/);
 });

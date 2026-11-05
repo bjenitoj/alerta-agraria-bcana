@@ -37,9 +37,9 @@ test("v6.1 SIGPAC CyL: cita recortada con «…», sin «La siguiente lista» ni
   assert.doesNotMatch(appJs, /texto de la página oficial/);
 });
 
-test("v6.1 Calendario PAC: AHORA y PRÓXIMAS centrados; caché v=58", () => {
+test("v6.1 Calendario PAC: AHORA y PRÓXIMAS centrados; caché v=59", () => {
   assert.match(css, /\.pac-card > \.eyebrow \{ text-align: center; \}/);
-  assert.match(indexHtml, /app\.js\?v=58/);
+  assert.match(indexHtml, /app\.js\?v=59/);
 });
 
 test("v6.1 «i» circular con margen y ✕ visible con zona táctil de 36px", () => {
