@@ -77,10 +77,9 @@ export function referenceSources() {
   add({ name: PRICE_CONFIG.fuente, organism: "Ministerio de Agricultura, Pesca y Alimentación", url: PRICE_CONFIG.pagina, usedIn: "Precios (antes «Hoy en el campo»). El Excel semanal se descarga desde esta página." });
   add({ name: LONJA.fuente, organism: LONJA.organismo, url: LONJA.tabla, usedIn: "Precios (fuente «Lonja de Salamanca»). Cotizaciones de cada sesión, tal como las publica la tabla oficial." });
   add({ name: LONJA_LEON.fuente, organism: LONJA_LEON.organismo, url: LONJA_LEON.pagina, usedIn: "Precios (fuente «Lonja de León», si León está en tu zona). Cotizaciones semanales por mesa, tal como las publica la Lonja." });
-  // v5.8: la fuente de «Normativa en vigor» (pestaña Normativa), también en /fuentes.
-  add({ name: NORMATIVA.fuente, organism: "Agencia Estatal Boletín Oficial del Estado", url: NORMATIVA.api, usedIn: "Normativa en vigor (pestaña Normativa). Normas consolidadas vigentes de agricultura, ganadería y pesca, con enlace al texto del BOE." });
-  // v5.9: fuentes de la pantalla Alertas.
-  for (const source of ALERT_SOURCES) add({ name: source.name, organism: source.organism, url: source.url, usedIn: "Alertas (avisos oficiales que no salen en otra sección)" });
+  // v6.4: Normativa y Alertas viven dentro de la pestaña Varios.
+  add({ name: NORMATIVA.fuente, organism: "Agencia Estatal Boletín Oficial del Estado", url: NORMATIVA.api, usedIn: "Normativa en vigor (Varios › Normativa). Normas consolidadas vigentes de agricultura, ganadería y pesca, con enlace al texto del BOE." });
+  for (const source of ALERT_SOURCES) add({ name: source.name, organism: source.organism, url: source.url, usedIn: "Alertas, dentro de Varios (avisos oficiales que no salen en otra sección)" });
   try {
     const tools = readConfig("herramientas.json");
     for (const group of tools.grupos || []) {

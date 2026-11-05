@@ -1,5 +1,11 @@
 # Cambios
 
+## v6.4 · 05/11/2026 · Varios
+
+- Las pestañas Normativa y Alertas pasan a un solo chip «Varios (n)», con la suma de las dos. Al abrirlo hay dos tarjetas, Normativa (n) y Alertas (n). Dentro, un control segmentado cambia de una a otra sin perder filtros, sectores, zona, grupos por tipo ni los cuatro botones de Alertas.
+- La guía de usuario nombra Varios y dice que Normativa y Alertas están dentro.
+- Caché `?v=58`.
+
 ## v6.3 · 05/11/2026 · Nueva PAC
 
 - Nueva pestaña «Nueva PAC» (junto a Calendario PAC; se podrá mover): seguimiento oficial de la reforma de la PAC después de 2027 (propuestas de la Comisión de julio de 2025 para el MFP 2028-2034, planes de asociación nacionales y regionales, negociación en Consejo y Parlamento).

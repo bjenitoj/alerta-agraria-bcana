@@ -71,8 +71,9 @@ test("v6.2 Normativa: grupos por tipo, en orden de rango, recientes arriba, solo
   assert.match(appJs, /<summary class="norma-band">\$\{normaIcon\(group\.id\)\}<span class="norma-band-name">\$\{escapeHtml\(group\.label\)\}<\/span> <span class="count">\(\$\{group\.items\.length\}\)<\/span>/);
 });
 
-test("v6.2 Normativa: recuento del chip y de Inicio con el filtro", () => {
-  assert.match(appJs, /id === "normativa"\s*\n\s*\? normativaCount\(items\)/);
+test("v6.2 Normativa: recuento del chip Varios y de Inicio con el filtro", () => {
+  assert.match(appJs, /function variosCount\(items = baseItems\(\)\) \{\n  return normativaCount\(items\) \+ alertList\(items\)\.length;\n\}/);
+  assert.match(appJs, /id === "varios"\s*\n\s*\? variosCount\(items\)/);
   assert.match(appJs, /const total = id === "normativa" \? normativaCount\(items\) : list\.length;/);
 });
 

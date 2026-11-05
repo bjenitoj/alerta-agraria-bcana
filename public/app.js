@@ -863,7 +863,7 @@ function calendarLink(item) {
 const tabIcon = (body) => `<svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
 const PRICES_ICON = tabIcon(`<path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/>`);
 // v5.8: nombre corto bajo el icono en el móvil (el nombre completo va en aria-label y title).
-const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas", "nueva-pac": "Nueva PAC" };
+const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas", "nueva-pac": "Nueva PAC", varios: "Varios" };
 const TAB_ICONS = {
   ayudas: tabIcon(`<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.6-1 1.4-1.5 2.5-1.5 1.6 0 2.5.9 2.5 2s-.8 1.8-2.5 2-2.6.8-2.6 2 1 2 2.6 2c1.1 0 2-.5 2.5-1.4"/>`),
   calendario: tabIcon(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M8 14h2M12 14h2M16 14h0M8 17h2M12 17h2"/>`),
@@ -871,6 +871,7 @@ const TAB_ICONS = {
   campo: PRICES_ICON,
   favoritas: tabIcon(`<path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>`),
   alertas: tabIcon(`<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>`),
+  varios: tabIcon(`<rect x="3.5" y="4" width="7.5" height="16" rx="1.5"/><rect x="13" y="4" width="7.5" height="16" rx="1.5"/>`),
   "nueva-pac": tabIcon(`<path d="M5 19V9l7-5 7 5v10"/><path d="M10 19v-5h4v5"/><path d="M9 11h.01M15 11h.01M12 14.5v-2"/>`),
   archivadas: tabIcon(`<rect x="3.5" y="4" width="17" height="4" rx="1"/><path d="M5 8v11h14V8M10 12h4"/>`),
 };
@@ -1954,6 +1955,45 @@ function renderNormativa(recent) {
       <p class="hint">Leyes, reales decretos y órdenes que el BOE da como vigentes (legislación consolidada), de tus sectores y tu zona, agrupadas por tipo. Sin ayudas: esas están en Ayudas.</p>${vigorHtml}</section>`;
 }
 
+// v6.4 · Varios: una sola pestaña. Al abrirla, dos tarjetas (Normativa o Alertas). Dentro, un control
+// segmentado para cambiar sin perder filtros, grupos, sectores ni recuentos de cada pantalla.
+let variosPane = null;
+function variosCount(items = baseItems()) {
+  return normativaCount(items) + alertList(items).length;
+}
+function variosOptions() {
+  const items = baseItems();
+  return [
+    ["normativa", "Normativa", normativaCount(items), "Lo último del BOE y BOCyL y las normas en vigor, agrupadas por tipo."],
+    ["alertas", "Alertas", alertList(items).length, "Avisos oficiales de tu zona: tiempo, plagas, sanidad animal e incendios."],
+  ];
+}
+function variosChooser() {
+  const cards = variosOptions().map(([id, label, count, note]) => `<button type="button" class="varios-card" data-varios="${id}">
+      <span class="varios-card-top">${TAB_ICONS[id] || ""}<span class="varios-card-name">${label} <span class="count">(${count})</span></span></span>
+      <span class="varios-card-note">${note}</span>
+    </button>`).join("");
+  return `<div class="varios-chooser" role="group" aria-label="Elige Normativa o Alertas">${cards}</div>`;
+}
+function variosSwitch() {
+  const buttons = variosOptions().map(([id, label, count]) => {
+    const on = variosPane === id;
+    return `<button type="button" class="seg-btn${on ? " on" : ""}" data-varios="${id}" aria-pressed="${on ? "true" : "false"}">${label} <span class="count">(${count})</span></button>`;
+  }).join("");
+  return `<div class="seg varios-seg" role="group" aria-label="Normativa o Alertas">${buttons}</div>`;
+}
+function renderVarios() {
+  const items = baseItems();
+  if (variosPane === "alertas") return variosSwitch() + renderAlertas();
+  if (variosPane === "normativa") {
+    const recent = byPublication(items.filter((item) => inTab(item, "normativa")));
+    return variosSwitch() + renderNormativa(recent);
+  }
+  return filterRow() +
+    `<section class="view-head"><p class="eyebrow">Normativa y avisos oficiales</p><h2>Varios (${variosCount(items)})</h2></section>` +
+    variosChooser();
+}
+
 function renderList(tab) {
   if (tab === "ayudas") return renderAyudas();
   const card = listStatus ? GLANCE.find((entry) => entry.status === listStatus && entry.goto === tab) : null;
@@ -2421,17 +2461,14 @@ function renderDigestTab() {
 
 function renderTabs() {
   const items = baseItems();
-  // v5.8: sin chip «Inicio» (está en la barra de abajo y en el logo). Orden: Ayudas, Calendario PAC, Normativa,
-  // Precios (antes «Hoy en el campo», con el icono de la barra de abajo) y Favoritas (arriba, entre Resumen y Herramientas).
-  // v5.8: sin chip «Inicio» (se vuelve con el logo). Orden: Ayudas, Calendario PAC, Normativa, Precios y Favoritas,
-  // cada uno con icono. En el móvil (≤ 900 px) solo el icono, para que entren los 5 en una fila.
+  // v5.8: sin chip «Inicio» (se vuelve con el logo). Favoritas está en cabecera y barra.
+  // v6.4: Normativa y Alertas se unen en un solo chip «Varios» (dentro se elige una u otra).
   const buttons = [
     ["ayudas", "Ayudas"],
     ["calendario", "Calendario PAC"],
     ["nueva-pac", "Nueva PAC"], // v6.3: colocación provisional; fácil de mover en este array
-    ["normativa", "Normativa"],
     ["campo", "Precios"],
-    ["alertas", "Alertas"],
+    ["varios", "Varios"],
     ["archivadas", "Archivadas"],
   ].filter(([id]) => id !== "archivadas" || isAdmin());
   const noCount = new Set(["calendario", "campo", "herramientas"]);
@@ -2443,12 +2480,10 @@ function renderTabs() {
           ? (state.archive || []).length
           : id === "favoritas"
             ? Object.values(favorites).filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || ""))).length // v5.9: todas, también cerradas
-            : id === "alertas"
-              ? alertList(items).length // v5.9: el mismo número que la pantalla Alertas y el cuadro de Inicio
+            : id === "varios"
+              ? variosCount(items) // v6.4: Normativa (recientes + en vigor) + Alertas, mismos filtros
             : id === "ayudas"
               ? ayudasView().items.length // v5.7: el mismo número que la lista y el cuadro elegido
-              : id === "normativa"
-                ? normativaCount(items) // v6.2: lo mismo que la pantalla (recientes + en vigor, por sector y zona)
                 : id === "nueva-pac"
                   ? (nuevaPacData?.news || []).length // v6.3: noticias de la reforma post-2027
                 : items.filter((item) => inTab(item, id)).length;
@@ -2461,6 +2496,11 @@ function renderTabs() {
 
 function render() {
   if (QUIET.has(PATH) || PATH === "/admin") return;
+  // v6.4: un enlace antiguo a Normativa o Alertas abre Varios en esa pantalla.
+  if (active === "normativa" || active === "alertas") {
+    variosPane = active;
+    active = "varios";
+  }
   stampEl.textContent = state.collecting
     ? "Consultando fuentes oficiales…"
     : state.lastCollectAt
@@ -2499,7 +2539,7 @@ function render() {
   else if (active === "favoritas") html = renderFavorites();
   else if (active === "calendario") html = renderPacCalendar();
   else if (active === "campo") html = renderField();
-  else if (active === "alertas") html = renderAlertas();
+  else if (active === "varios") html = renderVarios();
   else if (active === "nueva-pac") html = renderNuevaPac();
   else if (active === "herramientas") html = renderToolsTab();
   else if (active === "archivadas") html = renderArchive();
@@ -2719,6 +2759,7 @@ async function refresh() {
 tabsEl.addEventListener("click", (event) => {
   const button = event.target.closest(".tab");
   if (!button) return;
+  if (button.dataset.id === "varios") variosPane = null;
   active = button.dataset.id;
   listStatus = null;
   setSheet(false);
@@ -3021,6 +3062,19 @@ appEl.addEventListener("click", (event) => {
     setSheet(true, true);
     render();
     if (level) requestAnimationFrame(() => document.querySelector(`[data-place-box="${level}"]`)?.scrollIntoView({ block: "center" }));
+    return;
+  }
+  const variosBtn = event.target.closest("[data-varios]");
+  if (variosBtn) {
+    event.preventDefault();
+    const next = variosBtn.dataset.varios;
+    if (next === "normativa" || next === "alertas") {
+      active = "varios";
+      variosPane = next;
+      listStatus = null;
+      render();
+      window.scrollTo(0, 0);
+    }
     return;
   }
   const go = event.target.closest("[data-goto]");

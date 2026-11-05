@@ -12,12 +12,14 @@ const appJs = read("public/app.js");
 const css = read("public/styles.css");
 const tabs = appJs.slice(appJs.indexOf("function renderTabs"), appJs.indexOf("function render()"));
 
-test("v5.8 chips: sin Inicio; orden Ayudas, Calendario PAC, Nueva PAC, Normativa, Precios, Alertas; Precios con el icono de abajo", () => {
+test("v5.8 chips: sin Inicio; orden Ayudas, Calendario PAC, Nueva PAC, Precios, Varios; Precios con el icono de abajo", () => {
   assert.doesNotMatch(tabs, /\["inicio", "Inicio"\]/);
   assert.doesNotMatch(tabs, /Hoy en el campo"\]/);
   const list = tabs.slice(tabs.indexOf("const buttons"), tabs.indexOf("].filter"));
   const ids = [...list.matchAll(/\["([a-z-]+)", /g)].map((m) => m[1]);
-  assert.deepEqual(ids.filter((id) => id !== "archivadas"), ["ayudas", "calendario", "nueva-pac", "normativa", "campo", "alertas"], "v6.3: Favoritas sube a cabecera/barra entre Resumen y Herramientas");
+  assert.deepEqual(ids.filter((id) => id !== "archivadas"), ["ayudas", "calendario", "nueva-pac", "campo", "varios"], "v6.4: Normativa y Alertas son el chip Varios");
+  assert.doesNotMatch(list, /\["normativa", "Normativa"\]/);
+  assert.doesNotMatch(list, /\["alertas", "Alertas"\]/);
   assert.match(tabs, /\["campo", "Precios"\]/);
   assert.match(appJs, /campo: PRICES_ICON,/);
   const dockSvg = '<path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/>'; // el icono que tenía «Precios» en la barra
@@ -54,11 +56,11 @@ test("v5.8 Ajustes: desplegables Mis preferencias, Tema, Leídas y borradas; sin
   assert.doesNotMatch(appJs, /choiceButtons\(SECTORS,/);
 });
 
-test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=57", () => {
+test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=58", () => {
   const boe = referenceSources().find((s) => s.url === "https://www.boe.es/datosabiertos/api/legislacion-consolidada");
   assert.ok(boe);
   assert.match(boe.usedIn, /Normativa en vigor/);
-  assert.match(indexHtml, /app\.js\?v=57/);
+  assert.match(indexHtml, /app\.js\?v=58/);
 });
 
 test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de abajo; la cabecera los oculta solo ≤ 900 px", () => {
@@ -76,7 +78,7 @@ test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de 
 
 test("v5.8 móvil: chips con texto pequeño bajo el icono y barra Resumen · Favoritas · Herramientas · Ajustes", () => {
   assert.match(tabs, /<span class="tab-short" aria-hidden="true">\$\{TAB_SHORT\[id\] \|\| title\}<\/span>/);
-  assert.match(appJs, /const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas"(?:, "nueva-pac": "Nueva PAC")? };/);
+  assert.match(appJs, /const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas", "nueva-pac": "Nueva PAC", varios: "Varios" };/);
   assert.match(css, /\.tabs \.tab \.tab-short \{ display: none; \}/);
   const dock = indexHtml.slice(indexHtml.indexOf('<nav class="dock'), indexHtml.indexOf("</nav>", indexHtml.indexOf('<nav class="dock')));
   assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Resumen", "Favoritas", "Herramientas", "Ajustes"]);

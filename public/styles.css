@@ -1061,7 +1061,7 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
   .seg-btn { min-height: 40px; }
 }
 
-/* v5.8 · Chips de apartados en MAYÚSCULAS (AYUDAS, CALENDARIO PAC, NORMATIVA, PRECIOS, MIS FAVORITAS). */
+/* v5.8 · Chips de apartados en MAYÚSCULAS (AYUDAS, CALENDARIO PAC, PRECIOS, VARIOS). */
 .tabs .tab { display: inline-flex; align-items: center; text-transform: uppercase; letter-spacing: 0.03em; }
 
 /* v5.8 · Chip «Precios» con el icono de la barra de abajo. */
@@ -1371,4 +1371,29 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
     font-size: 11px;
     line-height: 16px;
   }
+}
+
+/* v6.4 · Varios: dos tarjetas para elegir Normativa o Alertas; dentro, el control segmentado. */
+.varios-chooser { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 4px 0 18px; }
+.varios-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  min-height: 148px; padding: 16px 16px 18px; text-align: left;
+  border: 0; border-radius: 20px; cursor: pointer; font: inherit; color: var(--ink);
+  background: linear-gradient(160deg, rgba(31, 154, 98, .12), var(--card) 68%);
+  box-shadow: var(--shadow);
+}
+.varios-card-top { display: flex; align-items: center; gap: 10px; }
+.varios-card .tab-icon {
+  width: 26px; height: 26px; margin: 0; flex: none; color: var(--green);
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.varios-card-name { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.varios-card .count { color: var(--green); font-weight: 800; }
+.varios-card-note { color: var(--muted); font-size: 14px; line-height: 1.35; }
+.varios-card:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.varios-seg { margin-top: 0; }
+.varios-seg .count { font-weight: 800; }
+@media (max-width: 700px) {
+  .varios-chooser { grid-template-columns: 1fr; }
+  .varios-card { min-height: 0; }
 }
