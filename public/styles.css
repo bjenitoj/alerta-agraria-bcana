@@ -239,7 +239,7 @@ button, .choice, .tab {
 .board {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "filters" "glance" "prio" "field" "plan" "loose";
+  grid-template-areas: "filters" "glance" "prio" "field" "favs" "plan" "loose";
   gap: 16px;
   align-items: start;
 }
@@ -278,6 +278,14 @@ button, .choice, .tab {
 .pac-block { grid-area: pac; }
 .loose { grid-area: loose; }
 .digest { grid-area: digest; position: sticky; top: 12px; }
+.home-favs { grid-area: favs; }
+.home-tools { grid-area: tools; }
+.home-favs-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 8px; }
+.home-favs-head h2 { margin: 0; font-size: 26px; }
+.home-favs-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.home-favs-list li { background: linear-gradient(135deg, rgba(31, 154, 98, .06), var(--card) 55%); border-radius: 16px; padding: 12px 14px; box-shadow: var(--shadow); }
+.home-favs-list a { font-weight: 700; text-decoration: none; }
+.home-favs-list small { display: block; margin-top: 4px; color: var(--muted); }
 .column h2, .pac-block h2, .loose h2, .digest h2 {
   display: flex;
   justify-content: space-between;
@@ -615,7 +623,7 @@ body.public-page footer { padding-bottom: 32px; }
   .tab-main { display: none; }
   .board {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "filters" "glance" "prio" "field" "plan" "loose";
+    grid-template-areas: "filters" "glance" "prio" "field" "favs" "plan" "loose";
   }
   .columns, .glance { grid-template-columns: 1fr 1fr; }
   .field-strip { grid-template-columns: 1fr; }
@@ -1076,11 +1084,11 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
 .acc-panel[hidden] { display: none; }
 .acc-btn:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
 
-/* v5.8 · Móvil (≤ 900 px, con barra de abajo): Resumen, Herramientas y Ajustes pasan de la cabecera a la barra
-   (7 botones: Inicio · Ayudas · Normativa · Precios · Resumen · Herram. · Ajustes). En pantallas anchas, igual que antes. */
-.dock { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
-.dock button { min-width: 0; padding: 6px 0; font-size: 11px; letter-spacing: -0.01em; }
-.dock-label { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* v6.3 · Móvil (≤ 900 px): la barra es Resumen, Favoritas, Herramientas y Ajustes.
+   Esos botones salen de la cabecera (también la estrella de Favoritas). El nombre se ve entero. */
+.dock { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; }
+.dock button { min-width: 0; padding: 6px 1px; font-size: 11px; letter-spacing: -0.02em; }
+.dock-label { display: block; max-width: 100%; overflow: visible; white-space: nowrap; font-size: clamp(10px, 2.85vw, 12px); letter-spacing: -0.03em; line-height: 1.15; }
 .dock-ico { position: relative; display: inline-flex; }
 .dock-badge {
   position: absolute; top: -6px; right: -10px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px;
@@ -1089,6 +1097,7 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
 .dock-badge[hidden] { display: none; }
 @media (max-width: 900px) {
   body:not(.public-page):not(.locked) .top #digestBtn,
+  body:not(.public-page):not(.locked) .top #favBtn,
   body:not(.public-page):not(.locked) .top #toolsBtn,
   body:not(.public-page):not(.locked) .top #settingsBtn { display: none; }
 }
@@ -1296,4 +1305,70 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .tab.active .tab-icon, .chip.on svg, .dock button.on svg, .head-btn.on svg {
   background: rgba(255, 255, 255, .18);
   border-color: rgba(255, 255, 255, .75);
+}
+
+
+/* v6.3 · Nueva PAC */
+.np-block { margin: 16px 0 22px; }
+.np-block h3 { margin: 0 0 10px; font-size: 22px; }
+.np-current { margin: 0 0 12px; }
+.np-stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.np-stage { background: linear-gradient(135deg, rgba(31, 154, 98, .08), var(--card) 60%); border-radius: 16px; padding: 12px 14px; box-shadow: var(--shadow); }
+.np-stage.done { opacity: .92; }
+.np-stage.on { background: linear-gradient(135deg, rgba(18, 112, 74, .18), var(--card) 55%); box-shadow: 0 6px 18px rgba(18, 112, 74, .14); }
+.np-stage-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 4px; }
+.np-mark { font-size: 13px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.np-stage.on .np-mark { color: var(--green); }
+.np-stage.done .np-mark { color: var(--open); }
+.np-stage p { margin: 4px 0; }
+.np-news, .np-docs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.np-news li, .np-docs li { background: linear-gradient(135deg, rgba(31, 154, 98, .06), var(--card) 55%); border-radius: 16px; padding: 12px 14px; box-shadow: var(--shadow); }
+.np-news a, .np-docs a { font-weight: 700; text-decoration: none; }
+.np-news small, .np-docs small { display: block; margin-top: 4px; color: var(--muted); }
+.np-news-item { display: grid; gap: 6px; }
+.np-news-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.np-type { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 800; background: rgba(18,112,74,.12); color: var(--green); border: 1px solid color-mix(in srgb, var(--green) 35%, #fff); }
+.np-type.t-norma { background: rgba(29,78,137,.12); color: #1d4e89; border-color: color-mix(in srgb, #1d4e89 40%, #fff); }
+.np-type.t-propuesta { background: rgba(18,112,74,.14); color: var(--green); }
+.np-type.t-avance { background: rgba(240,166,58,.18); color: #9a3412; border-color: color-mix(in srgb, #9a3412 35%, #fff); }
+.np-type.t-postura { background: rgba(140,74,50,.12); color: #8c4a32; border-color: color-mix(in srgb, #8c4a32 40%, #fff); }
+.np-type.t-consulta { background: rgba(29,78,137,.10); color: #1d4e89; }
+.np-type.t-documento { background: rgba(92,83,70,.10); color: #5c5346; }
+.np-title { font-size: 18px; line-height: 1.35; }
+.np-summary { margin: 0; color: var(--ink); }
+.np-meta { margin: 0; color: var(--muted); font-size: 15px; }
+.np-source { font-weight: 700; }
+
+/* v6.3 revisión visual · iPad y web (≥ 901 px): Resumen, Favoritas, Herramientas y Ajustes
+   más altos y estrechos. El símbolo queda centrado arriba y el nombre debajo.
+   El recuento sigue entre paréntesis, en la misma línea del nombre. */
+@media (min-width: 901px) {
+  .top-tools { align-items: center; gap: 6px; }
+  .head-btn {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    min-height: 78px;
+    width: auto;
+    padding: 8px 10px 7px;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .head-line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .head-btn .head-text { font-size: 13px; font-weight: 800; }
+  .head-btn .head-badge {
+    position: static;
+    min-width: 0;
+    height: auto;
+    padding: 0 5px;
+    font-size: 11px;
+    line-height: 16px;
+  }
 }

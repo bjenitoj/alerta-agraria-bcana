@@ -1,5 +1,16 @@
 # Cambios
 
+## v6.3 · 05/11/2026 · Nueva PAC
+
+- Nueva pestaña «Nueva PAC» (junto a Calendario PAC; se podrá mover): seguimiento oficial de la reforma de la PAC después de 2027 (propuestas de la Comisión de julio de 2025 para el MFP 2028-2034, planes de asociación nacionales y regionales, negociación en Consejo y Parlamento).
+- Bloque «En qué punto está» con las etapas (Propuesta, Negociación, Acuerdo, Planes nacionales, Entrada en vigor 2028), cada una con enlace y fecha oficiales. Solo se marca como actual lo que dicen las fuentes.
+- Lista de últimas noticias (con recuento entre paréntesis): cada una con título, enlace a la fuente oficial, etiqueta de tipo (Norma, Propuesta, Avance, Postura, Consulta, Documento u Otro) y un minirresumen de 1-2 frases sacado solo del texto oficial (si no hay, no se inventa); los resúmenes se guardan para no regenerarlos. Documentos oficiales clave (DG AGRI, COM(2025) 560, MAPA, Consejo cuando hay URL oficial). Las convocatorias y pagos de la PAC en vigor siguen en Ayudas y Calendario PAC.
+- Fuentes usadas cuando responden: DG AGRI (página PAC después de 2027 y noticias), notas de prensa AGRI de la Comisión, Red PAC y FEGA. MAPA RSS, Consejo, Parlamento y Junta CyL se documentan si no responden; no se inventa contenido.
+- Favoritas: el apartado pasa arriba, entre Resumen y Herramientas (cabecera y barra de abajo); en Inicio la sección Favoritas sube (tras el bloque del campo). El nombre visible es solo «Favoritas» (con el recuento entre paréntesis).
+- Cabecera en iPad y web: Resumen, Favoritas, Herramientas y Ajustes más altos y estrechos, con el símbolo centrado arriba y el nombre debajo. El recuento sigue entre paréntesis, en la misma línea del nombre.
+- Móvil: fuera la estrella de Favoritas de la cabecera (ya está en la barra) y el botón Inicio de la barra. La barra queda Resumen, Favoritas, Herramientas y Ajustes, con el nombre entero. Se vuelve a Inicio tocando el logo o el título «Alerta Agraria».
+- Caché `?v=57`.
+
 ## v6.2 · 04/11/2026 · Resumen del día y estilo nuevo
 
 - Resumen: el desplegable «Día» ofrece siempre hoy y el día anterior, además de los resúmenes guardados. Un día sin resumen guardado o sin novedades sale vacío con «Ese día no hubo novedades.» (no se inventa nada).

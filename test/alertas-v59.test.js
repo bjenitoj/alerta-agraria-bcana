@@ -37,7 +37,7 @@ test("v5.9 Alertas: ITACyL plagas, RASVE e incendios con fecha y enlace oficial;
 });
 
 test("v5.9 Alertas: chip después de Precios, pantalla por fuente, sin repetir lo de otras secciones", () => {
-  assert.match(appJs, /\["campo", "Precios"\],\n    \["alertas", "Alertas"\],\n    \["favoritas"/);
+  assert.match(appJs, /\["campo", "Precios"\],\n    \["alertas", "Alertas"\],/);
   assert.match(appJs, /alertas: tabIcon\(/);
   assert.match(appJs, /id === "alertas"\n\s+\? alertList\(items\)\.length/);
   assert.match(appJs, /else if \(active === "alertas"\) html = renderAlertas\(\);/);
