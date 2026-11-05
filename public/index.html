@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=56" />
+  <link rel="stylesheet" href="/styles.css?v=57" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -58,12 +58,13 @@
         <strong>Alerta Agraria</strong>
         <small>Para tu explotación</small>
       </span>
+      <span class="sr-only">Ir a Inicio.</span>
     </a>
     <div class="top-tools">
-      <button id="digestBtn" type="button" class="ghost head-btn digest-btn" aria-label="Resumen del día"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="head-text">Resumen</span><span class="head-badge" hidden></span></button>
-      <button id="favBtn" type="button" class="ghost head-btn fav-btn" aria-label="Favoritas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg><span class="head-text">Favoritas</span><span class="head-badge" hidden></span></button>
-      <button id="toolsBtn" type="button" class="ghost head-btn tools-btn" aria-label="Herramientas oficiales"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span class="head-text">Herramientas</span></button>
-      <button id="settingsBtn" type="button" class="ghost head-btn settings-btn" aria-label="Ajustes" aria-haspopup="dialog" aria-controls="prefSheet" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="head-text">Ajustes</span></button>
+      <button id="digestBtn" type="button" class="ghost head-btn digest-btn" aria-label="Resumen del día"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="head-line"><span class="head-text">Resumen</span><span class="head-badge" hidden></span></span></button>
+      <button id="favBtn" type="button" class="ghost head-btn fav-btn" aria-label="Favoritas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg><span class="head-line"><span class="head-text">Favoritas</span><span class="head-badge" hidden></span></span></button>
+      <button id="toolsBtn" type="button" class="ghost head-btn tools-btn" aria-label="Herramientas oficiales"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span class="head-line"><span class="head-text">Herramientas</span></span></button>
+      <button id="settingsBtn" type="button" class="ghost head-btn settings-btn" aria-label="Ajustes" aria-haspopup="dialog" aria-controls="prefSheet" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span class="head-line"><span class="head-text">Ajustes</span></span></button>
       <p class="stamp" id="stamp">Cargando…</p>
       <button id="refresh" type="button" class="admin-only">Actualizar</button>
     </div>
@@ -175,11 +176,7 @@
   </footer>
 
   <nav class="dock private" aria-label="Principal">
-    <!-- v5.8: en el móvil la barra tiene Inicio, Resumen, Herramientas y Ajustes (apartados = chips de arriba). -->
-    <button type="button" data-dock-home="1" data-dock-on="inicio" aria-label="Inicio" title="Inicio">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 4l8 7.5"/><path d="M7 10.5V20h10v-9.5"/></svg>
-      <span class="dock-label">Inicio</span>
-    </button>
+    <!-- v6.3: en el móvil la barra es Resumen, Favoritas, Herramientas y Ajustes. Inicio se abre con el logo. -->
     <button type="button" data-dock-proxy="digestBtn" data-dock-on="resumen" aria-label="Resumen del día" title="Resumen">
       <span class="dock-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="dock-badge" hidden></span></span>
       <span class="dock-label">Resumen</span>
@@ -216,6 +213,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=56"></script>
+  <script type="module" src="/app.js?v=57"></script>
 </body>
 </html>

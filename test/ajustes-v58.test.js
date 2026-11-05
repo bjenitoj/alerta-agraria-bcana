@@ -54,18 +54,18 @@ test("v5.8 Ajustes: desplegables Mis preferencias, Tema, Leídas y borradas; sin
   assert.doesNotMatch(appJs, /choiceButtons\(SECTORS,/);
 });
 
-test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=56", () => {
+test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=57", () => {
   const boe = referenceSources().find((s) => s.url === "https://www.boe.es/datosabiertos/api/legislacion-consolidada");
   assert.ok(boe);
   assert.match(boe.usedIn, /Normativa en vigor/);
-  assert.match(indexHtml, /app\.js\?v=56/);
+  assert.match(indexHtml, /app\.js\?v=57/);
 });
 
 test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de abajo; la cabecera los oculta solo ≤ 900 px", () => {
   const dock = indexHtml.slice(indexHtml.indexOf('<nav class="dock'), indexHtml.indexOf("</nav>", indexHtml.indexOf('<nav class="dock')));
   const order = [...dock.matchAll(/data-dock(?:-proxy)?="(\w+)"/g)].map((m) => m[1]);
   assert.deepEqual(order, ["digestBtn", "favBtn", "toolsBtn", "settingsBtn"]);
-  assert.ok(dock.indexOf('data-dock-home="1" data-dock-on="inicio"') < dock.indexOf("digestBtn"), "Inicio primero");
+  assert.doesNotMatch(dock, /data-dock-home/, "Inicio ya no está en la barra; se abre con el logo");
   assert.match(dock, /class="dock-badge" hidden/);
   assert.match(appJs, /document\.getElementById\(proxy\.dataset\.dockProxy\)\?\.click\(\)/);
   assert.match(appJs, /dockBadge\.hidden = badge\.hidden/);
@@ -74,14 +74,14 @@ test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de 
   assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/, "el logo lleva a Inicio");
 });
 
-test("v5.8 móvil: chips con texto pequeño bajo el icono y barra Inicio · Resumen · Favoritas · Herramientas · Ajustes", () => {
+test("v5.8 móvil: chips con texto pequeño bajo el icono y barra Resumen · Favoritas · Herramientas · Ajustes", () => {
   assert.match(tabs, /<span class="tab-short" aria-hidden="true">\$\{TAB_SHORT\[id\] \|\| title\}<\/span>/);
   assert.match(appJs, /const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas"(?:, "nueva-pac": "Nueva PAC")? };/);
   assert.match(css, /\.tabs \.tab \.tab-short \{ display: none; \}/);
   const dock = indexHtml.slice(indexHtml.indexOf('<nav class="dock'), indexHtml.indexOf("</nav>", indexHtml.indexOf('<nav class="dock')));
-  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Inicio", "Resumen", "Favoritas", "Herramientas", "Ajustes"]);
-  assert.match(css, /\.dock \{ grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
-  assert.match(appJs, /event\.target\.closest\("\[data-dock-home\]"\)\) document\.querySelector\("\.top \.brand"\)\?\.click\(\)/);
+  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Resumen", "Favoritas", "Herramientas", "Ajustes"]);
+  assert.match(css, /\.dock \{ grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/);
+  assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/);
 });
 
 test("v5.8 Inicio: «Ayudas y subvenciones» = Otras ayudas y «PAC» = Ayudas PAC, sin piezas repetidas", () => {

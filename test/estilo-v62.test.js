@@ -14,8 +14,8 @@ test("v6.2 estilo «Con color» es el diseño por defecto, sin interruptor ?esti
   assert.match(css, /\.tab\.active, \.chip\.on[^{]*\{[^}]*linear-gradient\(135deg, #12704a, #1f9a62\)/);
   assert.match(css, /\.top \{ position: sticky; top: var\(--rb-h, 0px\)/);
   assert.match(appJs, /function measureReviewBanner/);
-  assert.match(html, /styles\.css\?v=56/);
-  assert.match(html, /app\.js\?v=56/);
+  assert.match(html, /styles\.css\?v=57/);
+  assert.match(html, /app\.js\?v=57/);
 });
 
 test("v6.2 estilo: siempre en claro, también con el sistema en oscuro", () => {

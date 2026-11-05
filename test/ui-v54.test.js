@@ -77,12 +77,13 @@ test("v5.4 Resumen: botón de cabecera, fuera del cuerpo de Inicio y contador so
   assert.match(appJs, /Cambiar en Mis preferencias/);
 });
 
-test("v5.8 barra de abajo (móvil): Inicio, Resumen, Favoritas, Herramientas y Ajustes, con icono y texto pequeño", () => {
+test("v5.8 barra de abajo (móvil): Resumen, Favoritas, Herramientas y Ajustes, con icono y texto pequeño", () => {
   assert.doesNotMatch(dock, /data-dock="/);
+  assert.doesNotMatch(dock, /data-dock-home/);
   const proxies = [...dock.matchAll(/data-dock-proxy="(\w+)"/g)].map((m) => m[1]);
   assert.deepEqual(proxies, ["digestBtn", "favBtn", "toolsBtn", "settingsBtn"]);
-  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Inicio", "Resumen", "Favoritas", "Herramientas", "Ajustes"]);
-  assert.match(css, /\.dock \{ grid-template-columns: repeat\(5, minmax\(0, 1fr\)\);/);
+  assert.deepEqual([...dock.matchAll(/<span class="dock-label">([^<]+)</g)].map((m) => m[1]), ["Resumen", "Favoritas", "Herramientas", "Ajustes"]);
+  assert.match(css, /\.dock \{ grid-template-columns: repeat\(4, minmax\(0, 1fr\)\);/);
 });
 
 // v5.6: el botón «← Inicio» se quitó; se vuelve con el título de la cabecera (ver footer-v56.test.js).

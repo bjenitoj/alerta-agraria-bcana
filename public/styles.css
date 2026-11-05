@@ -1084,11 +1084,11 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
 .acc-panel[hidden] { display: none; }
 .acc-btn:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
 
-/* v5.8 · Móvil (≤ 900 px, con barra de abajo): Resumen, Herramientas y Ajustes pasan de la cabecera a la barra
-   (7 botones: Inicio · Ayudas · Normativa · Precios · Resumen · Herram. · Ajustes). En pantallas anchas, igual que antes. */
-.dock { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
-.dock button { min-width: 0; padding: 6px 0; font-size: 11px; letter-spacing: -0.01em; }
-.dock-label { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* v6.3 · Móvil (≤ 900 px): la barra es Resumen, Favoritas, Herramientas y Ajustes.
+   Esos botones salen de la cabecera (también la estrella de Favoritas). El nombre se ve entero. */
+.dock { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; }
+.dock button { min-width: 0; padding: 6px 1px; font-size: 11px; letter-spacing: -0.02em; }
+.dock-label { display: block; max-width: 100%; overflow: visible; white-space: nowrap; font-size: clamp(10px, 2.85vw, 12px); letter-spacing: -0.03em; line-height: 1.15; }
 .dock-ico { position: relative; display: inline-flex; }
 .dock-badge {
   position: absolute; top: -6px; right: -10px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px;
@@ -1097,6 +1097,7 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
 .dock-badge[hidden] { display: none; }
 @media (max-width: 900px) {
   body:not(.public-page):not(.locked) .top #digestBtn,
+  body:not(.public-page):not(.locked) .top #favBtn,
   body:not(.public-page):not(.locked) .top #toolsBtn,
   body:not(.public-page):not(.locked) .top #settingsBtn { display: none; }
 }
@@ -1337,3 +1338,37 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .np-summary { margin: 0; color: var(--ink); }
 .np-meta { margin: 0; color: var(--muted); font-size: 15px; }
 .np-source { font-weight: 700; }
+
+/* v6.3 revisión visual · iPad y web (≥ 901 px): Resumen, Favoritas, Herramientas y Ajustes
+   más altos y estrechos. El símbolo queda centrado arriba y el nombre debajo.
+   El recuento sigue entre paréntesis, en la misma línea del nombre. */
+@media (min-width: 901px) {
+  .top-tools { align-items: center; gap: 6px; }
+  .head-btn {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    min-height: 78px;
+    width: auto;
+    padding: 8px 10px 7px;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .head-line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .head-btn .head-text { font-size: 13px; font-weight: 800; }
+  .head-btn .head-badge {
+    position: static;
+    min-width: 0;
+    height: auto;
+    padding: 0 5px;
+    font-size: 11px;
+    line-height: 16px;
+  }
+}

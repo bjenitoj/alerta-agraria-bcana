@@ -2475,6 +2475,7 @@ function render() {
   renderTabs();
   paintDigestBtn();
   paintFavBtn();
+  paintBrand();
   toolsBtn?.classList.toggle("on", active === "herramientas");
   favBtn?.classList.toggle("on", active === "favoritas");
   if (location.hash === "#resumen" && active !== "resumen") history.replaceState(null, "", location.pathname + location.search);
@@ -2807,6 +2808,13 @@ prefSheet?.addEventListener("click", (event) => {
 });
 // v5.6: el título «Alerta Agraria» de la cabecera es la vuelta a Inicio (ya no hay botón de volver).
 // En la consulta cambia a Inicio sin recargar; en las páginas sueltas (/fuentes, /aviso-legal…) el enlace href="/" lleva a Inicio.
+// v6.3: en el móvil tampoco hay botón Inicio en la barra; el logo y el título siguen siendo el acceso.
+function paintBrand() {
+  const brand = document.querySelector(".top .brand");
+  if (!brand) return;
+  if (active === "inicio") brand.setAttribute("aria-current", "page");
+  else brand.removeAttribute("aria-current");
+}
 document.querySelector(".top .brand")?.addEventListener("click", (event) => {
   if (QUIET.has(PATH) || PATH === "/admin" || event.metaKey || event.ctrlKey || event.shiftKey || event.button) return;
   event.preventDefault();
@@ -2817,12 +2825,10 @@ document.querySelector(".top .brand")?.addEventListener("click", (event) => {
   render();
   window.scrollTo(0, 0);
 });
-// v5.8: Resumen, Herramientas y Ajustes de la barra de abajo hacen lo mismo que sus botones de la cabecera.
+// v5.8: Resumen, Favoritas, Herramientas y Ajustes de la barra de abajo hacen lo mismo que sus botones de la cabecera.
 document.querySelector(".dock")?.addEventListener("click", (event) => {
   const proxy = event.target.closest("[data-dock-proxy]");
   if (proxy) document.getElementById(proxy.dataset.dockProxy)?.click();
-  // v5.8: «Inicio» de la barra hace lo mismo que tocar el logo.
-  if (event.target.closest("[data-dock-home]")) document.querySelector(".top .brand")?.click();
 });
 document.querySelector(".dock")?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-dock]");
