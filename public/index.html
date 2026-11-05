@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=59" />
+  <link rel="stylesheet" href="/styles.css?v=60" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -132,7 +132,7 @@
       <section class="acc settings-read private">
         <button type="button" class="acc-btn" id="readTitle" data-acc="leidas" aria-expanded="false" aria-controls="acc-leidas"><span class="acc-text"><span class="acc-title">Leídas y borradas</span><span class="acc-note">Se guardan 15 días en este dispositivo</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="acc-panel" id="acc-leidas" role="region" aria-labelledby="readTitle" hidden>
-          <p class="hint">Toca una noticia para marcarla como leída. «Borrar leídas» las quita de la vista durante 15 días. Se guarda solo en este dispositivo.</p>
+          <p class="hint">Toca una noticia para marcarla como leída: se quita de Resumen, Ayudas y el resto. En Favoritas se queda. «Borrar leídas» la mantiene fuera 15 días. Se guarda solo en este dispositivo.</p>
           <div class="settings-read-actions">
             <button type="button" id="restoreDeleted" class="ghost" disabled>Recuperar borradas (0)</button>
           </div>
@@ -155,7 +155,7 @@
             <dt>Alertas</dt><dd>Dentro de Varios: avisos oficiales de tu zona (tiempo, plagas, sanidad animal e incendios).</dd>
             <dt>Agricultura · Ganadería · Pesca</dt><dd>Filtran lo que ves por sector. Ninguno marcado = todos.</dd>
             <dt>★ Favorita · Compartir</dt><dd>Guarda la ficha en Favoritas · la envía por el menú del móvil o WhatsApp.</dd>
-            <dt>Borrar leídas</dt><dd>Quita de la vista 15 días lo ya leído. Las favoritas no se borran.</dd>
+            <dt>Borrar leídas</dt><dd>Quita lo leído 15 días de todas las pestañas. En Favoritas no se borra.</dd>
           </dl>
         </div>
       </section>
@@ -214,6 +214,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=59"></script>
+  <script type="module" src="/app.js?v=60"></script>
 </body>
 </html>

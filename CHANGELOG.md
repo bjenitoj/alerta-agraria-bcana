@@ -5,7 +5,8 @@
 - Las pestañas Normativa y Alertas pasan a un solo chip «Varios (n)», con la suma de las dos. Al abrirlo hay dos tarjetas, Normativa (n) y Alertas (n). Dentro, un control segmentado cambia de una a otra sin perder filtros, sectores, zona, grupos por tipo ni los cuatro botones de Alertas.
 - La guía de usuario nombra Varios y dice que Normativa y Alertas están dentro.
 - La fila de chips de categorías no sale dentro de Resumen, Favoritas, Herramientas ni Ajustes. Sí en Inicio y al entrar en Ayudas, Calendario PAC, Nueva PAC, Varios o Precios.
-- Caché `?v=59`.
+- Marcar leída, borrar u ocultar una pieza la quita de todas las pestañas donde salga (Resumen, Ayudas y el resto). La marca es la misma historia en este dispositivo (`alerta_leidas_v1`: URL, id, título y documento). Si está en Favoritas, sigue ahí y no se pierde el favorito.
+- Caché `?v=60`.
 
 ## v6.3 · 05/11/2026 · Nueva PAC
 

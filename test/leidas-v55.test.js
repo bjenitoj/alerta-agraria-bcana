@@ -15,12 +15,13 @@ const fn = (from, to) => appJs.slice(appJs.indexOf(`function ${from}`), appJs.in
 const chunk = appJs.slice(appJs.indexOf('const READ_KEY = "alerta_leidas_v1"'), appJs.indexOf("// ── fin leídas y borradas ──"));
 function load(initial = {}, favs = new Set()) {
   const ls = { ...initial };
-  const api = new Function("readJson", "writeJson", "canonicalUrl", "isFavorite", `${chunk}
-    return { READ_KEY, READ_TTL_DAYS, pruneReadStore, loadReadStore, readKeyOf, isReadItem, isDeletedItem, setRead, deleteReadItems, undeleteKeys, restoreAllDeleted, store: () => readStore };`)(
+  const api = new Function("readJson", "writeJson", "canonicalUrl", "isFavorite", "documentKeys", `${chunk}
+    return { READ_KEY, READ_TTL_DAYS, pruneReadStore, loadReadStore, readKeyOf, markKeys, isReadItem, isDeletedItem, isClearedItem, setRead, deleteReadItems, undeleteKeys, restoreAllDeleted, store: () => readStore };`)(
     (key, fallback) => (key in ls ? JSON.parse(ls[key]) : fallback),
     (key, value) => { ls[key] = JSON.stringify(value); },
     (url) => (url ? String(url).replace(/^https?:\/\/(www\.)?/, "").replace(/[#?].*$/, "").replace(/\/$/, "") : ""),
-    (item) => favs.has(item.id));
+    (item) => favs.has(item.id),
+    () => []);
   return { api, ls };
 }
 const item = (n) => ({ id: `a${n}`, title: `Pieza oficial ${n}`, url: `https://www.boe.es/diario/${n}` });
@@ -67,13 +68,28 @@ test("v5.5 Borrar leídas: quita las leídas (no las favoritas), Deshacer y Recu
   assert.equal(items.some(api.isDeletedItem), false);
 });
 
-test("v5.5 borradas fuera de listas, cuadros y Resumen; las leídas sí cuentan", () => {
-  const base = fn("baseItems", "renderTabs");
-  assert.match(base, /if \(isDeletedItem\(item\)\) return false;/);
-  assert.match(base, /onlyNewEl\?\.checked && isReadItem\(item\)/);
-  assert.doesNotMatch(base, /isReadItem\(item\)\) return false;\s*\n\s*if \(!options/);
-  const digest = fn("digestData", "digestBadgeCount");
-  assert.match(digest, /!isDeletedItem\(item\)/);
+test("v6.4 leída o borrada sale de Ayudas, Resumen y el resto; Favoritas la conserva", () => {
+  const { api } = load({}, new Set(["fav"]));
+  const title = "Resolución de ayudas a la modernización de explotaciones agrarias en Castilla y León";
+  const inAyudas = { id: "ayudas-1", title, url: "https://bocyl.jcyl.es/boletin/a" };
+  const inResumen = { id: "resumen-9", title, url: "https://agricultura.jcyl.es/web/otra-ficha" };
+  api.setRead(inAyudas, true);
+  assert.equal(api.isClearedItem(inAyudas), true);
+  assert.equal(api.isClearedItem(inResumen), true, "mismo título: también fuera del Resumen");
+  assert.ok(api.store().read["u:bocyl.jcyl.es/boletin/a"]);
+  assert.ok(api.store().read[`t:${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim()}`]);
+  const favorite = { id: "fav", title: "Ayuda favorita que no debe perderse nunca jamás del todo", url: "https://www.boe.es/diario/fav" };
+  api.setRead(favorite, true);
+  const removed = api.deleteReadItems([inAyudas, favorite]);
+  assert.deepEqual(removed, ["u:bocyl.jcyl.es/boletin/a"]);
+  assert.equal(api.isDeletedItem(favorite), false, "borrar no marca la favorita");
+  assert.equal(api.isClearedItem(favorite), true, "leída sí, pero el favorito sigue");
+  const base = fn("baseItems", "filterRow");
+  assert.match(base, /if \(isClearedItem\(item\)\) return false;/);
+  const digest = fn("digestData", "prevDay");
+  assert.match(digest, /!isClearedItem\(item\)/);
+  const fav = fn("renderFavorites", "milestoneRow");
+  assert.doesNotMatch(fav, /isClearedItem|isDeletedItem|isReadItem/);
 });
 
 test("v5.5 tarjeta: tocarla la marca, «✓ Leída», «Marcar como no leída» y el enlace oficial también marca", () => {
@@ -122,7 +138,7 @@ test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias
   assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=59 (v5.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=59/);
+test("caché v=60 (v5.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=60/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });

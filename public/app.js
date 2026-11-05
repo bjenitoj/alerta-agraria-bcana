@@ -577,7 +577,7 @@ const READ_TTL_DAYS = 15;
 const READ_MAX = 3000;
 
 function emptyReadStore() {
-  return { v: 1, read: {}, deleted: {} };
+  return { v: 1, read: {}, deleted: {}, aliases: {} };
 }
 
 /** Quita lo que tenga más de 15 días y lo que no tenga una fecha válida. */
@@ -590,6 +590,10 @@ function pruneReadStore(store, nowMs = Date.now()) {
       .sort((a, b) => Date.parse(a[1]) - Date.parse(b[1]))
       .slice(-READ_MAX);
     out[bucket] = Object.fromEntries(entries);
+  }
+  const alive = new Set(Object.keys(out.deleted));
+  for (const [alias, primary] of Object.entries(store?.aliases || {})) {
+    if (alive.has(primary)) out.aliases[alias] = primary;
   }
   return out;
 }
@@ -613,10 +617,32 @@ function readKeyOf(item) {
   return url ? `u:${url}` : item?.id ? `id:${item.id}` : "";
 }
 
+/** Todas las claves de una misma historia (URL, id, título largo y documento oficial). */
+function markKeys(item) {
+  const keys = [];
+  const url = canonicalUrl(item?.url);
+  if (url) keys.push(`u:${url}`);
+  if (item?.id) keys.push(`id:${item.id}`);
+  const title = String(item?.title || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  if (title.length >= 40) keys.push(`t:${title}`);
+  if (typeof documentKeys === "function") {
+    for (const key of documentKeys(item?.url, item?.title)) keys.push(key);
+  }
+  return [...new Set(keys.filter(Boolean))];
+}
+
 function hasMark(bucket, item) {
-  const key = readKeyOf(item);
-  if (!key) return false;
-  return Boolean(readStore[bucket][key] || (item?.id && readStore[bucket][`id:${item.id}`]));
+  const keys = markKeys(item);
+  if (bucket !== "deleted") return keys.some((key) => readStore[bucket]?.[key]);
+  const aliases = readStore.aliases || {};
+  return keys.some((key) => readStore.deleted[key] || (aliases[key] && readStore.deleted[aliases[key]]));
 }
 
 function isReadItem(item) {
@@ -627,27 +653,37 @@ function isDeletedItem(item) {
   return hasMark("deleted", item);
 }
 
-function setRead(item, on) {
-  const key = readKeyOf(item);
-  if (!key) return;
-  if (on) readStore.read[key] = new Date().toISOString();
-  else {
-    delete readStore.read[key];
-    if (item?.id) delete readStore.read[`id:${item.id}`];
-    if (item) item.read = false;
+/** Leída o borrada: la misma historia sale de todas las pestañas, menos de Favoritas. */
+function isClearedItem(item) {
+  return isReadItem(item) || isDeletedItem(item);
+}
+
+function writeMarks(bucket, item, on) {
+  const now = new Date().toISOString();
+  for (const key of markKeys(item)) {
+    if (on) readStore[bucket][key] = now;
+    else delete readStore[bucket][key];
   }
+}
+
+function setRead(item, on) {
+  if (!markKeys(item).length) return;
+  writeMarks("read", item, on);
+  if (!on && item) item.read = false;
   writeJson(READ_KEY, readStore);
 }
 
-/** Borra (oculta 15 días) las leídas que no están en favoritas. Devuelve las claves borradas para «Deshacer». */
+/** Borra (oculta 15 días) las leídas que no están en favoritas. No toca el registro de Favoritas. */
 function deleteReadItems(items) {
   const now = new Date().toISOString();
   const keys = [];
+  readStore.aliases = readStore.aliases || {};
   for (const item of items || []) {
     if (!isReadItem(item) || isDeletedItem(item) || isFavorite(item)) continue;
     const key = readKeyOf(item);
     if (!key || keys.includes(key)) continue;
     readStore.deleted[key] = now;
+    for (const alias of markKeys(item)) if (alias !== key) readStore.aliases[alias] = key;
     keys.push(key);
   }
   writeJson(READ_KEY, readStore);
@@ -655,13 +691,19 @@ function deleteReadItems(items) {
 }
 
 function undeleteKeys(keys) {
-  for (const key of keys || []) delete readStore.deleted[key];
+  for (const key of keys || []) {
+    delete readStore.deleted[key];
+    for (const [alias, primary] of Object.entries(readStore.aliases || {})) {
+      if (primary === key) delete readStore.aliases[alias];
+    }
+  }
   writeJson(READ_KEY, readStore);
 }
 
 function restoreAllDeleted() {
   const n = Object.keys(readStore.deleted).length;
   readStore.deleted = {};
+  readStore.aliases = {};
   writeJson(READ_KEY, readStore);
   return n;
 }
@@ -1110,7 +1152,7 @@ function digestData(date) {
   // v6.2: un día del desplegable sin resumen guardado (p. ej. el anterior al primero) es un resumen vacío, sin inventar nada.
   const current = digests.find((entry) => entry.date === date) || (date && digests.length ? { date, items: [], missing: true } : digests[0]);
   if (!current) return null;
-  const shown = (item) => hasSourceUrl(item) && !isDeletedItem(item) && inSector(item) && shownByStatus(item);
+  const shown = (item) => hasSourceUrl(item) && !isClearedItem(item) && inSector(item) && shownByStatus(item);
   const aids = (current.items || []).filter(hasSourceUrl);
   const aidIds = new Set(aids.map((item) => item.id));
   const others = unseen(state.items || [], "alerta_ocultas")
@@ -1500,7 +1542,8 @@ function baseItems(options = {}) {
   const today = madridTodayKey();
   return unseen(state.items || [], "alerta_ocultas").filter((item) => {
     if (!hasSourceUrl(item)) return false;
-    if (isDeletedItem(item)) return false;
+    // v6.4: leída o borrada en cualquier pestaña sale de todas (Ayudas, Resumen, Inicio…). Favoritas no usa esta lista.
+    if (isClearedItem(item)) return false;
     if (!inSector(item)) return false;
     if (!options.allStatus && !shownByStatus(item, today)) return false;
     if (onlyNewEl?.checked && isReadItem(item)) return false;
@@ -2018,7 +2061,7 @@ function closingSoonList(dateKey) {
   const list = [];
   for (const item of pool) {
     const key = itemKey(item);
-    if (seen.has(key) || isDeletedItem(item) || !inSector(item) || !hasSourceUrl(item)) continue;
+    if (seen.has(key) || isClearedItem(item) || !inSector(item) || !hasSourceUrl(item)) continue;
     seen.add(key);
     if (isLiveAid(item.aid, today) && closesWithin(item.aid, today, 15)) list.push(item);
   }
@@ -2046,6 +2089,7 @@ function renderFavorites() {
   const live = new Map((state.items || []).map((item) => [itemKey(item), item]));
   // v5.9: una favorita se guarda sin fecha de caducidad (no le afectan los 15 días de leídas/borradas, ni que la
   // pieza desaparezca de la fuente, ni que la ayuda cierre). Solo se quita al tocar otra vez «★ Favorita».
+  // v6.4: marcarla leída, borrarla u ocultarla en otra pestaña no la quita de aquí ni borra el favorito.
   // Si la pieza ya no está en la lista de hoy, se enseña la copia guardada (título, fuente, enlace, fecha).
   const entries = Object.values(favorites)
     .filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || "")))
@@ -2954,10 +2998,19 @@ async function markCardRead(id, card, force = null) {
   const read = force === null ? !isReadItem(item) : force;
   if (read === isReadItem(item) && force !== null) return;
   setRead(item, read);
-  for (const entry of readPool()) if (readKeyOf(entry) === readKeyOf(item) && !read) entry.read = false;
-  paintCardRead(id, read);
+  for (const entry of readPool()) if (markKeys(entry).some((key) => markKeys(item).includes(key)) && !read) entry.read = false;
+  const y = window.scrollY;
+  render();
+  window.scrollTo(0, y);
   paintReadTools();
-  if (onlyNewEl?.checked) render();
+  if (read && active !== "favoritas" && force === null) {
+    showToast("Leída. Se quita también de las demás pestañas.", () => {
+      setRead(item, false);
+      const back = window.scrollY;
+      render();
+      window.scrollTo(0, back);
+    });
+  }
   if (!isAdmin()) return;
   // Panel del titular: además se avisa al servidor como antes.
   if (Boolean(item.read) !== read) {
