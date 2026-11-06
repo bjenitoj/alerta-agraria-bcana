@@ -6,7 +6,8 @@
 - La guía de usuario nombra Varios y dice que Normativa y Alertas están dentro.
 - La fila de chips de categorías no sale dentro de Resumen, Favoritas, Herramientas ni Ajustes. Sí en Inicio y al entrar en Ayudas, Calendario PAC, Nueva PAC, Varios o Precios.
 - Marcar leída, borrar u ocultar una pieza la quita de todas las pestañas donde salga (Resumen, Ayudas y el resto). La marca es la misma historia en este dispositivo (`alerta_leidas_v1`: URL, id, título y documento). Si está en Favoritas, sigue ahí y no se pierde el favorito.
-- Caché `?v=60`.
+- Iconos de Agricultura (espiga), Ganadería (vaca) y Pesca (pez): SVG propios, mismo trazo y un acento cálido por sector. Sustituyen al emoji en filtros, Ajustes y Mis preferencias.
+- Caché `?v=61`.
 
 ## v6.3 · 05/11/2026 · Nueva PAC
 

@@ -40,7 +40,7 @@ test("v6.0 cabecera: «Para tu explotación» y «Última consulta» en dos lín
   assert.match(indexHtml, /<small>Para tu explotación<\/small>/);
   assert.match(appJs, /<span>Última consulta<\/span><span>/);
   assert.match(css, /\.stamp span \{ display: block; \}/);
-  assert.match(indexHtml, /app\.js\?v=60/);
+  assert.match(indexHtml, /app\.js\?v=61/);
 });
 
 test("v6.0 números de cuenta entre paréntesis en todas las pantallas (no los cuadros grandes de Alertas)", () => {

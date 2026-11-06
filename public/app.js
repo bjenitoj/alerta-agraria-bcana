@@ -361,9 +361,10 @@ async function loadSession() {
   paintPrefsNote();
 }
 
-/** Iconos sencillos de cada opción (solo decoración, el lector de pantalla lee la etiqueta). */
+/** Iconos sencillos de cada opción (solo decoración, el lector de pantalla lee la etiqueta).
+ *  Agricultura, Ganadería y Pesca usan el SVG de GLYPH (se rellena justo debajo). */
 const EMOJI = {
-  agricultura: "🌾", ganaderia: "🐄", pesca: "🐟", todos: "🌐",
+  agricultura: "", ganaderia: "", pesca: "", todos: "🌐",
   ayudas: "💶", pac: "🇪🇺", normativa: "📜", alertas: "⚠️",
   "mi-zona": "⭐", salamanca: "📍", cyl: "🏰", nacional: "🇪🇸",
   secano: "☀️", regadio: "💧",
@@ -399,7 +400,7 @@ function sectorBlocksHtml(current) {
   return SECTOR_BLOCKS.filter((block) => scope[block.sector])
     .map((block) => {
       const hint = !many && block.group !== "water" ? ' <span class="hint">Puedes marcar varios</span>' : "";
-      // Con «Todos», una sola línea pequeña: «🌾 Agricultura · Tierra».
+      // Con «Todos», una sola línea pequeña: icono del sector y «Agricultura · Tierra».
       const head = many ? sectorHead(block.sector, block.title) : `<p>${block.title}${hint}</p>`;
       return `<div class="choice-block" data-block="${block.group}">${head}<div class="tiles${many ? " tiles-compact" : ""}">${choiceButtons(block.list, current[block.group], block.group)}</div></div>`;
     })
@@ -433,10 +434,15 @@ function svgIcon(body) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
 }
 
+/** v6.4 · Sectores: mismo trazo, esquinas redondas y un acento cálido (trigo, barro, arena). */
+function sectorIcon(id, body) {
+  return `<svg class="sector-ico s-${id}" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+}
+
 const GLYPH = {
-  agricultura: svgIcon(`<path d="M12 20V9"/><path d="M12 13c-2.2-1.2-4.2-1-6.2.2 0-3.2 1.6-5.4 6.2-6.2 4.6.8 6.2 3 6.2 6.2-2-.2-4-.4-6.2-.2z"/>`),
-  ganaderia: svgIcon(`<path d="M6 16c0-3 2-5 6-5s6 2 6 5v3H6z"/><path d="M8 11 6 7M16 11l2-4"/><circle cx="9" cy="15" r=".6"/><circle cx="15" cy="15" r=".6"/>`),
-  pesca: svgIcon(`<path d="M3 13c3-4 6-4 9 0s6 4 9 0c-2 4-6 6-9 6s-7-2-9-6z"/><circle cx="15" cy="12.5" r=".7"/>`),
+  agricultura: sectorIcon("agricultura", `<path d="M12 21.2V7"/><path d="M12 18 8.2 15.6M12 18l3.8-2.4M12 14.4 8.8 12.2M12 14.4l3.2-2.2M12 11 9.4 9M12 11l2.6-2"/><path class="accent" d="M12 4.8c.9.8.9 1.6 0 2.5-.9-.9-.9-1.7 0-2.5z"/>`),
+  ganaderia: sectorIcon("ganaderia", `<path d="M8.4 9.6 6.5 6.4M15.6 9.6 17.5 6.4"/><path d="M7.2 11.4c-1.5.4-2.4 1.5-2.2 2.9.2 1.1 1.1 1.8 2.2 1.9"/><path d="M16.8 11.4c1.5.4 2.4 1.5 2.2 2.9-.2 1.1-1.1 1.8-2.2 1.9"/><path d="M8 12.4c0-2.4 1.7-4.2 4-4.2s4 1.8 4 4.2v2.6c0 2.5-1.8 4.4-4 4.4s-4-1.9-4-4.4z"/><circle class="accent" cx="10.1" cy="13.6" r=".85"/><circle class="accent" cx="13.9" cy="13.6" r=".85"/><path d="M10.1 16.3h3.8c.55 0 .95.38.95.9s-.4.9-.95.9h-3.8c-.55 0-.95-.38-.95-.9s.4-.9.95-.9z"/>`),
+  pesca: sectorIcon("pesca", `<path d="M3.6 12.2c2.5-3.3 5.6-4.6 9-4.6 2.5 0 4.2 1 5.3 2.5L21 8.2v8l-3.1-1.9c-1.1 1.5-2.8 2.5-5.3 2.5-3.4 0-6.5-1.3-9-4.6z"/><circle class="accent" cx="8.3" cy="11.5" r=".85"/><path class="accent" d="M21 8.2 17.8 12.2 21 16.2"/>`),
   todos: svgIcon(`<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>`),
   ayuda: svgIcon(`<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.6-1 1.4-1.5 2.5-1.5 1.6 0 2.5.9 2.5 2s-.8 1.8-2.5 2-2.6.8-2.6 2 1 2 2.6 2c1.1 0 2-.5 2.5-1.4"/>`),
   pac: svgIcon(`<path d="M12 20V9"/><path d="M12 13c-2.2-1.2-4.2-1-6.2.2 0-3.2 1.6-5.4 6.2-6.2 4.6.8 6.2 3 6.2 6.2-2-.2-4-.4-6.2-.2z"/>`),
@@ -444,6 +450,9 @@ const GLYPH = {
   alerta: svgIcon(`<path d="M12 4a5 5 0 0 1 5 5v3l1.5 2.5H5.5L7 12V9a5 5 0 0 1 5-5z"/><path d="M10 18a2 2 0 0 0 4 0"/>`),
   plazo: svgIcon(`<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/>`),
 };
+EMOJI.agricultura = GLYPH.agricultura;
+EMOJI.ganaderia = GLYPH.ganaderia;
+EMOJI.pesca = GLYPH.pesca;
 
 function icon(name) {
   return `<span class="type">${GLYPH[name] || ""}</span>`;

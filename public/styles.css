@@ -1294,7 +1294,7 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .review-banner { background: linear-gradient(90deg, #fbeec8, #f6e3ad); color: #5a3b06; border-bottom-color: #e3c776; } }
 
 /* Iconos con borde fino: cada icono va en un cuadrado redondeado de fondo claro con un borde de 1px en un tono más oscuro de su color. */
-.tab-icon, .chip svg, .dock svg, .tool-icon, .norma-ico, .head-btn svg {
+.tab-icon, .chip svg, .dock svg, .tool-icon, .norma-ico, .head-btn svg, .sector-ico {
   box-sizing: content-box;
   padding: 3px;
   border: 1px solid color-mix(in srgb, currentColor 60%, #0b3d26);
@@ -1302,7 +1302,7 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
   background: color-mix(in srgb, currentColor 10%, #ffffff);
 }
 .tool-icon { padding: 6px; border-radius: 12px; }
-.tab.active .tab-icon, .chip.on svg, .dock button.on svg, .head-btn.on svg {
+.tab.active .tab-icon, .chip.on svg, .dock button.on svg, .head-btn.on svg, .tile.on .sector-ico {
   background: rgba(255, 255, 255, .18);
   border-color: rgba(255, 255, 255, .75);
 }
@@ -1392,6 +1392,14 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .varios-card-note { color: var(--muted); font-size: 14px; line-height: 1.35; }
 .varios-card:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
 .varios-seg { margin-top: 0; }
+
+/* v6.4 · Iconos de sector: espiga, vaca y pez. Mismo trazo; acento cálido distinto. */
+.sector-ico { --accent: #e2a23a; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sector-ico.s-ganaderia { --accent: #c86b45; }
+.sector-ico.s-pesca { --accent: #e07a4c; }
+.sector-ico .accent { fill: var(--accent); stroke: var(--accent); }
+.tile-icon .sector-ico { width: 22px; height: 22px; display: block; }
+.sector-head .sector-ico { width: 18px; height: 18px; vertical-align: -4px; margin-right: 2px; }
 .tabs[hidden] { display: none; }
 .varios-seg .count { font-weight: 800; }
 @media (max-width: 700px) {
