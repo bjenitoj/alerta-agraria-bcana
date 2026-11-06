@@ -85,7 +85,7 @@ test("v5.7 Precios: desplegable de fuente (MAPA por defecto, recuerda la elecci�
   assert.match(serverJs, /app\.get\("\/api\/precios\/lonja"/);
   const lonja = publicSourceView({}).sources.find((source) => source.id === "lonja_salamanca");
   assert.equal(lonja.status, "precios", "ya no sale en «Preparadas, aún no consultadas»");
-  assert.match(indexHtml, /\?v=61/);
+  assert.match(indexHtml, /\?v=62/);
 });
 
 test("v5.7 sin pestañas «Jóvenes» ni «Noticias»; «noticias» fuera de Mis preferencias; valores viejos no rompen", async () => {
@@ -104,7 +104,7 @@ test("v5.7 sin pestañas «Jóvenes» ni «Noticias»; «noticias» fuera de Mis
   // Una pieza de Ayudas sigue en Ayudas aunque también fuera noticia.
   assert.deepEqual(itemInfoTypes({ category: "noticias_oficiales", infoTypes: ["ayudas", "noticias"] }), ["ayudas"]);
   assert.deepEqual(itemInfoTypes({ category: "jovenes_modernizacion", kind: "ayuda", infoTypes: ["noticias"] }), ["ayudas"]);
-  assert.match(indexHtml, /\?v=61/);
+  assert.match(indexHtml, /\?v=62/);
 });
 
 test("v5.7 «solo abiertas» solo para ayudas; Normativa siempre y por fecha; Ayudas con bloques y chips de estado", () => {
@@ -120,5 +120,5 @@ test("v5.7 «solo abiertas» solo para ayudas; Normativa siempre y por fecha; Ay
   assert.match(appJs, /\{ id: "pac", label: "Ayudas PAC" \},\s*\{ id: "otras", label: "Otras ayudas" \},/);
   assert.match(appJs, /if \(tab === "ayudas"\) return renderAyudas\(\);/);
   assert.match(appJs, /class="glance status-boxes"/);
-  assert.match(indexHtml, /\?v=61/);
+  assert.match(indexHtml, /\?v=62/);
 });

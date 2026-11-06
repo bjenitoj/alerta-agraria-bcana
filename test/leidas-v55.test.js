@@ -52,44 +52,49 @@ test("v5.5 leídas: las marcas antiguas (alerta_leidas_local) se conservan", () 
   assert.equal(api.isReadItem(item(8)), false);
 });
 
-test("v5.5 Borrar leídas: quita las leídas (no las favoritas), Deshacer y Recuperar borradas", () => {
+test("v6.5 Borrar marcadas: quita las marcadas (también si son favoritas en las listas), Deshacer y Recuperar", () => {
   const { api } = load({}, new Set(["a3"]));
   const items = [item(1), item(2), item(3), item(4)];
   api.setRead(items[0], true);
-  api.setRead(items[2], true); // favorita
+  api.setRead(items[2], true); // favorita: sale de las listas, el registro de favoritas no se toca
   api.setRead(items[3], true);
   const keys = api.deleteReadItems(items);
-  assert.equal(keys.length, 2);
-  assert.deepEqual(items.map(api.isDeletedItem), [true, false, false, true]);
+  assert.equal(keys.length, 3);
+  assert.deepEqual(items.map(api.isDeletedItem), [true, false, true, true]);
+  assert.doesNotMatch(appJs.slice(appJs.indexOf("function deleteReadItems"), appJs.indexOf("function undeleteKeys")), /FAV_KEY|favorites\[/);
   api.undeleteKeys(keys);
   assert.deepEqual(items.map(api.isDeletedItem), [false, false, false, false]);
   api.deleteReadItems(items);
-  assert.equal(api.restoreAllDeleted(), 2);
+  assert.equal(api.restoreAllDeleted(), 3);
   assert.equal(items.some(api.isDeletedItem), false);
 });
 
-test("v6.4 leída o borrada sale de Ayudas, Resumen y el resto; Favoritas la conserva", () => {
+test("v6.5 marcar no oculta; borrar sí, en todas las pestañas, y Favoritas no filtra", () => {
   const { api } = load({}, new Set(["fav"]));
   const title = "Resolución de ayudas a la modernización de explotaciones agrarias en Castilla y León";
   const inAyudas = { id: "ayudas-1", title, url: "https://bocyl.jcyl.es/boletin/a" };
   const inResumen = { id: "resumen-9", title, url: "https://agricultura.jcyl.es/web/otra-ficha" };
   api.setRead(inAyudas, true);
-  assert.equal(api.isClearedItem(inAyudas), true);
-  assert.equal(api.isClearedItem(inResumen), true, "mismo título: también fuera del Resumen");
-  assert.ok(api.store().read["u:bocyl.jcyl.es/boletin/a"]);
-  assert.ok(api.store().read[`t:${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim()}`]);
+  assert.equal(api.isReadItem(inAyudas), true);
+  assert.equal(api.isReadItem(inResumen), true, "la misma historia queda marcada en Resumen");
+  assert.equal(api.isClearedItem(inAyudas), false, "marcar no la quita");
+  assert.equal(api.isClearedItem(inResumen), false);
+  api.setRead(inAyudas, false);
+  assert.equal(api.isReadItem(inResumen), false, "desmarcar vale para las dos");
+  api.setRead(inAyudas, true);
   const favorite = { id: "fav", title: "Ayuda favorita que no debe perderse nunca jamás del todo", url: "https://www.boe.es/diario/fav" };
   api.setRead(favorite, true);
   const removed = api.deleteReadItems([inAyudas, favorite]);
-  assert.deepEqual(removed, ["u:bocyl.jcyl.es/boletin/a"]);
-  assert.equal(api.isDeletedItem(favorite), false, "borrar no marca la favorita");
-  assert.equal(api.isClearedItem(favorite), true, "leída sí, pero el favorito sigue");
+  assert.deepEqual(removed, ["u:bocyl.jcyl.es/boletin/a", "u:boe.es/diario/fav"]);
+  assert.equal(api.isClearedItem(inResumen), true, "borrar quita la misma historia del Resumen");
+  assert.equal(api.isDeletedItem(favorite), true, "sale de las listas");
   const base = fn("baseItems", "filterRow");
   assert.match(base, /if \(isClearedItem\(item\)\) return false;/);
+  assert.match(appJs, /function isClearedItem\(item\) \{\n  return isDeletedItem\(item\);\n\}/);
   const digest = fn("digestData", "prevDay");
   assert.match(digest, /!isClearedItem\(item\)/);
   const fav = fn("renderFavorites", "milestoneRow");
-  assert.doesNotMatch(fav, /isClearedItem|isDeletedItem|isReadItem/);
+  assert.doesNotMatch(fav, /isClearedItem|isDeletedItem/);
 });
 
 test("v5.5 tarjeta: tocarla la marca, «✓ Leída», «Marcar como no leída» y el enlace oficial también marca", () => {
@@ -97,8 +102,10 @@ test("v5.5 tarjeta: tocarla la marca, «✓ Leída», «Marcar como no leída» 
   assert.match(card, /\$\{read \? "read" : "fresh"\}/);
   assert.match(card, /readBadge\(read\)/);
   assert.match(card, /class="text-btn mark-unread" data-unread=/);
-  assert.match(appJs, /<span class="badge read-badge">✓ Leída<\/span>/);
-  assert.match(css, /\.card\.read \{[^}]*opacity: 0\.5/);
+  assert.match(appJs, /<span class="badge read-badge">✓ Marcada<\/span>/);
+  assert.match(appJs, />Desmarcar</);
+  assert.doesNotMatch(css, /\.card\.read \{[^}]*opacity: 0\.5/);
+  assert.match(css, /\.card\.read \{[^}]*inset 6px 0 0 #12704a/);
   assert.match(css, /\.card:not\(\.read\) \.mark-unread \{ display: none; \}/);
   const click = appJs.slice(appJs.indexOf('appEl.addEventListener("click", async'));
   assert.match(click, /closest\("\[data-unread\]"\)/);
@@ -109,9 +116,13 @@ test("v5.5 tarjeta: tocarla la marca, «✓ Leída», «Marcar como no leída» 
   assert.match(mark, /setRead\(item, read\)/);
 });
 
-test("v5.5 «Borrar leídas (N)» en listas, cuadros y Resumen con «Deshacer»", () => {
-  assert.match(appJs, /Borrar leídas \(\$\{n\}\)/);
-  assert.match(appJs, /\+ \(items\.length \? readTools\(\) : ""\) \+ body/, "Ayudas, PAC y demás listas");
+test("v6.5 «Borrar marcadas (n)» grande, con icono, en listas y Resumen, con «Deshacer»", () => {
+  assert.match(appJs, /Borrar marcadas \(\$\{n\}\)/);
+  assert.match(appJs, /class="clear-ico"/);
+  assert.match(css, /\.read-tools \.clear-read \{[^}]*min-height: 56px/);
+  assert.match(css, /\.read-tools \.clear-read\[disabled\]/);
+  assert.match(appJs, /filterRow\(\) \+ head \+ readTools\(\) \+ body/, "listas");
+  assert.match(appJs, /filterRow\(\) \+ readTools\(\) \+ body/, "Ayudas");
   assert.match(appJs, /\$\{compact \? "" : readTools\(\)\}/, "Resumen");
   assert.match(appJs, /\$\{readTools\(\)\}<div class="list">/, "cuadros de Inicio abiertos");
   const toast = fn("showToast", "clearRead");
@@ -138,7 +149,7 @@ test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias
   assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=61 (v5.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=61/);
+test("caché v=62 (v5.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=62/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });

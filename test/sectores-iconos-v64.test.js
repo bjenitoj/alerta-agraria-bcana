@@ -26,6 +26,6 @@ test("v6.4 sectores: mismo trazo, borde fino y acento cálido", () => {
   assert.match(css, /\.sector-ico \.accent \{ fill: var\(--accent\)/);
   const border = css.slice(css.indexOf("/* Iconos con borde fino"));
   assert.ok(border.includes(".sector-ico"));
-  assert.match(html, /styles\.css\?v=61/);
-  assert.match(html, /app\.js\?v=61/);
+  assert.match(html, /styles\.css\?v=62/);
+  assert.match(html, /app\.js\?v=62/);
 });
