@@ -49,6 +49,20 @@ test("v6.6 en Favoritas: Quitar de favoritas, Borrar (también del resto, con De
   assert.match(css, /\.fav-actions \{ display: grid/);
   assert.match(css, /\.fav-actions \.fav-delete/);
   assert.match(css, /\.fav-actions \.act\.share/);
-  assert.match(indexHtml, /app\.js\?v=65/);
-  assert.match(indexHtml, /styles\.css\?v=65/);
+  assert.match(indexHtml, /app\.js\?v=67/);
+  assert.match(indexHtml, /styles\.css\?v=67/);
+});
+
+test("v6.7 cabecera de Favoritas sin el párrafo largo; la explicación sigue en la guía", () => {
+  const fav = fn("renderFavorites", "milestoneRow");
+  assert.match(fav, /<h2>Favoritas <span>\(\$\{entries\.length\}\)<\/span><\/h2>/);
+  assert.match(fav, /Solo en este móvil u ordenador/);
+  assert.match(fav, /Se guarda solo en este navegador: no hay cuenta ni se envía nada\./);
+  assert.match(fav, /Aún no tienes favoritas\./);
+  assert.doesNotMatch(fav, /Toca «★ Favorita» en cualquier pieza/);
+  assert.doesNotMatch(fav, /Quitar de favoritas» la devuelve/);
+  const guide = indexHtml.slice(indexHtml.indexOf('id="acc-guia"'), indexHtml.indexOf("</dl>"));
+  assert.match(guide, /<dt>Favoritas<\/dt><dd>Lo marcado con «★ Favorita»\. Sale de las otras pestañas/);
+  assert.match(guide, /quitar la devuelve a su pestaña si no está borrada/);
+  assert.match(guide, /borrar la quita también del resto/);
 });
