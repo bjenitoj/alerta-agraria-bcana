@@ -10,13 +10,15 @@ const wide = css.slice(css.indexOf("/* v6.5 · iPad y web: Ajustes"));
 test("v6.5 Ajustes en iPad y web: debajo de la cabecera y más grande", () => {
   assert.match(wide, /@media \(min-width: 901px\)/);
   assert.match(wide, /\.pref-sheet \{[^}]*top: var\(--chrome-h, 156px\)/);
-  assert.match(wide, /\.pref-sheet \.sheet-card \{[^}]*width: min\(1180px, 100%\)/);
-  assert.match(wide, /\.pref-sheet \.sheet-card \{[^}]*height: 100%/);
+  assert.match(wide, /\.pref-sheet \{[^}]*padding: 12px 8px 16px/);
+  assert.match(wide, /\.pref-sheet \.sheet-card \{[^}]*width: 100%/);
+  assert.match(wide, /\.pref-sheet \.sheet-card \{[^}]*height: auto/);
+  assert.match(wide, /\.pref-sheet \.sheet-card \{[^}]*max-height: calc\(100dvh - var\(--chrome-h, 156px\) - 28px\)/);
   assert.match(wide, /\.pref-sheet \.sheet-head \{[^}]*position: sticky/);
   assert.match(appJs, /--chrome-h/);
   assert.match(appJs, /top\.getBoundingClientRect\(\)\.bottom/);
-  assert.match(html, /styles\.css\?v=63/);
-  assert.match(html, /app\.js\?v=63/);
+  assert.match(html, /styles\.css\?v=64/);
+  assert.match(html, /app\.js\?v=64/);
 });
 
 test("v6.5 el asistente también baja en pantallas anchas; el móvil no usa ese top", () => {

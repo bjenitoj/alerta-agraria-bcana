@@ -1344,6 +1344,9 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .np-summary { margin: 0; color: var(--ink); }
 .np-meta { margin: 0; color: var(--muted); font-size: 15px; }
 .np-source { font-weight: 700; }
+.np-related { margin: 8px 0 0; }
+.np-related a { font-weight: 700; }
+.np-related small { color: var(--muted); }
 
 /* v6.3 revisión visual · iPad y web (≥ 901 px): Resumen, Favoritas, Herramientas y Ajustes
    más altos y estrechos. El símbolo queda centrado arriba y el nombre debajo.
@@ -1408,19 +1411,21 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .sector-head .sector-ico { width: 18px; height: 18px; vertical-align: -4px; margin-right: 2px; }
 .tabs[hidden] { display: none; }
 
-/* v6.5 · iPad y web: Ajustes empieza bajo la cabecera (título y Cerrar enteros) y ocupa casi todo el hueco. */
+/* v6.5 · iPad y web: Ajustes bajo la cabecera, de borde a borde, alto justo del contenido. */
 @media (min-width: 901px) {
   .pref-sheet {
     top: var(--chrome-h, 156px);
-    align-items: stretch;
-    justify-items: center;
-    padding: 12px 20px 16px;
+    align-items: start;
+    justify-items: stretch;
+    padding: 12px 8px 16px;
     z-index: 45;
+    overflow: auto;
   }
   .pref-sheet .sheet-card {
-    width: min(1180px, 100%);
-    height: 100%;
-    max-height: none;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: calc(100dvh - var(--chrome-h, 156px) - 28px);
     margin: 0;
     border-radius: 22px;
   }

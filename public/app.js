@@ -1435,7 +1435,6 @@ function renderNuevaPac() {
   if (!nuevaPacData) return `<p class="empty">Cargando la información oficial de la nueva PAC…</p>`;
   const stages = nuevaPacData.stages || [];
   const news = nuevaPacData.news || [];
-  const docs = nuevaPacData.documents || [];
   const current = stages.find((s) => s.status === "actual");
   const stageHtml = stages.map((stage) => {
     const cls = stage.status === "actual" ? "on" : stage.status === "hecho" ? "done" : "";
@@ -1449,18 +1448,19 @@ function renderNuevaPac() {
           ? `<a class="np-source" href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(item.sourceName || "Fuente oficial")} ↗</a>`
           : `<span class="np-source">${escapeHtml(item.sourceName || "Fuente oficial")}</span>`;
         const sum = item.summary ? `<p class="np-summary">${escapeHtml(item.summary)}</p>` : "";
+        const related = (item.related || []).filter((rel) => rel?.url && rel.url !== item.url);
+        const relatedHtml = related.length
+          ? `<p class="np-related">Documento oficial: ${related.map((rel) => `<a href="${escapeHtml(rel.url)}" target="_blank" rel="noopener">${escapeHtml(rel.title)}</a>${rel.sourceLabel ? ` <small>(${escapeHtml(rel.sourceLabel)})</small>` : ""}`).join("<br>")}</p>`
+          : "";
         return `<li class="np-news-item">
           <div class="np-news-top"><span class="np-type t-${escapeHtml(type.toLowerCase())}">${escapeHtml(type)}</span>${item.date ? `<time datetime="${escapeHtml(item.date)}">${escapeHtml(fmtDay(item.date))}</time>` : ""}</div>
           <a class="np-title" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>
           ${sum}
+          ${relatedHtml}
           <p class="np-meta">Fuente: ${sourceLink}</p>
         </li>`;
       }).join("")}</ul>`
     : `<p class="empty">Ahora mismo no hay noticias de la reforma en las fuentes que responden.</p>`;
-  const docsHtml = `<ul class="np-docs">${docs.map((doc) => `<li><a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener">${escapeHtml(doc.title)}</a><small>${escapeHtml(doc.sourceLabel || "")}</small></li>`).join("")}</ul>`;
-  const unavail = (nuevaPacData.unavailable || []).length
-    ? `<p class="note">Fuentes oficiales previstas que ahora no responden desde aquí (no inventamos su contenido): ${(nuevaPacData.unavailable || []).map((u) => escapeHtml(u.name)).join("; ")}.</p>`
-    : "";
   return `
     <section class="view-head"><p class="eyebrow">Reforma de la PAC después de 2027</p><h2>Nueva PAC</h2></section>
     <section class="np-block card">
@@ -1472,11 +1472,6 @@ function renderNuevaPac() {
       <h3>Últimas noticias <span class="count">(${news.length})</span></h3>
       ${newsHtml}
     </section>
-    <section class="np-block">
-      <h3>Documentos oficiales <span class="count">(${docs.length})</span></h3>
-      ${docsHtml}
-    </section>
-    ${unavail}
     <p class="orientativo">Solo fuentes oficiales. Las convocatorias y pagos de la PAC en vigor siguen en Ayudas y en Calendario PAC.</p>`;
 }
 
