@@ -899,15 +899,21 @@ button.stat[aria-expanded="true"] .chev { transform: rotate(180deg); }
 
 /* v5.5 · Leídas y borradas (como la app original, guardado solo en este dispositivo). */
 .card.fresh { cursor: pointer; }
-.card.read { cursor: pointer; opacity: 0.5; box-shadow: inset 5px 0 0 #b7b0a2, var(--shadow); }
-.card.read h3 { color: var(--muted); }
-@media (hover: hover) and (pointer: fine) { .card.read:hover { opacity: 0.8; } }
-.badge.read-badge { background: var(--line); color: var(--muted); }
+.card.read { cursor: pointer; box-shadow: inset 6px 0 0 #12704a, var(--shadow); background: linear-gradient(135deg, rgba(18, 112, 74, .14), var(--card) 48%); }
+.card.read h3 { color: var(--ink); }
+.badge.read-badge { background: #12704a; color: #fff; font-weight: 800; }
 .card:not(.read) .mark-unread { display: none; }
-.mark-unread { font-size: 15px; min-height: 40px; }
-.read-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 10px; min-width: 0; }
-.read-tools .clear-read { min-height: 40px; padding: 6px 12px; font-size: 15px; }
-.read-tools .clear-read[disabled] { opacity: 0.55; cursor: default; }
+.mark-unread { font-size: 16px; min-height: 44px; font-weight: 800; color: #12704a; }
+.read-tools { display: flex; margin: 4px 0 14px; min-width: 0; }
+.read-tools .clear-read {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 12px 20px; font-size: 18px; font-weight: 800;
+  border: 0; border-radius: 16px; color: #fff; cursor: pointer;
+  background: linear-gradient(135deg, #c2410c, #e08a2a);
+  box-shadow: 0 6px 16px rgba(194, 65, 12, .28);
+}
+.read-tools .clear-read .clear-ico { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.read-tools .clear-read[disabled] { background: #e7dfd2; color: #8a8174; box-shadow: none; cursor: default; }
 .read-tools .hint { font-size: 14px; color: var(--muted); min-width: 0; }
 .settings-read .hint { margin: 0 0 8px; font-size: 14px; color: var(--muted); }
 .settings-read-actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -1338,6 +1344,9 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .np-summary { margin: 0; color: var(--ink); }
 .np-meta { margin: 0; color: var(--muted); font-size: 15px; }
 .np-source { font-weight: 700; }
+.np-related { margin: 8px 0 0; }
+.np-related a { font-weight: 700; }
+.np-related small { color: var(--muted); }
 
 /* v6.3 revisión visual · iPad y web (≥ 901 px): Resumen, Favoritas, Herramientas y Ajustes
    más altos y estrechos. El símbolo queda centrado arriba y el nombre debajo.
@@ -1401,6 +1410,41 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .tile-icon .sector-ico { width: 22px; height: 22px; display: block; }
 .sector-head .sector-ico { width: 18px; height: 18px; vertical-align: -4px; margin-right: 2px; }
 .tabs[hidden] { display: none; }
+
+/* v6.5 · iPad y web: Ajustes bajo la cabecera, de borde a borde, alto justo del contenido. */
+@media (min-width: 901px) {
+  .pref-sheet {
+    top: var(--chrome-h, 156px);
+    align-items: start;
+    justify-items: stretch;
+    padding: 12px 8px 16px;
+    z-index: 45;
+    overflow: auto;
+  }
+  .pref-sheet .sheet-card {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: calc(100dvh - var(--chrome-h, 156px) - 28px);
+    margin: 0;
+    border-radius: 22px;
+  }
+  .pref-sheet .sheet-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--card);
+    padding-bottom: 8px;
+  }
+  .wizard, body[data-review="on"] .wizard {
+    align-items: start;
+    padding-top: calc(var(--chrome-h, 156px) + 12px);
+  }
+  .wizard-card, body[data-review="on"] .wizard-card {
+    width: min(720px, calc(100vw - 48px));
+    max-height: calc(100dvh - var(--chrome-h, 156px) - 28px);
+  }
+}
 .varios-seg .count { font-weight: 800; }
 @media (max-width: 700px) {
   .varios-chooser { grid-template-columns: 1fr; }

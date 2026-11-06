@@ -662,9 +662,9 @@ function isDeletedItem(item) {
   return hasMark("deleted", item);
 }
 
-/** Leída o borrada: la misma historia sale de todas las pestañas, menos de Favoritas. */
+/** Borrada con el botón: la misma historia sale de todas las pestañas, menos de Favoritas. Marcarla no la quita. */
 function isClearedItem(item) {
-  return isReadItem(item) || isDeletedItem(item);
+  return isDeletedItem(item);
 }
 
 function writeMarks(bucket, item, on) {
@@ -682,13 +682,13 @@ function setRead(item, on) {
   writeJson(READ_KEY, readStore);
 }
 
-/** Borra (oculta 15 días) las leídas que no están en favoritas. No toca el registro de Favoritas. */
+/** Borra (oculta 15 días) las marcadas. No toca el registro de Favoritas: allí siguen hasta que se quiten. */
 function deleteReadItems(items) {
   const now = new Date().toISOString();
   const keys = [];
   readStore.aliases = readStore.aliases || {};
   for (const item of items || []) {
-    if (!isReadItem(item) || isDeletedItem(item) || isFavorite(item)) continue;
+    if (!isReadItem(item) || isDeletedItem(item)) continue;
     const key = readKeyOf(item);
     if (!key || keys.includes(key)) continue;
     readStore.deleted[key] = now;
@@ -941,7 +941,7 @@ function typeRow(item) {
 }
 
 function readBadge(read) {
-  return read ? `<span class="badge read-badge">✓ Leída</span>` : `<span class="badge new">Nueva</span>`;
+  return read ? `<span class="badge read-badge">✓ Marcada</span>` : `<span class="badge new">Nueva</span>`;
 }
 
 /** Piezas que se pueden marcar o borrar (lista del día + resúmenes), sin repetir. */
@@ -958,13 +958,15 @@ function readPool() {
 }
 
 function deletableReadCount() {
-  return readPool().filter((item) => isReadItem(item) && !isDeletedItem(item) && !isFavorite(item)).length;
+  return readPool().filter((item) => isReadItem(item) && !isDeletedItem(item)).length;
 }
 
-/** Barra pequeña con «Borrar leídas (N)», como en la app original. */
+const CLEAR_ICON = `<svg class="clear-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M9 7V5h6v2"/><path d="M7.5 7l.8 13h7.4l.8-13"/></svg>`;
+
+/** Botón grande de la cabecera de la lista. Solo borra al pulsarlo; si no hay marcadas, queda atenuado. */
 function readTools() {
   const n = deletableReadCount();
-  return `<div class="read-tools"><button type="button" class="ghost clear-read" data-clear-read="1"${n ? "" : " disabled"}>Borrar leídas (${n})</button>${n ? `<span class="hint">Se quitan de la vista 15 días. Las favoritas no se borran.</span>` : ""}</div>`;
+  return `<div class="read-tools"><button type="button" class="clear-read" data-clear-read="1"${n ? "" : " disabled"}>${CLEAR_ICON}<span>Borrar marcadas (${n})</span></button></div>`;
 }
 
 function paintReadTools() {
@@ -1035,7 +1037,7 @@ function clearRead() {
   render();
   window.scrollTo(0, y);
   if (!keys.length) return;
-  showToast(`${keys.length === 1 ? "Borrada 1 leída" : `Borradas ${keys.length} leídas`}`, () => {
+  showToast(`${keys.length === 1 ? "Borrada 1 marcada" : `Borradas ${keys.length} marcadas`}`, () => {
     undeleteKeys(keys);
     const back = window.scrollY;
     render();
@@ -1136,7 +1138,7 @@ function aidCard(item, options = {}) {
       <div class="card-actions">
         ${archive}
         ${tramite}
-        <button type="button" class="text-btn mark-unread" data-unread="${escapeHtml(item.id)}">Marcar como no leída</button>
+        <button type="button" class="text-btn mark-unread" data-unread="${escapeHtml(item.id)}">Desmarcar</button>
       </div>
     </article>`;
 }
@@ -1433,7 +1435,6 @@ function renderNuevaPac() {
   if (!nuevaPacData) return `<p class="empty">Cargando la información oficial de la nueva PAC…</p>`;
   const stages = nuevaPacData.stages || [];
   const news = nuevaPacData.news || [];
-  const docs = nuevaPacData.documents || [];
   const current = stages.find((s) => s.status === "actual");
   const stageHtml = stages.map((stage) => {
     const cls = stage.status === "actual" ? "on" : stage.status === "hecho" ? "done" : "";
@@ -1447,18 +1448,19 @@ function renderNuevaPac() {
           ? `<a class="np-source" href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(item.sourceName || "Fuente oficial")} ↗</a>`
           : `<span class="np-source">${escapeHtml(item.sourceName || "Fuente oficial")}</span>`;
         const sum = item.summary ? `<p class="np-summary">${escapeHtml(item.summary)}</p>` : "";
+        const related = (item.related || []).filter((rel) => rel?.url && rel.url !== item.url);
+        const relatedHtml = related.length
+          ? `<p class="np-related">Documento oficial: ${related.map((rel) => `<a href="${escapeHtml(rel.url)}" target="_blank" rel="noopener">${escapeHtml(rel.title)}</a>${rel.sourceLabel ? ` <small>(${escapeHtml(rel.sourceLabel)})</small>` : ""}`).join("<br>")}</p>`
+          : "";
         return `<li class="np-news-item">
           <div class="np-news-top"><span class="np-type t-${escapeHtml(type.toLowerCase())}">${escapeHtml(type)}</span>${item.date ? `<time datetime="${escapeHtml(item.date)}">${escapeHtml(fmtDay(item.date))}</time>` : ""}</div>
           <a class="np-title" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>
           ${sum}
+          ${relatedHtml}
           <p class="np-meta">Fuente: ${sourceLink}</p>
         </li>`;
       }).join("")}</ul>`
     : `<p class="empty">Ahora mismo no hay noticias de la reforma en las fuentes que responden.</p>`;
-  const docsHtml = `<ul class="np-docs">${docs.map((doc) => `<li><a href="${escapeHtml(doc.url)}" target="_blank" rel="noopener">${escapeHtml(doc.title)}</a><small>${escapeHtml(doc.sourceLabel || "")}</small></li>`).join("")}</ul>`;
-  const unavail = (nuevaPacData.unavailable || []).length
-    ? `<p class="note">Fuentes oficiales previstas que ahora no responden desde aquí (no inventamos su contenido): ${(nuevaPacData.unavailable || []).map((u) => escapeHtml(u.name)).join("; ")}.</p>`
-    : "";
   return `
     <section class="view-head"><p class="eyebrow">Reforma de la PAC después de 2027</p><h2>Nueva PAC</h2></section>
     <section class="np-block card">
@@ -1470,11 +1472,6 @@ function renderNuevaPac() {
       <h3>Últimas noticias <span class="count">(${news.length})</span></h3>
       ${newsHtml}
     </section>
-    <section class="np-block">
-      <h3>Documentos oficiales <span class="count">(${docs.length})</span></h3>
-      ${docsHtml}
-    </section>
-    ${unavail}
     <p class="orientativo">Solo fuentes oficiales. Las convocatorias y pagos de la PAC en vigor siguen en Ayudas y en Calendario PAC.</p>`;
 }
 
@@ -1551,7 +1548,7 @@ function baseItems(options = {}) {
   const today = madridTodayKey();
   return unseen(state.items || [], "alerta_ocultas").filter((item) => {
     if (!hasSourceUrl(item)) return false;
-    // v6.4: leída o borrada en cualquier pestaña sale de todas (Ayudas, Resumen, Inicio…). Favoritas no usa esta lista.
+    // v6.5: solo lo borrado con el botón sale de todas las pestañas. Marcar no oculta. Favoritas no usa esta lista.
     if (isClearedItem(item)) return false;
     if (!inSector(item)) return false;
     if (!options.allStatus && !shownByStatus(item, today)) return false;
@@ -1903,7 +1900,7 @@ function renderAyudas() {
     : `<p class="empty">Nada en «${escapeHtml(label)}» ahora mismo.</p>`;
   return `<div class="seg" role="group" aria-label="Tipo de ayuda">${groups}</div>` +
     `<div class="glance status-boxes" role="group" aria-label="Estado">${boxes}</div>` +
-    filterRow() + (view.items.length ? readTools() : "") + body;
+    filterRow() + readTools() + body;
 }
 
 function byPublication(list) {
@@ -2001,7 +1998,7 @@ function renderNormativa(recent) {
       : vigentes.length
         ? normaGroupsHtml(normaGroups(vigentes))
         : `<p class="empty">Nada para este sector.</p>`;
-  return filterRow() + (recent.length ? readTools() : "") +
+  return filterRow() + readTools() +
     `<section class="norma-block"><h2>Publicado últimamente (BOE y BOCyL) <span class="count">(${recent.length})</span></h2>${recentHtml}</section>` +
     `<section class="norma-block"><h2>Normas en vigor (BOE) <span class="count">(${vigentes.length})</span></h2>
       <p class="hint">Leyes, reales decretos y órdenes que el BOE da como vigentes (legislación consolidada), de tus sectores y tu zona, agrupadas por tipo. Sin ayudas: esas están en Ayudas.</p>${vigorHtml}</section>`;
@@ -2060,7 +2057,7 @@ function renderList(tab) {
   const body = items.length
     ? `<div class="list">${items.map((item) => aidCard(item)).join("")}</div>`
     : `<p class="empty">No hay nada en este apartado con los criterios de ahora.</p>`;
-  return filterRow() + head + (items.length ? readTools() : "") + body;
+  return filterRow() + head + readTools() + body;
 }
 
 function closingSoonList(dateKey) {
@@ -2098,7 +2095,7 @@ function renderFavorites() {
   const live = new Map((state.items || []).map((item) => [itemKey(item), item]));
   // v5.9: una favorita se guarda sin fecha de caducidad (no le afectan los 15 días de leídas/borradas, ni que la
   // pieza desaparezca de la fuente, ni que la ayuda cierre). Solo se quita al tocar otra vez «★ Favorita».
-  // v6.4: marcarla leída, borrarla u ocultarla en otra pestaña no la quita de aquí ni borra el favorito.
+  // v6.5: borrarla en otra pestaña no la quita de aquí ni borra el favorito. Se queda hasta quitar «★ Favorita».
   // Si la pieza ya no está en la lista de hoy, se enseña la copia guardada (título, fuente, enlace, fecha).
   const entries = Object.values(favorites)
     .filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || "")))
@@ -2757,10 +2754,15 @@ function syncReviewBanner(on) {
   measureReviewBanner();
 }
 
-/** v6.2 estilo: la cabecera fija se queda justo debajo del cartel «En revisión» (su alto cambia con el ancho). */
+/** v6.2 estilo: la cabecera fija se queda justo debajo del cartel «En revisión» (su alto cambia con el ancho).
+ *  v6.5: --chrome-h es el borde inferior de esa cabecera, para que Ajustes empiece debajo. */
 function measureReviewBanner() {
   const banner = document.getElementById("reviewBanner");
-  document.documentElement.style.setProperty("--rb-h", (banner && banner.offsetParent ? banner.offsetHeight : 0) + "px");
+  const bannerH = banner && banner.offsetParent ? banner.offsetHeight : 0;
+  document.documentElement.style.setProperty("--rb-h", bannerH + "px");
+  const top = document.querySelector(".top");
+  const chrome = top ? Math.ceil(top.getBoundingClientRect().bottom) : bannerH;
+  document.documentElement.style.setProperty("--chrome-h", Math.max(chrome, bannerH) + "px");
 }
 addEventListener("resize", measureReviewBanner);
 measureReviewBanner();
@@ -2844,6 +2846,7 @@ function setSheet(open, focusPrefs = false) {
   prefSheet.hidden = !open;
   settingsBtn?.setAttribute("aria-expanded", open ? "true" : "false");
   paintCategoryTabs();
+  if (open) measureReviewBanner();
   if (open) {
     paintThemeChoice();
     paintReadSettings();
@@ -3000,7 +3003,7 @@ async function archiveById(id) {
   render();
 }
 
-/** Tocar la noticia: leída ↔ no leída (como la app original). `force` = true la deja leída (al abrir el enlace). */
+/** Tocar la pieza solo la marca o la desmarca. No la borra: eso es «Borrar marcadas». `force` = true la deja marcada (al abrir el enlace). */
 async function markCardRead(id, card, force = null) {
   const item = findItem(id);
   if (!item) return;
@@ -3012,14 +3015,6 @@ async function markCardRead(id, card, force = null) {
   render();
   window.scrollTo(0, y);
   paintReadTools();
-  if (read && active !== "favoritas" && force === null) {
-    showToast("Leída. Se quita también de las demás pestañas.", () => {
-      setRead(item, false);
-      const back = window.scrollY;
-      render();
-      window.scrollTo(0, back);
-    });
-  }
   if (!isAdmin()) return;
   // Panel del titular: además se avisa al servidor como antes.
   if (Boolean(item.read) !== read) {

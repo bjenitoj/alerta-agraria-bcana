@@ -55,8 +55,8 @@ test("v5.9 Inicio: sin cuadros Abiertas/Cierran pronto/Líneas PAC y sección «
 });
 
 test("v5.9 Normativa: botón «Borrar leídas» como en las demás pantallas", () => {
-  assert.match(between("function renderNormativa", "\n}\n"), /filterRow\(\) \+ \(recent\.length \? readTools\(\) : ""\)/);
-  assert.match(indexHtml, /v=61/);
+  assert.match(between("function renderNormativa", "\n}\n"), /filterRow\(\) \+ readTools\(\)/);
+  assert.match(indexHtml, /v=64/);
 });
 
 test("v5.9 Alertas: solo lo que no sale en otra sección (RD 849/2026 fuera)", () => {

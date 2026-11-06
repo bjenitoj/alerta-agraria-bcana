@@ -1,5 +1,13 @@
 # Cambios
 
+## v6.5 · 06/11/2026 · Borrar marcadas
+
+- Tocar una pieza o abrir su enlace solo la marca (banda verde y «✓ Marcada»). No se oculta ni se borra sola. Se puede desmarcar antes de borrar.
+- «Borrar marcadas (n)» queda arriba de la lista: más grande, con icono y el número entre paréntesis. Si no hay ninguna, sale atenuado. Al pulsarlo, las marcadas desaparecen 15 días de todas las pestañas. En Favoritas se quedan. Sigue el aviso con «Deshacer».
+- Ajustes en iPad y web empieza debajo de la cabecera (el título y «Cerrar» se ven enteros). El ancho es de borde a borde, con un margen mínimo. El alto es el de los apartados; si uno se abre y no cabe, el panel crece y hace scroll. En el iPhone sigue la hoja de abajo.
+- Nueva PAC: fuera la lista «Documentos oficiales» y la línea de fuentes que no responden. Lo que no estaba ya en una noticia se engancha a esa noticia (enlace oficial, sin texto inventado) o entra como noticia propia sin resumen. Sigue el aviso de que las convocatorias y pagos en vigor están en Ayudas y Calendario PAC.
+- Caché `?v=64`.
+
 ## v6.4 · 05/11/2026 · Varios
 
 - Las pestañas Normativa y Alertas pasan a un solo chip «Varios (n)», con la suma de las dos. Al abrirlo hay dos tarjetas, Normativa (n) y Alertas (n). Dentro, un control segmentado cambia de una a otra sin perder filtros, sectores, zona, grupos por tipo ni los cuatro botones de Alertas.
