@@ -22,7 +22,11 @@ test("v5.6 sin lista «Estado de las fuentes» al final de las páginas", () => 
 
 test("v5.6 pie discreto: frase legal y enlaces a Fuentes oficiales y Aviso legal", () => {
   assert.match(footer, /class="site-foot"/);
+  assert.match(footer, /<p class="foot-legal">Información orientativa\. Consulta siempre la publicación oficial\.<\/p>\s*<p class="foot-legal">Información obtenida de fuentes oficiales/);
   assert.match(footer, /Información obtenida de fuentes oficiales, con enlace y fecha en cada aviso\. Esta app no está vinculada a ningún organismo público\./);
+  assert.equal((indexHtml.match(/Información orientativa\. Consulta siempre la publicación oficial\./g) || []).length, 1);
+  assert.doesNotMatch(appJs, /Información orientativa/);
+  assert.match(css, /\.site-foot \.foot-legal \{[^}]*font-weight: 400/);
   assert.match(footer, /<a href="\/fuentes">Fuentes oficiales<\/a>/);
   assert.match(footer, /<a href="\/aviso-legal">Aviso legal<\/a>/);
   assert.doesNotMatch(footer, /\bBC\b/, "el titular solo sale en el aviso legal");
@@ -54,8 +58,8 @@ test("v5.6 sin botón «← Inicio»: se vuelve tocando «Alerta Agraria» y con
   assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/);
   // v5.8: en el móvil se vuelve a Inicio con el logo (la barra ya no lleva «Inicio»).
   assert.doesNotMatch(indexHtml, /data-dock="inicio"/);
-  assert.match(indexHtml, /styles\.css\?v=66/);
-  assert.match(indexHtml, /app\.js\?v=66/);
+  assert.match(indexHtml, /styles\.css\?v=67/);
+  assert.match(indexHtml, /app\.js\?v=67/);
 });
 
 const card = appJs.slice(appJs.indexOf("function aidCard"), appJs.indexOf("function sortedItems"));

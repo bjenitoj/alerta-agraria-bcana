@@ -554,7 +554,6 @@ function togglePref(group, id) {
   render();
 }
 
-const NOTICE = "Información orientativa. Consulta siempre la publicación oficial.";
 const FAV_KEY = "alerta_favoritas_v1";
 // v5.6: ya no se ocultan noticias. Se borra la lista antigua para que todo vuelva a verse.
 const OLD_HIDE_KEY = "alerta_ocultadas_v1";
@@ -1152,7 +1151,6 @@ function aidCard(item, options = {}) {
       <h3>${escapeHtml(item.title || "Sin título")}</h3>
       ${ghost}
       ${showAid ? fourBlocks : `<p class="summary">${escapeHtml(item.summary || "")}</p><div class="origin src-line"><span>Fuente oficial:</span> ${sourceLink}${published}</div>`}
-      <p class="orientativo">${NOTICE}</p>
       <div class="card-actions">
         ${archive}
         ${tramite}
@@ -1248,7 +1246,7 @@ function digestCard(compact) {
   const data = digestData(digestDate);
   const current = data?.current;
   if (!current) {
-    return `<aside class="digest"><div class="digest-head"><span class="mark">${GLYPH.plazo}</span><div><p class="eyebrow">Novedades oficiales</p><h2>Resumen del día</h2><p class="orientativo">Información orientativa. Consulta siempre la publicación oficial.</p></div></div>${closingSoonSection("")}<p class="empty">Todavía no hay resumen. Se genera solo al terminar la consulta del día.</p></aside>`;
+    return `<aside class="digest"><div class="digest-head"><span class="mark">${GLYPH.plazo}</span><div><p class="eyebrow">Novedades oficiales</p><h2>Resumen del día</h2></div></div>${closingSoonSection("")}<p class="empty">Todavía no hay resumen. Se genera solo al terminar la consulta del día.</p></aside>`;
   }
   const options = digestDays(digests)
     .map((day) => `<option value="${escapeHtml(day)}" ${day === current.date ? "selected" : ""}>${escapeHtml(fmtDay(day))}</option>`)
@@ -1280,7 +1278,6 @@ function digestCard(compact) {
         <div>
           <p class="eyebrow">Novedades oficiales</p>
           <h2>Resumen del día</h2>
-          <p class="orientativo">Información orientativa. Consulta siempre la publicación oficial.</p>
         </div>
       </div>
       <label class="history">Día
@@ -1529,8 +1526,7 @@ function renderAlertas() {
     alertTypeButtons() +
     (alertType ? `<p class="note">Solo ${escapeHtml(ALERT_TYPE_BUTTONS.find((entry) => entry.id === alertType)?.label || "")}. <button type="button" class="link-btn" data-alert-type="">Ver todas (${alertList().length})</button></p>` : "") +
     groups +
-    (other.length && !alertType ? `<section class="alert-group"><h2>Otras alertas <span class="count">(${other.length})</span></h2><div class="list">${other.map((item) => aidCard(item)).join("")}</div></section>` : "") +
-    `<p class="orientativo">${NOTICE}</p>`;
+    (other.length && !alertType ? `<section class="alert-group"><h2>Otras alertas <span class="count">(${other.length})</span></h2><div class="list">${other.map((item) => aidCard(item)).join("")}</div></section>` : "");
 }
 
 function priorityStrip(items) {
@@ -2217,7 +2213,6 @@ function renderPacCalendar() {
       ${past.length ? `<details class="pac-past"><summary>Terminados (${past.length})</summary><ol class="timeline">${past.map(milestoneRow).join("")}</ol></details>` : ""}
       <p class="note">Cada fecha lleva la cita literal de su fuente. «Orientativa»: la fuente no da el día exacto. Revisado el ${escapeHtml(fmtDay(pacData.updated))} en estas fuentes oficiales:</p>
       <ul class="sources-list">${(pacData.sources || []).map((source) => `<li>${sourceAnchor(source.url, source.nombre)}${source.pdf ? ` · ${sourceAnchor(source.pdf, "PDF")}` : ""}</li>`).join("")}</ul>
-      <p class="orientativo">${NOTICE}</p>
     </section>`;
 }
 
@@ -2308,7 +2303,6 @@ function renderLeonPrices() {
       </div>
       ${tables || `<p class="empty">No hay precios de la Lonja de León para los sectores elegidos.</p>`}
       <p class="links"><a href="${page}" target="_blank" rel="noopener">Cotizaciones de la Lonja de León</a></p>
-      <p class="orientativo">${NOTICE}</p>
     </section>`;
 }
 
@@ -2366,7 +2360,6 @@ function renderLonja() {
       </div>
       ${tables}
       <p class="links"><a href="${escapeHtml(table)}" target="_blank" rel="noopener">Tabla oficial de cotizaciones</a>${/^https?:/i.test(String(lonjaData.pageUrl || "")) ? ` · <a href="${escapeHtml(lonjaData.pageUrl)}" target="_blank" rel="noopener">Página de la Lonja</a>` : ""}</p>
-      <p class="orientativo">${NOTICE}</p>
     </section>`;
 }
 
@@ -2408,7 +2401,6 @@ function renderMapaPrices() {
       </div>
       ${tables}
       <p class="links"><a href="${escapeHtml(page)}" target="_blank" rel="noopener">Página oficial del MAPA</a> · <a href="${escapeHtml(pricesData.fileUrl)}" target="_blank" rel="noopener">Tabla oficial (Excel)</a></p>
-      <p class="orientativo">${NOTICE}</p>
     </section>`;
 }
 
@@ -2490,8 +2482,7 @@ function toolsHtml(data, place) {
       <h2 class="tools-title">Herramientas oficiales ${toolsGuide(hidden, n, where)}</h2>
       <p>Enlaces a webs y apps oficiales.</p>
     </article>
-    ${groups || `<p class="empty">No se ha podido cargar la lista. ${data?.error ? "Prueba más tarde." : ""}</p>`}
-    <p class="orientativo">${NOTICE}</p>`;
+    ${groups || `<p class="empty">No se ha podido cargar la lista. ${data?.error ? "Prueba más tarde." : ""}</p>`}`;
 }
 function closeToolPops(except = null) {
   document.querySelectorAll(".tool-pop:not([hidden])").forEach((pop) => {

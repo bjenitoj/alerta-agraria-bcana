@@ -4,7 +4,8 @@
 
 - Fuera el párrafo largo de la cabecera de Favoritas. Quedan el título «Favoritas (n)», la etiqueta «Solo en este móvil u ordenador» y la nota «Se guarda solo en este navegador…». Sin favoritas, una línea: «Aún no tienes favoritas».
 - Esa explicación ya estaba en la Guía de usuario (Favoritas y Quitar · Borrar · Compartir). Se añade ahí que quitar la devuelve solo si no está borrada.
-- Caché `?v=66`.
+- «Información orientativa. Consulta siempre la publicación oficial.» deja de ir en rojo encima del pie. Es la primera línea del pie, en el mismo gris pequeño, en todas las páginas. No se repite en las fichas ni al final de cada pestaña.
+- Caché `?v=67`.
 
 ## v6.6 · 06/11/2026 · Solo en Favoritas
 
