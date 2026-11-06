@@ -1148,6 +1148,16 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
 @media (max-width: 360px) { .tabs .tab .tab-short { font-size: 9px; letter-spacing: -0.04em; } }
 @media (max-width: 360px) { .tabs { gap: 3px; } .tabs .tab { padding: 5px 0; } .tabs .tab .tab-short { font-size: 8.5px; letter-spacing: -0.05em; } }
 .fav-closed { margin: 0 0 6px; font-weight: 700; font-size: 14px; }
+.fav-actions { display: grid; gap: 8px; margin-top: 12px; }
+.fav-actions .act { justify-content: center; min-height: 48px; width: auto; padding: 8px 12px; }
+.fav-actions .fav-off { background: var(--wheat); border-color: #c4922a; color: #3d2a04; }
+.fav-actions .fav-delete { background: #fff6f1; border-color: var(--earth); color: var(--soon); }
+.fav-actions .fav-delete .clear-ico { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.fav-actions .act.share { border-color: var(--green-2); color: var(--green); }
+.alert-list .act.mini.fav, .np-news-item > .act.mini.fav { justify-self: start; }
+@media (min-width: 720px) {
+  .fav-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 /* v5.9: 4 botones de tipo de alerta, mismo estilo que los de Ayudas */
 .glance.status-boxes.alert-types { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .glance.status-boxes .status-box small { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
