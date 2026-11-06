@@ -4,7 +4,8 @@
 
 - Tocar una pieza o abrir su enlace solo la marca (banda verde y «✓ Marcada»). No se oculta ni se borra sola. Se puede desmarcar antes de borrar.
 - «Borrar marcadas (n)» queda arriba de la lista: más grande, con icono y el número entre paréntesis. Si no hay ninguna, sale atenuado. Al pulsarlo, las marcadas desaparecen 15 días de todas las pestañas. En Favoritas se quedan. Sigue el aviso con «Deshacer».
-- Caché `?v=62`.
+- Ajustes en iPad y web empieza debajo de la cabecera (el título y «Cerrar» se ven enteros) y ocupa casi todo el ancho y el alto que quedan. El asistente de preferencias también baja para no quedar tapado.
+- Caché `?v=63`.
 
 ## v6.4 · 05/11/2026 · Varios
 

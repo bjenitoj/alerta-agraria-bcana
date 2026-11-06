@@ -61,12 +61,12 @@ test("v6.4 navegación: el chip abre el selector; las tarjetas y los «Ver» ent
   assert.match(appJs, /const TAB_OF = \{ ayudas: "ayudas", pac: "ayudas", normativa: "normativa", alertas: "alertas" \}/);
 });
 
-test("v6.4 guía y caché v=62", () => {
+test("v6.4 guía y caché v=63", () => {
   assert.match(guide, /<dt>Varios<\/dt><dd>Una sola pestaña: elige Normativa o Alertas\.<\/dd>/);
   assert.match(guide, /<dt>Normativa<\/dt><dd>Dentro de Varios:/);
   assert.match(guide, /<dt>Alertas<\/dt><dd>Dentro de Varios:/);
-  assert.match(indexHtml, /styles\.css\?v=62/);
-  assert.match(indexHtml, /app\.js\?v=62/);
+  assert.match(indexHtml, /styles\.css\?v=63/);
+  assert.match(indexHtml, /app\.js\?v=63/);
 });
 
 test("v6.4 sin chips de categorías en Resumen, Favoritas, Herramientas y Ajustes", () => {

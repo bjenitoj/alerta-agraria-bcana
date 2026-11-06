@@ -2759,10 +2759,15 @@ function syncReviewBanner(on) {
   measureReviewBanner();
 }
 
-/** v6.2 estilo: la cabecera fija se queda justo debajo del cartel «En revisión» (su alto cambia con el ancho). */
+/** v6.2 estilo: la cabecera fija se queda justo debajo del cartel «En revisión» (su alto cambia con el ancho).
+ *  v6.5: --chrome-h es el borde inferior de esa cabecera, para que Ajustes empiece debajo. */
 function measureReviewBanner() {
   const banner = document.getElementById("reviewBanner");
-  document.documentElement.style.setProperty("--rb-h", (banner && banner.offsetParent ? banner.offsetHeight : 0) + "px");
+  const bannerH = banner && banner.offsetParent ? banner.offsetHeight : 0;
+  document.documentElement.style.setProperty("--rb-h", bannerH + "px");
+  const top = document.querySelector(".top");
+  const chrome = top ? Math.ceil(top.getBoundingClientRect().bottom) : bannerH;
+  document.documentElement.style.setProperty("--chrome-h", Math.max(chrome, bannerH) + "px");
 }
 addEventListener("resize", measureReviewBanner);
 measureReviewBanner();
@@ -2846,6 +2851,7 @@ function setSheet(open, focusPrefs = false) {
   prefSheet.hidden = !open;
   settingsBtn?.setAttribute("aria-expanded", open ? "true" : "false");
   paintCategoryTabs();
+  if (open) measureReviewBanner();
   if (open) {
     paintThemeChoice();
     paintReadSettings();

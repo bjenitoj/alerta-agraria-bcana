@@ -1407,6 +1407,39 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .tile-icon .sector-ico { width: 22px; height: 22px; display: block; }
 .sector-head .sector-ico { width: 18px; height: 18px; vertical-align: -4px; margin-right: 2px; }
 .tabs[hidden] { display: none; }
+
+/* v6.5 · iPad y web: Ajustes empieza bajo la cabecera (título y Cerrar enteros) y ocupa casi todo el hueco. */
+@media (min-width: 901px) {
+  .pref-sheet {
+    top: var(--chrome-h, 156px);
+    align-items: stretch;
+    justify-items: center;
+    padding: 12px 20px 16px;
+    z-index: 45;
+  }
+  .pref-sheet .sheet-card {
+    width: min(1180px, 100%);
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    border-radius: 22px;
+  }
+  .pref-sheet .sheet-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--card);
+    padding-bottom: 8px;
+  }
+  .wizard, body[data-review="on"] .wizard {
+    align-items: start;
+    padding-top: calc(var(--chrome-h, 156px) + 12px);
+  }
+  .wizard-card, body[data-review="on"] .wizard-card {
+    width: min(720px, calc(100vw - 48px));
+    max-height: calc(100dvh - var(--chrome-h, 156px) - 28px);
+  }
+}
 .varios-seg .count { font-weight: 800; }
 @media (max-width: 700px) {
   .varios-chooser { grid-template-columns: 1fr; }
