@@ -54,8 +54,8 @@ test("v5.6 sin botón «← Inicio»: se vuelve tocando «Alerta Agraria» y con
   assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/);
   // v5.8: en el móvil se vuelve a Inicio con el logo (la barra ya no lleva «Inicio»).
   assert.doesNotMatch(indexHtml, /data-dock="inicio"/);
-  assert.match(indexHtml, /styles\.css\?v=64/);
-  assert.match(indexHtml, /app\.js\?v=64/);
+  assert.match(indexHtml, /styles\.css\?v=65/);
+  assert.match(indexHtml, /app\.js\?v=65/);
 });
 
 const card = appJs.slice(appJs.indexOf("function aidCard"), appJs.indexOf("function sortedItems"));
@@ -76,7 +76,7 @@ test("v5.6 ficha: título en mayúsculas y sin «Por qué te puede interesar»",
 });
 
 test("v5.6 ficha: Favorita y Compartir arriba; abajo sin WhatsApp, calendario vacío, Ocultar ni «Abrir fuente oficial»", () => {
-  assert.match(card, /<div class="top-right">\$\{daysBadge\(aid\)\}\$\{topActions\(item\)\}<\/div>/);
+  assert.match(card, /<div class="top-right">\$\{daysBadge\(aid\)\}\$\{options\.inFavorites \? "" : topActions\(item\)\}<\/div>/);
   const top = appJs.slice(appJs.indexOf("function topActions"), appJs.indexOf("function calendarLink"));
   assert.match(top, /data-fav=/);
   assert.match(top, /data-share=/);

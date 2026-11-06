@@ -1,5 +1,12 @@
 # Cambios
 
+## v6.6 · 06/11/2026 · Solo en Favoritas
+
+- Al marcar «★ Favorita», la pieza desaparece de la pestaña donde estaba y del resto (Ayudas, Resumen, Varios, Nueva PAC, Alertas, Inicio…). Solo se ve en Favoritas. Los recuentos entre paréntesis bajan en esas pestañas y suben en Favoritas. Los precios son tablas, no fichas: no llevan estrella.
+- Aviso «Guardada en Favoritas» con Deshacer. «Quitar de favoritas» la devuelve a su pestaña, si no está borrada, con aviso «Quitada de Favoritas» y Deshacer.
+- En Favoritas, cada ficha tiene tres botones: «Quitar de favoritas», «Borrar» (sale de Favoritas y del resto de pestañas, con Deshacer) y «Compartir».
+- Caché `?v=65`.
+
 ## v6.5 · 06/11/2026 · Borrar marcadas
 
 - Tocar una pieza o abrir su enlace solo la marca (banda verde y «✓ Marcada»). No se oculta ni se borra sola. Se puede desmarcar antes de borrar.

@@ -89,7 +89,7 @@ test("v6.5 marcar no oculta; borrar sí, en todas las pestañas, y Favoritas no 
   assert.equal(api.isClearedItem(inResumen), true, "borrar quita la misma historia del Resumen");
   assert.equal(api.isDeletedItem(favorite), true, "sale de las listas");
   const base = fn("baseItems", "filterRow");
-  assert.match(base, /if \(isClearedItem\(item\)\) return false;/);
+  assert.match(base, /isClearedItem\(item\) \|\| isFavorite\(item\)/);
   assert.match(appJs, /function isClearedItem\(item\) \{\n  return isDeletedItem\(item\);\n\}/);
   const digest = fn("digestData", "prevDay");
   assert.match(digest, /!isClearedItem\(item\)/);
@@ -149,7 +149,7 @@ test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias
   assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=64 (v5.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=64/);
+test("caché v=65 (v6.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=65/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });

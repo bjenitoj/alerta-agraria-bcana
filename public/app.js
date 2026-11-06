@@ -718,6 +718,19 @@ function restoreAllDeleted() {
 }
 // ── fin leídas y borradas ──
 
+/** Oculta una pieza 15 días en todas las pestañas. Si ya estaba borrada, no cambia esa marca. */
+function buryItem(item) {
+  if (!item || isDeletedItem(item)) return [];
+  const key = readKeyOf(item);
+  if (!key) return [];
+  const now = new Date().toISOString();
+  readStore.aliases = readStore.aliases || {};
+  readStore.deleted[key] = now;
+  for (const alias of markKeys(item)) if (alias !== key) readStore.aliases[alias] = key;
+  writeJson(READ_KEY, readStore);
+  return [key];
+}
+
 // v5.6: la app solo enseña lo que está abierto o sin plazo conocido. Lo cerrado y lo que aún no ha abierto
 // (próximo) no sale en ningún sitio: listas, Inicio, Resumen, contadores ni favoritas. Ya no hay «Solo abiertas».
 try { localStorage.removeItem(OPEN_KEY); } catch {}
@@ -762,7 +775,7 @@ function snapshot(item) {
     url: item.url,
     summary: item.summary,
     sourceName: item.sourceName,
-    publishedAt: item.publishedAt,
+    publishedAt: item.publishedAt || item.date,
     kind: item.kind,
     category: item.category,
     infoTypes: item.infoTypes,
@@ -792,8 +805,13 @@ function toggleFavorite(id) {
 }
 
 function findItem(id) {
+  const catalog = [
+    ...(nuevaPacData?.news || []),
+    ...((alertsData?.groups || []).flatMap((group) => group.items || [])),
+  ];
   return (state.items || []).find((item) => item.id === id)
     || (state.digests || []).flatMap((entry) => entry.items || []).find((item) => item.id === id)
+    || catalog.find((item) => item.id === id)
     || favorites[id]
     || null;
 }
@@ -1129,7 +1147,7 @@ function aidCard(item, options = {}) {
           ${readBadge(read)}
           ${typeRow(item)}
         </div>
-        <div class="top-right">${daysBadge(aid)}${topActions(item)}</div>
+        <div class="top-right">${daysBadge(aid)}${options.inFavorites ? "" : topActions(item)}</div>
       </div>
       <h3>${escapeHtml(item.title || "Sin título")}</h3>
       ${ghost}
@@ -1140,6 +1158,7 @@ function aidCard(item, options = {}) {
         ${tramite}
         <button type="button" class="text-btn mark-unread" data-unread="${escapeHtml(item.id)}">Desmarcar</button>
       </div>
+      ${options.inFavorites ? favoriteActions(item) : ""}
     </article>`;
 }
 
@@ -1163,7 +1182,7 @@ function digestData(date) {
   // v6.2: un día del desplegable sin resumen guardado (p. ej. el anterior al primero) es un resumen vacío, sin inventar nada.
   const current = digests.find((entry) => entry.date === date) || (date && digests.length ? { date, items: [], missing: true } : digests[0]);
   if (!current) return null;
-  const shown = (item) => hasSourceUrl(item) && !isClearedItem(item) && inSector(item) && shownByStatus(item);
+  const shown = (item) => hasSourceUrl(item) && !isClearedItem(item) && !isFavorite(item) && inSector(item) && shownByStatus(item);
   const aids = (current.items || []).filter(hasSourceUrl);
   const aidIds = new Set(aids.map((item) => item.id));
   const others = unseen(state.items || [], "alerta_ocultas")
@@ -1392,7 +1411,8 @@ function officialAlerts(groupId = null) {
     .filter((alert) => /^https?:/i.test(String(alert.url || "")) && inSector(alert))
     .filter((alert) => !urls.has(normUrl(alert.url)))
     .filter((alert) => !titles.has(String(alert.title || "").toLowerCase().slice(0, 80)))
-    .map((alert) => ({ ...alert, publishedAt: alert.date }));
+    .map((alert) => ({ ...alert, publishedAt: alert.date }))
+    .filter((alert) => !isFavorite(alert) && !isClearedItem(alert));
 }
 /** Lista única de Alertas: avisos oficiales + piezas con tema «alerta» que no salen en ninguna otra sección. */
 function alertList(items = sortedItems(baseItems())) {
@@ -1430,11 +1450,15 @@ function ensureNuevaPac() {
     .catch(() => { nuevaPacData = { ok: false, news: [], stages: [], documents: [] }; nuevaPacLoading = null; if (active === "nueva-pac") render(); });
 }
 
+function visibleNuevaPacNews() {
+  return (nuevaPacData?.news || []).filter((item) => item && !isFavorite(item) && !isClearedItem(item));
+}
+
 function renderNuevaPac() {
   ensureNuevaPac();
   if (!nuevaPacData) return `<p class="empty">Cargando la información oficial de la nueva PAC…</p>`;
   const stages = nuevaPacData.stages || [];
-  const news = nuevaPacData.news || [];
+  const news = visibleNuevaPacNews();
   const current = stages.find((s) => s.status === "actual");
   const stageHtml = stages.map((stage) => {
     const cls = stage.status === "actual" ? "on" : stage.status === "hecho" ? "done" : "";
@@ -1454,6 +1478,7 @@ function renderNuevaPac() {
           : "";
         return `<li class="np-news-item">
           <div class="np-news-top"><span class="np-type t-${escapeHtml(type.toLowerCase())}">${escapeHtml(type)}</span>${item.date ? `<time datetime="${escapeHtml(item.date)}">${escapeHtml(fmtDay(item.date))}</time>` : ""}</div>
+          <button type="button" class="act mini fav" data-fav="${escapeHtml(item.id)}" aria-pressed="false">★ Favorita</button>
           <a class="np-title" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>
           ${sum}
           ${relatedHtml}
@@ -1486,7 +1511,7 @@ function renderAlertas() {
       : !group.ok
       ? `<p class="empty">Ahora mismo no podemos leer esta fuente. Para no darte un dato equivocado, no enseñamos ninguno.</p>`
       : list.length
-        ? `<ul class="alert-list">${list.map((alert) => `<li><a href="${escapeHtml(alert.url)}" target="_blank" rel="noopener">${escapeHtml(alert.title)}</a><small>${escapeHtml(alert.summary || "")}${alert.date ? ` · ${escapeHtml(fmtDay(alert.date))}` : ""}</small></li>`).join("")}</ul>`
+        ? `<ul class="alert-list">${list.map((alert) => `<li><button type="button" class="act mini fav" data-fav="${escapeHtml(alert.id)}" aria-pressed="false">★ Favorita</button><a href="${escapeHtml(alert.url)}" target="_blank" rel="noopener">${escapeHtml(alert.title)}</a><small>${escapeHtml(alert.summary || "")}${alert.date ? ` · ${escapeHtml(fmtDay(alert.date))}` : ""}</small></li>`).join("")}</ul>`
         : `<p class="empty">Ningún aviso ahora para tu zona y sectores.</p>`;
     return `<section class="alert-group" data-alert-group="${escapeHtml(group.id)}">
       <h2>${escapeHtml(group.name)}${limits.hidden[group.id] ? "" : ` <span class="count">(${list.length})</span>`}</h2>
@@ -1548,8 +1573,8 @@ function baseItems(options = {}) {
   const today = madridTodayKey();
   return unseen(state.items || [], "alerta_ocultas").filter((item) => {
     if (!hasSourceUrl(item)) return false;
-    // v6.5: solo lo borrado con el botón sale de todas las pestañas. Marcar no oculta. Favoritas no usa esta lista.
-    if (isClearedItem(item)) return false;
+    // v6.5: lo borrado sale de todas las pestañas. v6.6: una favorita solo se ve en Favoritas.
+    if (isClearedItem(item) || isFavorite(item)) return false;
     if (!inSector(item)) return false;
     if (!options.allStatus && !shownByStatus(item, today)) return false;
     if (onlyNewEl?.checked && isReadItem(item)) return false;
@@ -2067,7 +2092,7 @@ function closingSoonList(dateKey) {
   const list = [];
   for (const item of pool) {
     const key = itemKey(item);
-    if (seen.has(key) || isClearedItem(item) || !inSector(item) || !hasSourceUrl(item)) continue;
+    if (seen.has(key) || isClearedItem(item) || isFavorite(item) || !inSector(item) || !hasSourceUrl(item)) continue;
     seen.add(key);
     if (isLiveAid(item.aid, today) && closesWithin(item.aid, today, 15)) list.push(item);
   }
@@ -2090,28 +2115,47 @@ function closingSoonSection(dateKey) {
   return `<section class="closing-soon"><h3>Plazos que cierran en menos de 15 días <span>(${list.length})</span></h3>${rows}</section>`;
 }
 
+/** En Favoritas: quitar (vuelve a su pestaña), borrar (también del resto) y compartir. */
+function favoriteActions(item) {
+  const today = madridTodayKey();
+  const appUrl = location.origin && /^https?:/.test(location.origin) ? `${location.origin}/` : "";
+  return `
+    <div class="fav-actions" role="group" aria-label="Acciones de la favorita">
+      <button type="button" class="act fav-off" data-fav="${escapeHtml(item.id)}">Quitar de favoritas</button>
+      <button type="button" class="act fav-delete" data-fav-delete="${escapeHtml(item.id)}">${CLEAR_ICON}<span>Borrar</span></button>
+      <button type="button" class="act share" data-share="${escapeHtml(item.id)}" data-wa="${escapeHtml(whatsappUrl(item, today, appUrl))}">${SHARE_ICON}<span class="act-label">Compartir</span></button>
+    </div>`;
+}
+
 function renderFavorites() {
   const today = madridTodayKey();
   const live = new Map((state.items || []).map((item) => [itemKey(item), item]));
   // v5.9: una favorita se guarda sin fecha de caducidad (no le afectan los 15 días de leídas/borradas, ni que la
-  // pieza desaparezca de la fuente, ni que la ayuda cierre). Solo se quita al tocar otra vez «★ Favorita».
-  // v6.5: borrarla en otra pestaña no la quita de aquí ni borra el favorito. Se queda hasta quitar «★ Favorita».
-  // Si la pieza ya no está en la lista de hoy, se enseña la copia guardada (título, fuente, enlace, fecha).
+  // pieza desaparezca de la fuente, ni que la ayuda cierre). Solo se quita con «Quitar de favoritas».
+  // v6.5: «Borrar marcadas» en otra pestaña no la quita de aquí ni borra el favorito.
+  // v6.6: «Borrar» en esta ficha sí la quita de Favoritas y del resto. Si ya no está en la lista de hoy, se enseña la copia.
   const entries = Object.values(favorites)
     .filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || "")))
     .sort((a, b) => String(b.savedAt || "").localeCompare(String(a.savedAt || "")));
+  const catalog = [
+    ...(nuevaPacData?.news || []),
+    ...((alertsData?.groups || []).flatMap((group) => group.items || [])),
+  ];
   const cards = entries.map((fav) => {
-    const current = live.get(fav.key) || (state.items || []).find((item) => item.id === fav.id);
+    const current = live.get(fav.key)
+      || (state.items || []).find((item) => item.id === fav.id)
+      || catalog.find((item) => item.id === fav.id || itemKey(item) === fav.key);
     const aid = (current || fav).aid;
     const closed = Boolean(aid) && (aid.status === "cerrada" || deadlineInfo(aid, today).kind === "closed");
     const label = closed ? `<p class="fav-closed"><span class="badge deadline dl-closed">Cerrada</span> Esta ayuda ya ha cerrado. La guardas hasta que la quites de favoritas.</p>` : "";
-    return `<div class="fav-entry${closed ? " is-closed" : ""}">${label}${current ? aidCard(current) : aidCard(fav, { snapshot: true })}</div>`;
+    const card = current ? aidCard(current, { inFavorites: true }) : aidCard(fav, { snapshot: true, inFavorites: true });
+    return `<div class="fav-entry${closed ? " is-closed" : ""}">${label}${card}</div>`;
   });
   return `
     <section class="view-head">
       <p class="eyebrow">Solo en este móvil u ordenador</p>
       <h2>Favoritas <span>(${entries.length})</span></h2>
-      <p>Toca «★ Favorita» en cualquier pieza para guardarla aquí. Se quedan hasta que tú las quites, aunque cierren o desaparezcan de la fuente.</p>
+      <p>Toca «★ Favorita» en cualquier pieza para guardarla aquí. Deja de salir en las otras pestañas. «Quitar de favoritas» la devuelve a su pestaña, si no está borrada. «Borrar» la quita también del resto.</p>
       <p class="account-note">Se guarda solo en este navegador: no hay cuenta ni se envía nada.</p>
     </section>
     ${cards.length ? `<div class="list">${cards.join("")}</div>` : `<p class="empty">Todavía no tienes favoritas.</p>`}
@@ -2535,7 +2579,7 @@ function renderTabs() {
             : id === "ayudas"
               ? ayudasView().items.length // v5.7: el mismo número que la lista y el cuadro elegido
                 : id === "nueva-pac"
-                  ? (nuevaPacData?.news || []).length // v6.3: noticias de la reforma post-2027
+                  ? visibleNuevaPacNews().length // v6.3: noticias de la reforma; v6.6 sin las guardadas en Favoritas
                 : items.filter((item) => inTab(item, id)).length;
       // v5.8: la misma fila en móvil y en pantallas anchas (ninguna se oculta en el móvil).
       const main = "tab-extra";
@@ -3077,10 +3121,49 @@ appEl.addEventListener("click", (event) => {
   const fav = event.target.closest("[data-fav]");
   if (fav) {
     event.preventDefault();
-    toggleFavorite(fav.dataset.fav);
+    const id = fav.dataset.fav;
+    const item = findItem(id) || { id };
+    const was = isFavorite(item);
+    const existing = Object.keys(favorites).find((key) => key === id || favorites[key]?.key === itemKey(item));
+    const snap = existing ? { ...favorites[existing] } : null;
+    toggleFavorite(id);
     const y = window.scrollY;
     render();
     window.scrollTo(0, y);
+    showToast(was ? "Quitada de Favoritas" : "Guardada en Favoritas", () => {
+      if (was && snap?.id && !findItem(snap.id)) favorites[snap.id] = snap;
+      else toggleFavorite(id);
+      writeJson(FAV_KEY, favorites);
+      paintFavBtn();
+      const back = window.scrollY;
+      render();
+      window.scrollTo(0, back);
+    });
+    return;
+  }
+  const favDelete = event.target.closest("[data-fav-delete]");
+  if (favDelete) {
+    event.preventDefault();
+    const id = favDelete.dataset.favDelete;
+    const item = findItem(id);
+    const existing = Object.keys(favorites).find((key) => key === id || (item && favorites[key]?.key === itemKey(item)));
+    const snap = existing ? { ...favorites[existing] } : null;
+    if (existing) delete favorites[existing];
+    writeJson(FAV_KEY, favorites);
+    const keys = buryItem(item || snap);
+    paintFavBtn();
+    const y = window.scrollY;
+    render();
+    window.scrollTo(0, y);
+    showToast("Borrada", () => {
+      if (snap?.id) favorites[snap.id] = snap;
+      writeJson(FAV_KEY, favorites);
+      undeleteKeys(keys);
+      paintFavBtn();
+      const back = window.scrollY;
+      render();
+      window.scrollTo(0, back);
+    });
     return;
   }
   const share = event.target.closest("[data-share]");

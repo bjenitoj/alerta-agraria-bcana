@@ -14,7 +14,7 @@ test("v5.9 favoritas: copia guardada con título, fuente, enlace y fecha", () =>
 test("v5.9 favoritas: no caducan ni se ocultan; las cerradas llevan «Cerrada»", () => {
   const fav = fnBody("renderFavorites");
   assert.ok(!fav.includes("isLiveAid"), "no se filtran por abiertas");
-  assert.match(fav, /aidCard\(fav, \{ snapshot: true \}\)/, "usa la copia si ya no sale");
+  assert.match(fav, /aidCard\(fav, \{ snapshot: true, inFavorites: true \}\)/, "usa la copia si ya no sale");
   assert.match(fav, />Cerrada</);
   assert.doesNotMatch(fnBody("deleteReadItems"), /FAV_KEY|delete favorites/, "borrar no quita el registro de favoritas");
   assert.ok(!fnBody("pruneReadStore").includes("FAV_KEY"), "la limpieza de 15 días no toca favoritas");
