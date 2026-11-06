@@ -2155,10 +2155,9 @@ function renderFavorites() {
     <section class="view-head">
       <p class="eyebrow">Solo en este móvil u ordenador</p>
       <h2>Favoritas <span>(${entries.length})</span></h2>
-      <p>Toca «★ Favorita» en cualquier pieza para guardarla aquí. Deja de salir en las otras pestañas. «Quitar de favoritas» la devuelve a su pestaña, si no está borrada. «Borrar» la quita también del resto.</p>
       <p class="account-note">Se guarda solo en este navegador: no hay cuenta ni se envía nada.</p>
     </section>
-    ${cards.length ? `<div class="list">${cards.join("")}</div>` : `<p class="empty">Todavía no tienes favoritas.</p>`}
+    ${cards.length ? `<div class="list">${cards.join("")}</div>` : `<p class="empty">Aún no tienes favoritas.</p>`}
 `;
 }
 
