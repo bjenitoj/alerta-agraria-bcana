@@ -1,5 +1,14 @@
 # Cambios
 
+## v6.4 · 05/11/2026 · Varios
+
+- Las pestañas Normativa y Alertas pasan a un solo chip «Varios (n)», con la suma de las dos. Al abrirlo hay dos tarjetas, Normativa (n) y Alertas (n). Dentro, un control segmentado cambia de una a otra sin perder filtros, sectores, zona, grupos por tipo ni los cuatro botones de Alertas.
+- La guía de usuario nombra Varios y dice que Normativa y Alertas están dentro.
+- La fila de chips de categorías no sale dentro de Resumen, Favoritas, Herramientas ni Ajustes. Sí en Inicio y al entrar en Ayudas, Calendario PAC, Nueva PAC, Varios o Precios.
+- Marcar leída, borrar u ocultar una pieza la quita de todas las pestañas donde salga (Resumen, Ayudas y el resto). La marca es la misma historia en este dispositivo (`alerta_leidas_v1`: URL, id, título y documento). Si está en Favoritas, sigue ahí y no se pierde el favorito.
+- Iconos de Agricultura (espiga), Ganadería (vaca) y Pesca (pez): SVG propios, mismo trazo y un acento cálido por sector. Sustituyen al emoji en filtros, Ajustes y Mis preferencias.
+- Caché `?v=61`.
+
 ## v6.3 · 05/11/2026 · Nueva PAC
 
 - Nueva pestaña «Nueva PAC» (junto a Calendario PAC; se podrá mover): seguimiento oficial de la reforma de la PAC después de 2027 (propuestas de la Comisión de julio de 2025 para el MFP 2028-2034, planes de asociación nacionales y regionales, negociación en Consejo y Parlamento).

@@ -1061,7 +1061,7 @@ body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-are
   .seg-btn { min-height: 40px; }
 }
 
-/* v5.8 · Chips de apartados en MAYÚSCULAS (AYUDAS, CALENDARIO PAC, NORMATIVA, PRECIOS, MIS FAVORITAS). */
+/* v5.8 · Chips de apartados en MAYÚSCULAS (AYUDAS, CALENDARIO PAC, PRECIOS, VARIOS). */
 .tabs .tab { display: inline-flex; align-items: center; text-transform: uppercase; letter-spacing: 0.03em; }
 
 /* v5.8 · Chip «Precios» con el icono de la barra de abajo. */
@@ -1294,7 +1294,7 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .review-banner { background: linear-gradient(90deg, #fbeec8, #f6e3ad); color: #5a3b06; border-bottom-color: #e3c776; } }
 
 /* Iconos con borde fino: cada icono va en un cuadrado redondeado de fondo claro con un borde de 1px en un tono más oscuro de su color. */
-.tab-icon, .chip svg, .dock svg, .tool-icon, .norma-ico, .head-btn svg {
+.tab-icon, .chip svg, .dock svg, .tool-icon, .norma-ico, .head-btn svg, .sector-ico {
   box-sizing: content-box;
   padding: 3px;
   border: 1px solid color-mix(in srgb, currentColor 60%, #0b3d26);
@@ -1302,7 +1302,7 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
   background: color-mix(in srgb, currentColor 10%, #ffffff);
 }
 .tool-icon { padding: 6px; border-radius: 12px; }
-.tab.active .tab-icon, .chip.on svg, .dock button.on svg, .head-btn.on svg {
+.tab.active .tab-icon, .chip.on svg, .dock button.on svg, .head-btn.on svg, .tile.on .sector-ico {
   background: rgba(255, 255, 255, .18);
   border-color: rgba(255, 255, 255, .75);
 }
@@ -1371,4 +1371,38 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
     font-size: 11px;
     line-height: 16px;
   }
+}
+
+/* v6.4 · Varios: dos tarjetas para elegir Normativa o Alertas; dentro, el control segmentado. */
+.varios-chooser { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 4px 0 18px; }
+.varios-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  min-height: 148px; padding: 16px 16px 18px; text-align: left;
+  border: 0; border-radius: 20px; cursor: pointer; font: inherit; color: var(--ink);
+  background: linear-gradient(160deg, rgba(31, 154, 98, .12), var(--card) 68%);
+  box-shadow: var(--shadow);
+}
+.varios-card-top { display: flex; align-items: center; gap: 10px; }
+.varios-card .tab-icon {
+  width: 26px; height: 26px; margin: 0; flex: none; color: var(--green);
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.varios-card-name { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.varios-card .count { color: var(--green); font-weight: 800; }
+.varios-card-note { color: var(--muted); font-size: 14px; line-height: 1.35; }
+.varios-card:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+.varios-seg { margin-top: 0; }
+
+/* v6.4 · Iconos de sector: espiga, vaca y pez. Mismo trazo; acento cálido distinto. */
+.sector-ico { --accent: #e2a23a; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sector-ico.s-ganaderia { --accent: #c86b45; }
+.sector-ico.s-pesca { --accent: #e07a4c; }
+.sector-ico .accent { fill: var(--accent); stroke: var(--accent); }
+.tile-icon .sector-ico { width: 22px; height: 22px; display: block; }
+.sector-head .sector-ico { width: 18px; height: 18px; vertical-align: -4px; margin-right: 2px; }
+.tabs[hidden] { display: none; }
+.varios-seg .count { font-weight: 800; }
+@media (max-width: 700px) {
+  .varios-chooser { grid-template-columns: 1fr; }
+  .varios-card { min-height: 0; }
 }

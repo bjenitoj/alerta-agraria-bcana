@@ -36,11 +36,9 @@ test("v5.9 Alertas: ITACyL plagas, RASVE e incendios con fecha y enlace oficial;
   assert.ok(referenceSources().some((s) => /RASVE/.test(s.name)), "/fuentes cita las fuentes de Alertas");
 });
 
-test("v5.9 Alertas: chip después de Precios, pantalla por fuente, sin repetir lo de otras secciones", () => {
-  assert.match(appJs, /\["campo", "Precios"\],\n    \["alertas", "Alertas"\],/);
+test("v5.9 Alertas: pantalla por fuente, sin repetir lo de otras secciones", () => {
   assert.match(appJs, /alertas: tabIcon\(/);
-  assert.match(appJs, /id === "alertas"\n\s+\? alertList\(items\)\.length/);
-  assert.match(appJs, /else if \(active === "alertas"\) html = renderAlertas\(\);/);
+  assert.match(appJs, /if \(variosPane === "alertas"\) return variosSwitch\(\) \+ renderAlertas\(\);/);
   const fa = appJs.slice(appJs.indexOf("function officialAlerts"), appJs.indexOf("function alertList"));
   assert.match(fa, /filter\(inOtherSection\)/);
   assert.match(fa, /!urls\.has\(normUrl\(alert\.url\)\)/);

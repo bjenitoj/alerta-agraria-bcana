@@ -8,7 +8,7 @@ const css = readFileSync(new URL("../public/styles.css", import.meta.url), "utf8
 
 test("v6.0 Ajustes: «Guía de usuario» breve con cada pestaña y botón", () => {
   const guide = indexHtml.slice(indexHtml.indexOf('id="acc-guia"'), indexHtml.indexOf("</dl>"));
-  for (const name of ["Resumen", "Herramientas", "Ajustes", "Ayudas", "Calendario PAC", "Normativa", "Precios", "Alertas", "Favoritas", "Agricultura · Ganadería · Pesca", "★ Favorita · Compartir", "Borrar leídas"]) {
+  for (const name of ["Resumen", "Herramientas", "Ajustes", "Ayudas", "Calendario PAC", "Varios", "Normativa", "Precios", "Alertas", "Favoritas", "Agricultura · Ganadería · Pesca", "★ Favorita · Compartir", "Borrar leídas"]) {
     assert.ok(guide.includes(`<dt>${name}</dt>`), name);
   }
   for (const dd of guide.matchAll(/<dd>(.*?)<\/dd>/g)) assert.ok(dd[1].length <= 200, `breve: ${dd[1]}`);
@@ -40,7 +40,7 @@ test("v6.0 cabecera: «Para tu explotación» y «Última consulta» en dos lín
   assert.match(indexHtml, /<small>Para tu explotación<\/small>/);
   assert.match(appJs, /<span>Última consulta<\/span><span>/);
   assert.match(css, /\.stamp span \{ display: block; \}/);
-  assert.match(indexHtml, /app\.js\?v=57/);
+  assert.match(indexHtml, /app\.js\?v=61/);
 });
 
 test("v6.0 números de cuenta entre paréntesis en todas las pantallas (no los cuadros grandes de Alertas)", () => {

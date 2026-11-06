@@ -361,9 +361,10 @@ async function loadSession() {
   paintPrefsNote();
 }
 
-/** Iconos sencillos de cada opción (solo decoración, el lector de pantalla lee la etiqueta). */
+/** Iconos sencillos de cada opción (solo decoración, el lector de pantalla lee la etiqueta).
+ *  Agricultura, Ganadería y Pesca usan el SVG de GLYPH (se rellena justo debajo). */
 const EMOJI = {
-  agricultura: "🌾", ganaderia: "🐄", pesca: "🐟", todos: "🌐",
+  agricultura: "", ganaderia: "", pesca: "", todos: "🌐",
   ayudas: "💶", pac: "🇪🇺", normativa: "📜", alertas: "⚠️",
   "mi-zona": "⭐", salamanca: "📍", cyl: "🏰", nacional: "🇪🇸",
   secano: "☀️", regadio: "💧",
@@ -399,7 +400,7 @@ function sectorBlocksHtml(current) {
   return SECTOR_BLOCKS.filter((block) => scope[block.sector])
     .map((block) => {
       const hint = !many && block.group !== "water" ? ' <span class="hint">Puedes marcar varios</span>' : "";
-      // Con «Todos», una sola línea pequeña: «🌾 Agricultura · Tierra».
+      // Con «Todos», una sola línea pequeña: icono del sector y «Agricultura · Tierra».
       const head = many ? sectorHead(block.sector, block.title) : `<p>${block.title}${hint}</p>`;
       return `<div class="choice-block" data-block="${block.group}">${head}<div class="tiles${many ? " tiles-compact" : ""}">${choiceButtons(block.list, current[block.group], block.group)}</div></div>`;
     })
@@ -433,10 +434,15 @@ function svgIcon(body) {
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
 }
 
+/** v6.4 · Sectores: mismo trazo, esquinas redondas y un acento cálido (trigo, barro, arena). */
+function sectorIcon(id, body) {
+  return `<svg class="sector-ico s-${id}" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+}
+
 const GLYPH = {
-  agricultura: svgIcon(`<path d="M12 20V9"/><path d="M12 13c-2.2-1.2-4.2-1-6.2.2 0-3.2 1.6-5.4 6.2-6.2 4.6.8 6.2 3 6.2 6.2-2-.2-4-.4-6.2-.2z"/>`),
-  ganaderia: svgIcon(`<path d="M6 16c0-3 2-5 6-5s6 2 6 5v3H6z"/><path d="M8 11 6 7M16 11l2-4"/><circle cx="9" cy="15" r=".6"/><circle cx="15" cy="15" r=".6"/>`),
-  pesca: svgIcon(`<path d="M3 13c3-4 6-4 9 0s6 4 9 0c-2 4-6 6-9 6s-7-2-9-6z"/><circle cx="15" cy="12.5" r=".7"/>`),
+  agricultura: sectorIcon("agricultura", `<path d="M12 21.2V7"/><path d="M12 18 8.2 15.6M12 18l3.8-2.4M12 14.4 8.8 12.2M12 14.4l3.2-2.2M12 11 9.4 9M12 11l2.6-2"/><path class="accent" d="M12 4.8c.9.8.9 1.6 0 2.5-.9-.9-.9-1.7 0-2.5z"/>`),
+  ganaderia: sectorIcon("ganaderia", `<path d="M8.4 9.6 6.5 6.4M15.6 9.6 17.5 6.4"/><path d="M7.2 11.4c-1.5.4-2.4 1.5-2.2 2.9.2 1.1 1.1 1.8 2.2 1.9"/><path d="M16.8 11.4c1.5.4 2.4 1.5 2.2 2.9-.2 1.1-1.1 1.8-2.2 1.9"/><path d="M8 12.4c0-2.4 1.7-4.2 4-4.2s4 1.8 4 4.2v2.6c0 2.5-1.8 4.4-4 4.4s-4-1.9-4-4.4z"/><circle class="accent" cx="10.1" cy="13.6" r=".85"/><circle class="accent" cx="13.9" cy="13.6" r=".85"/><path d="M10.1 16.3h3.8c.55 0 .95.38.95.9s-.4.9-.95.9h-3.8c-.55 0-.95-.38-.95-.9s.4-.9.95-.9z"/>`),
+  pesca: sectorIcon("pesca", `<path d="M3.6 12.2c2.5-3.3 5.6-4.6 9-4.6 2.5 0 4.2 1 5.3 2.5L21 8.2v8l-3.1-1.9c-1.1 1.5-2.8 2.5-5.3 2.5-3.4 0-6.5-1.3-9-4.6z"/><circle class="accent" cx="8.3" cy="11.5" r=".85"/><path class="accent" d="M21 8.2 17.8 12.2 21 16.2"/>`),
   todos: svgIcon(`<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>`),
   ayuda: svgIcon(`<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.6-1 1.4-1.5 2.5-1.5 1.6 0 2.5.9 2.5 2s-.8 1.8-2.5 2-2.6.8-2.6 2 1 2 2.6 2c1.1 0 2-.5 2.5-1.4"/>`),
   pac: svgIcon(`<path d="M12 20V9"/><path d="M12 13c-2.2-1.2-4.2-1-6.2.2 0-3.2 1.6-5.4 6.2-6.2 4.6.8 6.2 3 6.2 6.2-2-.2-4-.4-6.2-.2z"/>`),
@@ -444,6 +450,9 @@ const GLYPH = {
   alerta: svgIcon(`<path d="M12 4a5 5 0 0 1 5 5v3l1.5 2.5H5.5L7 12V9a5 5 0 0 1 5-5z"/><path d="M10 18a2 2 0 0 0 4 0"/>`),
   plazo: svgIcon(`<circle cx="12" cy="12" r="8"/><path d="M12 8v4.5l3 2"/>`),
 };
+EMOJI.agricultura = GLYPH.agricultura;
+EMOJI.ganaderia = GLYPH.ganaderia;
+EMOJI.pesca = GLYPH.pesca;
 
 function icon(name) {
   return `<span class="type">${GLYPH[name] || ""}</span>`;
@@ -577,7 +586,7 @@ const READ_TTL_DAYS = 15;
 const READ_MAX = 3000;
 
 function emptyReadStore() {
-  return { v: 1, read: {}, deleted: {} };
+  return { v: 1, read: {}, deleted: {}, aliases: {} };
 }
 
 /** Quita lo que tenga más de 15 días y lo que no tenga una fecha válida. */
@@ -590,6 +599,10 @@ function pruneReadStore(store, nowMs = Date.now()) {
       .sort((a, b) => Date.parse(a[1]) - Date.parse(b[1]))
       .slice(-READ_MAX);
     out[bucket] = Object.fromEntries(entries);
+  }
+  const alive = new Set(Object.keys(out.deleted));
+  for (const [alias, primary] of Object.entries(store?.aliases || {})) {
+    if (alive.has(primary)) out.aliases[alias] = primary;
   }
   return out;
 }
@@ -613,10 +626,32 @@ function readKeyOf(item) {
   return url ? `u:${url}` : item?.id ? `id:${item.id}` : "";
 }
 
+/** Todas las claves de una misma historia (URL, id, título largo y documento oficial). */
+function markKeys(item) {
+  const keys = [];
+  const url = canonicalUrl(item?.url);
+  if (url) keys.push(`u:${url}`);
+  if (item?.id) keys.push(`id:${item.id}`);
+  const title = String(item?.title || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  if (title.length >= 40) keys.push(`t:${title}`);
+  if (typeof documentKeys === "function") {
+    for (const key of documentKeys(item?.url, item?.title)) keys.push(key);
+  }
+  return [...new Set(keys.filter(Boolean))];
+}
+
 function hasMark(bucket, item) {
-  const key = readKeyOf(item);
-  if (!key) return false;
-  return Boolean(readStore[bucket][key] || (item?.id && readStore[bucket][`id:${item.id}`]));
+  const keys = markKeys(item);
+  if (bucket !== "deleted") return keys.some((key) => readStore[bucket]?.[key]);
+  const aliases = readStore.aliases || {};
+  return keys.some((key) => readStore.deleted[key] || (aliases[key] && readStore.deleted[aliases[key]]));
 }
 
 function isReadItem(item) {
@@ -627,27 +662,37 @@ function isDeletedItem(item) {
   return hasMark("deleted", item);
 }
 
-function setRead(item, on) {
-  const key = readKeyOf(item);
-  if (!key) return;
-  if (on) readStore.read[key] = new Date().toISOString();
-  else {
-    delete readStore.read[key];
-    if (item?.id) delete readStore.read[`id:${item.id}`];
-    if (item) item.read = false;
+/** Leída o borrada: la misma historia sale de todas las pestañas, menos de Favoritas. */
+function isClearedItem(item) {
+  return isReadItem(item) || isDeletedItem(item);
+}
+
+function writeMarks(bucket, item, on) {
+  const now = new Date().toISOString();
+  for (const key of markKeys(item)) {
+    if (on) readStore[bucket][key] = now;
+    else delete readStore[bucket][key];
   }
+}
+
+function setRead(item, on) {
+  if (!markKeys(item).length) return;
+  writeMarks("read", item, on);
+  if (!on && item) item.read = false;
   writeJson(READ_KEY, readStore);
 }
 
-/** Borra (oculta 15 días) las leídas que no están en favoritas. Devuelve las claves borradas para «Deshacer». */
+/** Borra (oculta 15 días) las leídas que no están en favoritas. No toca el registro de Favoritas. */
 function deleteReadItems(items) {
   const now = new Date().toISOString();
   const keys = [];
+  readStore.aliases = readStore.aliases || {};
   for (const item of items || []) {
     if (!isReadItem(item) || isDeletedItem(item) || isFavorite(item)) continue;
     const key = readKeyOf(item);
     if (!key || keys.includes(key)) continue;
     readStore.deleted[key] = now;
+    for (const alias of markKeys(item)) if (alias !== key) readStore.aliases[alias] = key;
     keys.push(key);
   }
   writeJson(READ_KEY, readStore);
@@ -655,13 +700,19 @@ function deleteReadItems(items) {
 }
 
 function undeleteKeys(keys) {
-  for (const key of keys || []) delete readStore.deleted[key];
+  for (const key of keys || []) {
+    delete readStore.deleted[key];
+    for (const [alias, primary] of Object.entries(readStore.aliases || {})) {
+      if (primary === key) delete readStore.aliases[alias];
+    }
+  }
   writeJson(READ_KEY, readStore);
 }
 
 function restoreAllDeleted() {
   const n = Object.keys(readStore.deleted).length;
   readStore.deleted = {};
+  readStore.aliases = {};
   writeJson(READ_KEY, readStore);
   return n;
 }
@@ -863,7 +914,7 @@ function calendarLink(item) {
 const tabIcon = (body) => `<svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
 const PRICES_ICON = tabIcon(`<path d="M4 19h16"/><path d="M5 15l4-4 3 3 6-7"/><path d="M15 7h3v3"/>`);
 // v5.8: nombre corto bajo el icono en el móvil (el nombre completo va en aria-label y title).
-const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas", "nueva-pac": "Nueva PAC" };
+const TAB_SHORT = { calendario: "Calendario", favoritas: "Favoritas", "nueva-pac": "Nueva PAC", varios: "Varios" };
 const TAB_ICONS = {
   ayudas: tabIcon(`<circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.6-1 1.4-1.5 2.5-1.5 1.6 0 2.5.9 2.5 2s-.8 1.8-2.5 2-2.6.8-2.6 2 1 2 2.6 2c1.1 0 2-.5 2.5-1.4"/>`),
   calendario: tabIcon(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M8 14h2M12 14h2M16 14h0M8 17h2M12 17h2"/>`),
@@ -871,6 +922,7 @@ const TAB_ICONS = {
   campo: PRICES_ICON,
   favoritas: tabIcon(`<path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>`),
   alertas: tabIcon(`<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>`),
+  varios: tabIcon(`<rect x="3.5" y="4" width="7.5" height="16" rx="1.5"/><rect x="13" y="4" width="7.5" height="16" rx="1.5"/>`),
   "nueva-pac": tabIcon(`<path d="M5 19V9l7-5 7 5v10"/><path d="M10 19v-5h4v5"/><path d="M9 11h.01M15 11h.01M12 14.5v-2"/>`),
   archivadas: tabIcon(`<rect x="3.5" y="4" width="17" height="4" rx="1"/><path d="M5 8v11h14V8M10 12h4"/>`),
 };
@@ -1109,7 +1161,7 @@ function digestData(date) {
   // v6.2: un día del desplegable sin resumen guardado (p. ej. el anterior al primero) es un resumen vacío, sin inventar nada.
   const current = digests.find((entry) => entry.date === date) || (date && digests.length ? { date, items: [], missing: true } : digests[0]);
   if (!current) return null;
-  const shown = (item) => hasSourceUrl(item) && !isDeletedItem(item) && inSector(item) && shownByStatus(item);
+  const shown = (item) => hasSourceUrl(item) && !isClearedItem(item) && inSector(item) && shownByStatus(item);
   const aids = (current.items || []).filter(hasSourceUrl);
   const aidIds = new Set(aids.map((item) => item.id));
   const others = unseen(state.items || [], "alerta_ocultas")
@@ -1499,7 +1551,8 @@ function baseItems(options = {}) {
   const today = madridTodayKey();
   return unseen(state.items || [], "alerta_ocultas").filter((item) => {
     if (!hasSourceUrl(item)) return false;
-    if (isDeletedItem(item)) return false;
+    // v6.4: leída o borrada en cualquier pestaña sale de todas (Ayudas, Resumen, Inicio…). Favoritas no usa esta lista.
+    if (isClearedItem(item)) return false;
     if (!inSector(item)) return false;
     if (!options.allStatus && !shownByStatus(item, today)) return false;
     if (onlyNewEl?.checked && isReadItem(item)) return false;
@@ -1954,6 +2007,45 @@ function renderNormativa(recent) {
       <p class="hint">Leyes, reales decretos y órdenes que el BOE da como vigentes (legislación consolidada), de tus sectores y tu zona, agrupadas por tipo. Sin ayudas: esas están en Ayudas.</p>${vigorHtml}</section>`;
 }
 
+// v6.4 · Varios: una sola pestaña. Al abrirla, dos tarjetas (Normativa o Alertas). Dentro, un control
+// segmentado para cambiar sin perder filtros, grupos, sectores ni recuentos de cada pantalla.
+let variosPane = null;
+function variosCount(items = baseItems()) {
+  return normativaCount(items) + alertList(items).length;
+}
+function variosOptions() {
+  const items = baseItems();
+  return [
+    ["normativa", "Normativa", normativaCount(items), "Lo último del BOE y BOCyL y las normas en vigor, agrupadas por tipo."],
+    ["alertas", "Alertas", alertList(items).length, "Avisos oficiales de tu zona: tiempo, plagas, sanidad animal e incendios."],
+  ];
+}
+function variosChooser() {
+  const cards = variosOptions().map(([id, label, count, note]) => `<button type="button" class="varios-card" data-varios="${id}">
+      <span class="varios-card-top">${TAB_ICONS[id] || ""}<span class="varios-card-name">${label} <span class="count">(${count})</span></span></span>
+      <span class="varios-card-note">${note}</span>
+    </button>`).join("");
+  return `<div class="varios-chooser" role="group" aria-label="Elige Normativa o Alertas">${cards}</div>`;
+}
+function variosSwitch() {
+  const buttons = variosOptions().map(([id, label, count]) => {
+    const on = variosPane === id;
+    return `<button type="button" class="seg-btn${on ? " on" : ""}" data-varios="${id}" aria-pressed="${on ? "true" : "false"}">${label} <span class="count">(${count})</span></button>`;
+  }).join("");
+  return `<div class="seg varios-seg" role="group" aria-label="Normativa o Alertas">${buttons}</div>`;
+}
+function renderVarios() {
+  const items = baseItems();
+  if (variosPane === "alertas") return variosSwitch() + renderAlertas();
+  if (variosPane === "normativa") {
+    const recent = byPublication(items.filter((item) => inTab(item, "normativa")));
+    return variosSwitch() + renderNormativa(recent);
+  }
+  return filterRow() +
+    `<section class="view-head"><p class="eyebrow">Normativa y avisos oficiales</p><h2>Varios (${variosCount(items)})</h2></section>` +
+    variosChooser();
+}
+
 function renderList(tab) {
   if (tab === "ayudas") return renderAyudas();
   const card = listStatus ? GLANCE.find((entry) => entry.status === listStatus && entry.goto === tab) : null;
@@ -1978,7 +2070,7 @@ function closingSoonList(dateKey) {
   const list = [];
   for (const item of pool) {
     const key = itemKey(item);
-    if (seen.has(key) || isDeletedItem(item) || !inSector(item) || !hasSourceUrl(item)) continue;
+    if (seen.has(key) || isClearedItem(item) || !inSector(item) || !hasSourceUrl(item)) continue;
     seen.add(key);
     if (isLiveAid(item.aid, today) && closesWithin(item.aid, today, 15)) list.push(item);
   }
@@ -2006,6 +2098,7 @@ function renderFavorites() {
   const live = new Map((state.items || []).map((item) => [itemKey(item), item]));
   // v5.9: una favorita se guarda sin fecha de caducidad (no le afectan los 15 días de leídas/borradas, ni que la
   // pieza desaparezca de la fuente, ni que la ayuda cierre). Solo se quita al tocar otra vez «★ Favorita».
+  // v6.4: marcarla leída, borrarla u ocultarla en otra pestaña no la quita de aquí ni borra el favorito.
   // Si la pieza ya no está en la lista de hoy, se enseña la copia guardada (título, fuente, enlace, fecha).
   const entries = Object.values(favorites)
     .filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || "")))
@@ -2421,17 +2514,14 @@ function renderDigestTab() {
 
 function renderTabs() {
   const items = baseItems();
-  // v5.8: sin chip «Inicio» (está en la barra de abajo y en el logo). Orden: Ayudas, Calendario PAC, Normativa,
-  // Precios (antes «Hoy en el campo», con el icono de la barra de abajo) y Favoritas (arriba, entre Resumen y Herramientas).
-  // v5.8: sin chip «Inicio» (se vuelve con el logo). Orden: Ayudas, Calendario PAC, Normativa, Precios y Favoritas,
-  // cada uno con icono. En el móvil (≤ 900 px) solo el icono, para que entren los 5 en una fila.
+  // v5.8: sin chip «Inicio» (se vuelve con el logo). Favoritas está en cabecera y barra.
+  // v6.4: Normativa y Alertas se unen en un solo chip «Varios» (dentro se elige una u otra).
   const buttons = [
     ["ayudas", "Ayudas"],
     ["calendario", "Calendario PAC"],
     ["nueva-pac", "Nueva PAC"], // v6.3: colocación provisional; fácil de mover en este array
-    ["normativa", "Normativa"],
     ["campo", "Precios"],
-    ["alertas", "Alertas"],
+    ["varios", "Varios"],
     ["archivadas", "Archivadas"],
   ].filter(([id]) => id !== "archivadas" || isAdmin());
   const noCount = new Set(["calendario", "campo", "herramientas"]);
@@ -2443,12 +2533,10 @@ function renderTabs() {
           ? (state.archive || []).length
           : id === "favoritas"
             ? Object.values(favorites).filter((fav) => fav && fav.title && /^https?:/i.test(String(fav.url || ""))).length // v5.9: todas, también cerradas
-            : id === "alertas"
-              ? alertList(items).length // v5.9: el mismo número que la pantalla Alertas y el cuadro de Inicio
+            : id === "varios"
+              ? variosCount(items) // v6.4: Normativa (recientes + en vigor) + Alertas, mismos filtros
             : id === "ayudas"
               ? ayudasView().items.length // v5.7: el mismo número que la lista y el cuadro elegido
-              : id === "normativa"
-                ? normativaCount(items) // v6.2: lo mismo que la pantalla (recientes + en vigor, por sector y zona)
                 : id === "nueva-pac"
                   ? (nuevaPacData?.news || []).length // v6.3: noticias de la reforma post-2027
                 : items.filter((item) => inTab(item, id)).length;
@@ -2459,8 +2547,22 @@ function renderTabs() {
     .join("");
 }
 
+// v6.4: la fila de categorías (Ayudas, Calendario, Nueva PAC, Varios, Precios…) no sale
+// dentro de Resumen, Favoritas, Herramientas ni Ajustes. Sí en Inicio y en esas categorías.
+const NO_CATEGORY_TABS = new Set(["resumen", "favoritas", "herramientas"]);
+function paintCategoryTabs() {
+  if (!tabsEl) return;
+  const sheetOpen = Boolean(prefSheet && !prefSheet.hidden);
+  tabsEl.hidden = NO_CATEGORY_TABS.has(active) || sheetOpen;
+}
+
 function render() {
   if (QUIET.has(PATH) || PATH === "/admin") return;
+  // v6.4: un enlace antiguo a Normativa o Alertas abre Varios en esa pantalla.
+  if (active === "normativa" || active === "alertas") {
+    variosPane = active;
+    active = "varios";
+  }
   stampEl.textContent = state.collecting
     ? "Consultando fuentes oficiales…"
     : state.lastCollectAt
@@ -2494,12 +2596,13 @@ function render() {
   if (active === "jovenes" || active === "noticias") active = "inicio";
   // v5.7: la pestaña PAC pasa a Ayudas > Ayudas PAC.
   if (active === "pac") { active = "ayudas"; saveAidGroup("pac"); }
+  paintCategoryTabs();
   if (active === "inicio") html = renderBoard();
   else if (active === "resumen") html = renderDigestTab();
   else if (active === "favoritas") html = renderFavorites();
   else if (active === "calendario") html = renderPacCalendar();
   else if (active === "campo") html = renderField();
-  else if (active === "alertas") html = renderAlertas();
+  else if (active === "varios") html = renderVarios();
   else if (active === "nueva-pac") html = renderNuevaPac();
   else if (active === "herramientas") html = renderToolsTab();
   else if (active === "archivadas") html = renderArchive();
@@ -2719,6 +2822,7 @@ async function refresh() {
 tabsEl.addEventListener("click", (event) => {
   const button = event.target.closest(".tab");
   if (!button) return;
+  if (button.dataset.id === "varios") variosPane = null;
   active = button.dataset.id;
   listStatus = null;
   setSheet(false);
@@ -2739,6 +2843,7 @@ function setSheet(open, focusPrefs = false) {
   if (!prefSheet) return;
   prefSheet.hidden = !open;
   settingsBtn?.setAttribute("aria-expanded", open ? "true" : "false");
+  paintCategoryTabs();
   if (open) {
     paintThemeChoice();
     paintReadSettings();
@@ -2902,10 +3007,19 @@ async function markCardRead(id, card, force = null) {
   const read = force === null ? !isReadItem(item) : force;
   if (read === isReadItem(item) && force !== null) return;
   setRead(item, read);
-  for (const entry of readPool()) if (readKeyOf(entry) === readKeyOf(item) && !read) entry.read = false;
-  paintCardRead(id, read);
+  for (const entry of readPool()) if (markKeys(entry).some((key) => markKeys(item).includes(key)) && !read) entry.read = false;
+  const y = window.scrollY;
+  render();
+  window.scrollTo(0, y);
   paintReadTools();
-  if (onlyNewEl?.checked) render();
+  if (read && active !== "favoritas" && force === null) {
+    showToast("Leída. Se quita también de las demás pestañas.", () => {
+      setRead(item, false);
+      const back = window.scrollY;
+      render();
+      window.scrollTo(0, back);
+    });
+  }
   if (!isAdmin()) return;
   // Panel del titular: además se avisa al servidor como antes.
   if (Boolean(item.read) !== read) {
@@ -3021,6 +3135,19 @@ appEl.addEventListener("click", (event) => {
     setSheet(true, true);
     render();
     if (level) requestAnimationFrame(() => document.querySelector(`[data-place-box="${level}"]`)?.scrollIntoView({ block: "center" }));
+    return;
+  }
+  const variosBtn = event.target.closest("[data-varios]");
+  if (variosBtn) {
+    event.preventDefault();
+    const next = variosBtn.dataset.varios;
+    if (next === "normativa" || next === "alertas") {
+      active = "varios";
+      variosPane = next;
+      listStatus = null;
+      render();
+      window.scrollTo(0, 0);
+    }
     return;
   }
   const go = event.target.closest("[data-goto]");
