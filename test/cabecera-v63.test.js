@@ -37,7 +37,7 @@ test("v6.3 móvil: sin estrella de cabecera y sin Inicio en la barra; el logo ab
   assert.doesNotMatch(appJs, /\["inicio", "Inicio"\]/);
 });
 
-test("v6.3 caché v=67", () => {
-  assert.match(html, /styles\.css\?v=67/);
-  assert.match(html, /app\.js\?v=67/);
+test("v6.3 caché v=69", () => {
+  assert.match(html, /styles\.css\?v=69/);
+  assert.match(html, /app\.js\?v=69/);
 });

@@ -1,5 +1,12 @@
 # Cambios
 
+## v6.8 · 08/11/2026 · Compartir la app
+
+- En la cabecera, junto a «Alerta Agraria», un botón solo con el icono de compartir (cuadrado y flecha hacia arriba, sin el logo de WhatsApp). Fondo verde de WhatsApp e icono blanco. El nombre accesible es «Compartir la app».
+- El nombre va en dos líneas, «Alerta» y «Agraria», a la altura del logo, para que el botón quede pegado al nombre. Fuera el subtítulo «Para tu explotación».
+- Abre WhatsApp con un texto breve y el enlace de la app, `https://alerta-agraria-bcana.onrender.com/`. No envía la noticia, la pestaña ni las preferencias. Igual en el móvil, el iPad y la web. Los botones de compartir de cada ficha no cambian.
+- Caché `?v=69`.
+
 ## v6.7 · 06/11/2026 · Cabecera de Favoritas
 
 - Fuera el párrafo largo de la cabecera de Favoritas. Quedan el título «Favoritas (n)», la etiqueta «Solo en este móvil u ordenador» y la nota «Se guarda solo en este navegador…». Sin favoritas, una línea: «Aún no tienes favoritas».
