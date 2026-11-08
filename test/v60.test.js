@@ -36,11 +36,13 @@ test("v6.0 Calendario PAC: tarjetas AHORA (naranja) y PRÓXIMAS (verde), lista e
   assert.match(css, /\.pac-now \{ background: #c25e00; \}/);
 });
 
-test("v6.0 cabecera: «Para tu explotación» y «Última consulta» en dos líneas centradas", () => {
-  assert.match(indexHtml, /<small>Para tu explotación<\/small>/);
+test("v6.8 cabecera: nombre en dos líneas, sin «Para tu explotación»; «Última consulta» sigue en dos líneas", () => {
+  assert.match(indexHtml, /<strong>Alerta<\/strong>\s*<strong>Agraria<\/strong>/);
+  assert.doesNotMatch(indexHtml, /Para tu explotación/);
   assert.match(appJs, /<span>Última consulta<\/span><span>/);
   assert.match(css, /\.stamp span \{ display: block; \}/);
-  assert.match(indexHtml, /app\.js\?v=68/);
+  assert.match(css, /\.brand \.brand-name,[\s\S]{0,120}height: 48px/);
+  assert.match(indexHtml, /app\.js\?v=69/);
 });
 
 test("v6.0 números de cuenta entre paréntesis en todas las pantallas (no los cuadros grandes de Alertas)", () => {

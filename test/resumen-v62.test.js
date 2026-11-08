@@ -36,6 +36,6 @@ test("v6.2 Resumen: se conservan hoy y el día anterior al guardar", () => {
   assert.deepEqual(list.map((d) => d.date), ["2026-11-04", "2026-11-03"]);
 });
 
-test("v6.2 caché v=68", () => {
-  assert.match(indexHtml, /app\.js\?v=68/);
+test("v6.2 caché v=69", () => {
+  assert.match(indexHtml, /app\.js\?v=69/);
 });
