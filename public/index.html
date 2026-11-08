@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=67" />
+  <link rel="stylesheet" href="/styles.css?v=68" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -52,14 +52,17 @@
   </div>
 
   <header class="top">
-    <a class="brand" href="/">
-      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#1b4332"/><circle cx="24" cy="17" r="7" fill="#e8b84a"/><path d="M6 34c7-9 12-8 18 1 6-11 13-10 18 0v8H6z" fill="#f4e7c4"/><path d="M24 24v11" stroke="#e8b84a" stroke-width="2" stroke-linecap="round"/></svg>
-      <span>
-        <strong>Alerta Agraria</strong>
-        <small>Para tu explotación</small>
-      </span>
-      <span class="sr-only">Ir a Inicio.</span>
-    </a>
+    <div class="brand-row">
+      <a class="brand" href="/">
+        <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="14" fill="#1b4332"/><circle cx="24" cy="17" r="7" fill="#e8b84a"/><path d="M6 34c7-9 12-8 18 1 6-11 13-10 18 0v8H6z" fill="#f4e7c4"/><path d="M24 24v11" stroke="#e8b84a" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>
+          <strong>Alerta Agraria</strong>
+          <small>Para tu explotación</small>
+        </span>
+        <span class="sr-only">Ir a Inicio.</span>
+      </a>
+      <a id="shareApp" class="share-app" href="https://wa.me/?text=Alerta%20Agraria%3A%20ayudas%2C%20PAC%20y%20avisos%20oficiales%20del%20campo.%0Ahttps%3A%2F%2Falerta-agraria-bcana.onrender.com%2F" target="_blank" rel="noopener noreferrer" aria-label="Compartir la app" title="Compartir la app"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></a>
+    </div>
     <div class="top-tools">
       <button id="digestBtn" type="button" class="ghost head-btn digest-btn" aria-label="Resumen del día"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h12v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 9h4v9a2 2 0 0 1-2 2h-4"/><path d="M7 9h6M7 12h6M7 15h4"/></svg><span class="head-line"><span class="head-text">Resumen</span><span class="head-badge" hidden></span></span></button>
       <button id="favBtn" type="button" class="ghost head-btn fav-btn" aria-label="Favoritas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg><span class="head-line"><span class="head-text">Favoritas</span><span class="head-badge" hidden></span></span></button>
@@ -156,6 +159,7 @@
             <dt>Alertas</dt><dd>Dentro de Varios: avisos oficiales de tu zona (tiempo, plagas, sanidad animal e incendios).</dd>
             <dt>Agricultura · Ganadería · Pesca</dt><dd>Filtran lo que ves por sector. Ninguno marcado = todos.</dd>
             <dt>★ Favorita · Compartir</dt><dd>Guarda la ficha en Favoritas · la envía por el menú del móvil o WhatsApp.</dd>
+            <dt>Compartir la app</dt><dd>El botón verde junto al nombre abre WhatsApp con un texto breve y el enlace de la app.</dd>
             <dt>Borrar marcadas</dt><dd>Quita las marcadas 15 días de todas las pestañas. En Favoritas se quedan.</dd>
           </dl>
         </div>
@@ -216,6 +220,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=67"></script>
+  <script type="module" src="/app.js?v=68"></script>
 </body>
 </html>

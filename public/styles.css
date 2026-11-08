@@ -142,6 +142,22 @@ button, .choice, .tab {
 }
 .logo { width: 48px; height: 48px; flex: none; }
 .brand strong { display: block; font-size: 22px; letter-spacing: -0.03em; }
+.brand-row { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto; }
+.brand-row .brand { flex: 0 1 auto; min-width: 0; }
+.share-app {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #25D366;
+  color: #fff;
+  text-decoration: none;
+}
+.share-app svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.share-app:focus-visible { outline: 3px solid #075E54; outline-offset: 2px; }
 .brand small, .lead, .stamp, footer { color: var(--muted); }
 .brand small { display: block; font-size: 15px; }
 .top-tools, .actions, .account-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
