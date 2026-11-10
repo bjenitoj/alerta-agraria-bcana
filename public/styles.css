@@ -1376,7 +1376,9 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 .np-news li, .np-docs li { background: linear-gradient(135deg, rgba(31, 154, 98, .06), var(--card) 55%); border-radius: 16px; padding: 12px 14px; box-shadow: var(--shadow); }
 .np-news a, .np-docs a { font-weight: 700; text-decoration: none; }
 .np-news small, .np-docs small { display: block; margin-top: 4px; color: var(--muted); }
-.np-news-item { display: grid; gap: 6px; }
+.np-news-item { display: grid; gap: 6px; cursor: pointer; }
+.np-news-item.read { box-shadow: inset 6px 0 0 #12704a, var(--shadow); background: linear-gradient(135deg, rgba(18, 112, 74, .14), var(--card) 48%); }
+.np-news-item:not(.read) .mark-unread { display: none; }
 .np-news-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .np-type { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 800; background: rgba(18,112,74,.12); color: var(--green); border: 1px solid color-mix(in srgb, var(--green) 35%, #fff); }
 .np-type.t-norma { background: rgba(29,78,137,.12); color: #1d4e89; border-color: color-mix(in srgb, #1d4e89 40%, #fff); }
