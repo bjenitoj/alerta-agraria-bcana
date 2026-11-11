@@ -1,5 +1,20 @@
 # Fuentes oficiales del sector primario (agricultura, ganadería, pesca)
 
+## v7.0 · Cobertura por comunidad (11/11/2026)
+
+Comprobado desde este servidor con curl (10-12 s). Solo entra lo que responde. Si no hay feed estable, la zona recibe lo nacional (BOE, MAPA, BDNS) y lo que la [Red PAC](https://www.redpac.es/rss.xml) nombre de esa comunidad.
+
+| Zona | Fuente propia que responde | URL | Si no responde |
+|---|---|---|---|
+| España | BOE, BDNS, MAPA, FEGA, Red PAC, AEMET (avisos de toda España) | https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAE_RSS.xml | — |
+| Castilla y León | BOCyL, ITACyL, Junta, PAC CyL (siguen) | https://bocyl.jcyl.es/rss | — |
+| Salamanca | Lonja de Salamanca (sigue) | https://www.lasalina.es/Aplicaciones/lonja/Cotizaciones.jsp | — |
+| León | Lonja de León (sigue) | https://www.lonjadeleon.es/category/cotizaciones/ | — |
+| Resto de comunidades | No hay RSS de boletín estable desde aquí (BOJA, DOG, DOGC y portales de consejería: tiempo agotado, TLS o HTML sin feed) | https://www.juntadeandalucia.es/boja · https://www.xunta.gal/diario-oficial-galicia · https://dogc.gencat.cat/ | Lo nacional y la Red PAC / BDNS / BOE cuando el texto nombra la comunidad o la provincia |
+| Comunitat Valenciana | La portada del DOGV responde, pero no es un RSS de disposiciones | https://dogv.gva.es/ | Igual: lo nacional y lo que nombren BOE, BDNS y Red PAC |
+| Aragón | El listado abierto del BOA responde, sin canal de novedades agrarias usable | https://www.boa.aragon.es/ | Igual |
+| Plagas e incendios fuera de CyL | Sin fuente oficial legible equivalente a ITACyL o a la Junta | https://plagas.itacyl.es/ | No se inventan. El tiempo es el de AEMET; la sanidad animal es RASVE (nacional, por provincia) |
+
 Investigación para Alerta Agraria. Verificado el 21/10/2026 (hora de Madrid) con curl y WebFetch. Solo se incluyen URLs comprobadas; las bloqueadas se marcan.
 
 **Leyenda.** `in_app`: ya la usa la app. Acceso: RSS/Atom, API, XLSX o HTML (hay que hacer scraping).

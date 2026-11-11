@@ -58,8 +58,8 @@ test("v5.6 sin botón «← Inicio»: se vuelve tocando «Alerta Agraria» y con
   assert.match(appJs, /document\.querySelector\("\.top \.brand"\)\?\.addEventListener\("click"/);
   // v5.8: en el móvil se vuelve a Inicio con el logo (la barra ya no lleva «Inicio»).
   assert.doesNotMatch(indexHtml, /data-dock="inicio"/);
-  assert.match(indexHtml, /styles\.css\?v=70/);
-  assert.match(indexHtml, /app\.js\?v=70/);
+  assert.match(indexHtml, /styles\.css\?v=71/);
+  assert.match(indexHtml, /app\.js\?v=71/);
 });
 
 const card = appJs.slice(appJs.indexOf("function aidCard"), appJs.indexOf("function sortedItems"));

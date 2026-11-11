@@ -98,7 +98,7 @@ test("v6.3: el parser de noticias DG AGRI saca enlaces /media/news/", () => {
   assert.equal(kept[0].date, "2025-07-23");
 });
 
-test("v6.3: pestaña Nueva PAC en la app, API y caché v=70", () => {
+test("v6.3: pestaña Nueva PAC en la app, API y caché v=71", () => {
   assert.match(appJs, /\["nueva-pac", "Nueva PAC"\]/);
   assert.match(appJs, /function renderNuevaPac/);
   assert.match(appJs, /En qué punto está/);
@@ -106,8 +106,8 @@ test("v6.3: pestaña Nueva PAC en la app, API y caché v=70", () => {
   assert.match(server, /\/api\/nueva-pac/);
   assert.match(server, /getNuevaPac/);
   assert.match(css, /\.np-stage/);
-  assert.match(indexHtml, /app\.js\?v=70/);
-  assert.match(indexHtml, /styles\.css\?v=70/);
+  assert.match(indexHtml, /app\.js\?v=71/);
+  assert.match(indexHtml, /styles\.css\?v=71/);
 });
 
 
@@ -164,5 +164,5 @@ test("v6.3: Favoritas entre Resumen y Herramientas, título sin «Mis»", () => 
   assert.match(appJs, /function homeFavorites/);
   assert.match(appJs, /\$\{homeFavorites\(\)\}/);
   assert.match(appJs, /fieldStrip\(\)\}[\s\S]*homeFavorites\(\)[\s\S]*planStrip\(\)/);
-  assert.match(indexHtml, /app\.js\?v=70/);
+  assert.match(indexHtml, /app\.js\?v=71/);
 });

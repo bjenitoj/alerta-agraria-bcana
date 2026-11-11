@@ -45,6 +45,6 @@ test("v6.9 favorita de Nueva PAC: sale de la pestaña y en Favoritas se quita, b
   assert.match(fn("favoriteActions", "renderFavorites"), /data-fav-delete=/);
   assert.match(fn("favoriteActions", "renderFavorites"), /data-share=/);
   assert.doesNotMatch(fn("deleteReadItems", "undeleteKeys"), /FAV_KEY|delete favorites/);
-  assert.match(indexHtml, /app\.js\?v=70/);
-  assert.match(indexHtml, /styles\.css\?v=70/);
+  assert.match(indexHtml, /app\.js\?v=71/);
+  assert.match(indexHtml, /styles\.css\?v=71/);
 });
