@@ -1333,6 +1333,19 @@ const normUrl = (url) => String(url || "").replace(/^https?:\/\//, "").replace(/
 // - v5.9 (cascada): el lugar es prefs.place; por defecto España › Castilla y León › Salamanca. Solo «España» = todo.
 const CYL_PROVINCES = ["avila", "burgos", "leon", "palencia", "salamanca", "segovia", "soria", "valladolid", "zamora"];
 const AEMET_ZONE_PROVINCE = { sanabria: "zamora", bierzo: "leon", trevino: "burgos" };
+// Nombre en el aviso (sin tildes, minúsculas) → el mismo texto que plainText(etiqueta de la provincia).
+const PROVINCE_KEYS = [
+  ["avila", "avila"], ["burgos", "burgos"], ["leon", "leon"], ["palencia", "palencia"], ["salamanca", "salamanca"],
+  ["segovia", "segovia"], ["soria", "soria"], ["valladolid", "valladolid"], ["zamora", "zamora"],
+  ["sevilla", "sevilla"], ["malaga", "malaga"], ["granada", "granada"], ["cordoba", "cordoba"], ["cadiz", "cadiz"],
+  ["huelva", "huelva"], ["jaen", "jaen"], ["almeria", "almeria"], ["ciudad real", "ciudad real"],
+  ["a coruna", "coruna, a"], ["coruna", "coruna, a"], ["lugo", "lugo"], ["ourense", "ourense"], ["orense", "ourense"],
+  ["pontevedra", "pontevedra"], ["barcelona", "barcelona"], ["girona", "girona"], ["gerona", "girona"],
+  ["lleida", "lleida"], ["lerida", "lleida"], ["tarragona", "tarragona"], ["zaragoza", "zaragoza"],
+  ["huesca", "huesca"], ["teruel", "teruel"], ["badajoz", "badajoz"], ["caceres", "caceres"],
+  ["alicante", "alicante/alacant"], ["alacant", "alicante/alacant"], ["valencia", "valencia/valencia"],
+  ["las palmas", "palmas, las"], ["vizcaya", "bizkaia"], ["bizkaia", "bizkaia"],
+];
 function plainText(text) {
   return String(text || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
@@ -1340,9 +1353,13 @@ function alertZone() {
   return normalizePlace(prefs?.place);
 }
 function provincesIn(text) {
-  const plain = plainText(text);
-  const found = CYL_PROVINCES.filter((p) => new RegExp(`\\b${p}\\b`).test(plain));
-  for (const [name, p] of Object.entries(AEMET_ZONE_PROVINCE)) if (plain.includes(name) && !found.includes(p)) found.push(p);
+  const plain = plainText(text).replace(/castilla y leon/g, " ");
+  const found = [];
+  const push = (name) => { if (name && !found.includes(name)) found.push(name); };
+  for (const [key, label] of PROVINCE_KEYS) {
+    if (new RegExp(`\\b${key}\\b`).test(plain)) push(label);
+  }
+  for (const [name, p] of Object.entries(AEMET_ZONE_PROVINCE)) if (plain.includes(name)) push(p);
   return found;
 }
 /**
@@ -1358,8 +1375,8 @@ function alertLimits(place = alertZone()) {
   const onlySpain = !where.ccaa.length;
   const needProvince = onlySpain ? "Marca tu comunidad y tu provincia" : "Marca tu provincia";
   const onlyCyl = "Por ahora solo para Castilla y León";
-  if (!cyl) { hidden.aemet = onlySpain ? needProvince : onlyCyl; hidden.plagas = onlySpain ? needProvince : onlyCyl; hidden.incendios = onlySpain ? needProvince : onlyCyl; }
-  else if (!cylProvince) hidden.aemet = needProvince;
+  if (!anyProvince) hidden.aemet = needProvince;
+  if (!cyl) { hidden.plagas = onlySpain ? needProvince : onlyCyl; hidden.incendios = onlySpain ? needProvince : onlyCyl; }
   if (!anyProvince) hidden.rasve = needProvince;
   const partial = cyl && !cylProvince ? ["plagas"] : [];
   const ids = Object.keys(hidden);
@@ -1393,7 +1410,7 @@ function alertInZone(alert, groupId, place = alertZone()) {
   const text = `${alert.title || ""} ${alert.summary || ""}`;
   const cyl = where.ccaa.includes("es-cl");
   const chosenProvinces = where.province.map((id) => plainText(provinceOf(id)?.label || ""));
-  if (groupId === "aemet") return cyl && provincesIn(alert.title).some((p) => chosenProvinces.includes(p));
+  if (groupId === "aemet") return provincesIn(alert.title).some((p) => chosenProvinces.includes(p));
   if (groupId === "plagas") { const provs = provincesIn(text); return cyl && (!provs.length || provs.some((p) => chosenProvinces.includes(p))); }
   if (groupId === "incendios") return cyl;
   if (groupId === "rasve") {
