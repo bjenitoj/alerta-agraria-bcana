@@ -42,7 +42,7 @@ test("v6.8 cabecera: nombre en dos líneas, sin «Para tu explotación»; «Últ
   assert.match(appJs, /<span>Última consulta<\/span><span>/);
   assert.match(css, /\.stamp span \{ display: block; \}/);
   assert.match(css, /\.brand \.brand-name,[\s\S]{0,120}height: 48px/);
-  assert.match(indexHtml, /app\.js\?v=69/);
+  assert.match(indexHtml, /app\.js\?v=70/);
 });
 
 test("v6.0 números de cuenta entre paréntesis en todas las pantallas (no los cuadros grandes de Alertas)", () => {

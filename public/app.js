@@ -961,11 +961,16 @@ function readBadge(read) {
   return read ? `<span class="badge read-badge">✓ Marcada</span>` : `<span class="badge new">Nueva</span>`;
 }
 
-/** Piezas que se pueden marcar o borrar (lista del día + resúmenes), sin repetir. */
+/** Piezas que se pueden marcar o borrar (lista del día, resúmenes y Nueva PAC), sin repetir. */
 function readPool() {
   const seen = new Set();
   const out = [];
-  for (const item of [...(state.items || []), ...(state.digests || []).flatMap((entry) => entry.items || [])]) {
+  const pool = [
+    ...(state.items || []),
+    ...(state.digests || []).flatMap((entry) => entry.items || []),
+    ...(nuevaPacData?.news || []),
+  ];
+  for (const item of pool) {
     const key = readKeyOf(item);
     if (!key || seen.has(key) || !hasSourceUrl(item)) continue;
     seen.add(key);
@@ -1465,6 +1470,7 @@ function renderNuevaPac() {
   const newsHtml = news.length
     ? `<ul class="np-news">${news.map((item) => {
         const type = item.type || "Otro";
+        const read = isReadItem(item);
         const sourceLink = item.sourceUrl
           ? `<a class="np-source" href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(item.sourceName || "Fuente oficial")} ↗</a>`
           : `<span class="np-source">${escapeHtml(item.sourceName || "Fuente oficial")}</span>`;
@@ -1473,13 +1479,14 @@ function renderNuevaPac() {
         const relatedHtml = related.length
           ? `<p class="np-related">Documento oficial: ${related.map((rel) => `<a href="${escapeHtml(rel.url)}" target="_blank" rel="noopener">${escapeHtml(rel.title)}</a>${rel.sourceLabel ? ` <small>(${escapeHtml(rel.sourceLabel)})</small>` : ""}`).join("<br>")}</p>`
           : "";
-        return `<li class="np-news-item">
-          <div class="np-news-top"><span class="np-type t-${escapeHtml(type.toLowerCase())}">${escapeHtml(type)}</span>${item.date ? `<time datetime="${escapeHtml(item.date)}">${escapeHtml(fmtDay(item.date))}</time>` : ""}</div>
+        return `<li class="np-news-item${read ? " read" : ""}" data-id="${escapeHtml(item.id)}">
+          <div class="np-news-top">${readBadge(read)}<span class="np-type t-${escapeHtml(type.toLowerCase())}">${escapeHtml(type)}</span>${item.date ? `<time datetime="${escapeHtml(item.date)}">${escapeHtml(fmtDay(item.date))}</time>` : ""}</div>
           <button type="button" class="act mini fav" data-fav="${escapeHtml(item.id)}" aria-pressed="false">★ Favorita</button>
           <a class="np-title" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>
           ${sum}
           ${relatedHtml}
           <p class="np-meta">Fuente: ${sourceLink}</p>
+          <button type="button" class="text-btn mark-unread" data-unread="${escapeHtml(item.id)}">Desmarcar</button>
         </li>`;
       }).join("")}</ul>`
     : `<p class="empty">Ahora mismo no hay noticias de la reforma en las fuentes que responden.</p>`;
@@ -1490,6 +1497,7 @@ function renderNuevaPac() {
       <p class="np-current">${current ? `Ahora mismo, según las fuentes oficiales: <strong>${escapeHtml(current.name)}</strong>.` : "Las fuentes oficiales no marcan una etapa actual con claridad."}</p>
       <ol class="np-stages">${stageHtml}</ol>
     </section>
+    ${readTools()}
     <section class="np-block">
       <h3>Últimas noticias <span class="count">(${news.length})</span></h3>
       ${newsHtml}
@@ -3246,7 +3254,13 @@ appEl.addEventListener("click", async (event) => {
     clearRead();
     return;
   }
-  // Abrir el enlace oficial también la marca como leída (sin parar el enlace).
+  // Abrir el enlace oficial también la marca (sin parar el enlace).
+  const npLink = event.target.closest(".np-news-item a[href]");
+  if (npLink) {
+    const row = npLink.closest(".np-news-item");
+    if (row?.dataset.id) markCardRead(row.dataset.id, row, true);
+    return;
+  }
   const link = event.target.closest(".card a[href]");
   if (link && !link.matches(".whatsapp, [download]")) {
     const card = link.closest(".card");
@@ -3262,8 +3276,13 @@ appEl.addEventListener("click", async (event) => {
     }
     return;
   }
+  const news = event.target.closest(".np-news-item");
+  if (news?.dataset.id) {
+    await markCardRead(news.dataset.id, news);
+    return;
+  }
   const card = event.target.closest(".card");
-  if (!card || active === "archivadas") return;
+  if (!card?.dataset.id || active === "archivadas") return;
   await markCardRead(card.dataset.id, card);
 });
 

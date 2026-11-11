@@ -1,5 +1,11 @@
 # Cambios
 
+## v6.9 · 10/11/2026 · Marcar y borrar en Nueva PAC
+
+- Nueva PAC tiene el botón «Borrar marcadas (n)», arriba de las noticias. Tocar una noticia o abrir su enlace solo la marca (banda verde y «✓ Marcada»); se puede desmarcar. Borrarlas las quita de todas las pestañas. En Favoritas se quedan.
+- El número del botón cuenta también las noticias de Nueva PAC marcadas. «★ Favorita» sigue sacándola de Nueva PAC: en Favoritas se quita, se borra o se comparte como el resto.
+- Caché `?v=70`.
+
 ## v6.8 · 08/11/2026 · Compartir la app
 
 - En la cabecera, junto a «Alerta Agraria», un botón solo con el icono de compartir (cuadrado y flecha hacia arriba, sin el logo de WhatsApp). Fondo verde de WhatsApp e icono blanco. El nombre accesible es «Compartir la app».
