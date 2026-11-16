@@ -1,5 +1,11 @@
 # Cambios
 
+## v7.0 · 11/11/2026 · Toda España
+
+- La zona de cada pieza puede ser España, una comunidad (`es-xx`) o una provincia (código INE). Siguen valiendo `cyl` y `salamanca`. Quien elige una provincia ve lo nacional, lo de su comunidad y lo de esa provincia; no ve las provincias hermanas.
+- Las convocatorias del BOE, de la BDNS y de la Red PAC que nombran una comunidad o una provincia se quedan en esa zona. Los boletines autonómicos que desde aquí no responden (BOJA, DOG y otros) no se inventan: esa zona recibe lo nacional y lo que esas tres fuentes dicen de ella. AEMET se lee del RSS de avisos de toda España. Plagas e incendios siguen siendo los de Castilla y León, que es la fuente oficial legible.
+- Caché `?v=71`.
+
 ## v6.9 · 10/11/2026 · Marcar y borrar en Nueva PAC
 
 - Nueva PAC tiene el botón «Borrar marcadas (n)», arriba de las noticias. Tocar una noticia o abrir su enlace solo la marca (banda verde y «✓ Marcada»); se puede desmarcar. Borrarlas las quita de todas las pestañas. En Favoritas se quedan.
