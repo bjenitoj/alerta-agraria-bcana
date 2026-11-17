@@ -1,5 +1,23 @@
 # Fuentes oficiales del sector primario (agricultura, ganadería, pesca)
 
+## v7.1 · Boletines que responden (17/11/2026)
+
+Comprobado con curl. Solo se activa un feed que devuelve RSS o Atom con piezas. El resto sigue sin fuente propia.
+
+| Zona | Qué se consulta | URL | Si no responde |
+|---|---|---|---|
+| Andalucía | BOJA, RSS | https://www.juntadeandalucia.es/boja/distribucion/boja.xml | Si el feed no contesta, la recogida sigue con el resto. La zona recibe lo nacional y lo que BOE, BDNS y Red PAC nombren |
+| Galicia | DOG, RSS | https://www.xunta.gal/diario-oficial-galicia/rss/Sumario_gl.rss | — |
+| Extremadura | DOE, RSS de otras resoluciones (la sección 1 no trae piezas) | https://doe.juntaex.es/rss/rss.php?seccion=3 | — |
+| Madrid | BOCM, RSS de sumarios | https://www.bocm.es/sumarios.rss | El canal es de sumarios del día, no de cada norma |
+| País Vasco | BOPV, Atom | https://www.euskadi.eus/bopv2/datos/Ultimo.xml | — |
+| Illes Balears | BOIB, RSS, con un reintento | https://www.caib.es/eboibfront/indexrss.do?lang=es | El canal es el aviso del número del boletín |
+| Canarias | BOC, RSS de otras resoluciones (el de la consejería de agricultura responde vacío) | https://www.gobiernodecanarias.org/boc/feeds/capitulo/otras_resoluciones.rss | — |
+| Cataluña | Notas de prensa de la Generalitat (no hay RSS del DOGC). Solo se guarda lo del sector | https://govern.cat/salapremsa/api/v1/rss/search?objectType=1 | — |
+| Aragón, Castilla-La Mancha, Asturias, Cantabria, Murcia, Navarra, La Rioja, Comunitat Valenciana, Ceuta, Melilla | Sin RSS o Atom de boletín o de agricultura que responda con piezas | BOA (HTML), DOCM (sin RSS), BOPA, BOC Cantabria, BORM (no es un canal de piezas), BON, BOR, DOGV (HTML) | Lo nacional y lo que nombren BOE, BDNS y Red PAC. No se inventa un canal |
+| Castilla y León | BOCyL, ITACyL, catálogos de la Junta. La zona por defecto es Castilla y León, no España | https://bocyl.jcyl.es/ | — |
+| BDNS | Búsqueda por finalidad 12 en cada comunidad (y Salamanca y Sevilla). Se reparte el cupo de fichas | https://www.infosubvenciones.es/bdnstrans/api/convocatorias/busqueda | Una comunidad que falle no para a las demás |
+
 ## v7.0 · Cobertura por comunidad (11/11/2026)
 
 Comprobado desde este servidor con curl (10-12 s). Solo entra lo que responde. Si no hay feed estable, la zona recibe lo nacional (BOE, MAPA, BDNS) y lo que la [Red PAC](https://www.redpac.es/rss.xml) nombre de esa comunidad.

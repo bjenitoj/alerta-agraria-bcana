@@ -257,6 +257,8 @@ test("semanas ISO y enlace del Excel", () => {
   assert.deepEqual(isoWeekRange(2026, 1), { from: "2025-12-29", to: "2026-01-04" });
   const html = '<a href="/dam/mapa/x/precios_medios_nacionales_2025-s52.xlsx">2025</a><a href="/dam/mapa/x/precios_medios_nacionales_2026-s36.xlsx">2026</a>';
   assert.equal(findXlsxLink(html, "https://www.mapa.gob.es/es/a/", 2026), "https://www.mapa.gob.es/dam/mapa/x/precios_medios_nacionales_2026-s36.xlsx");
+  const two = '<a href="/dam/mapa/x/precios_medios_nacionales_2026-s36.xlsx">s36</a><a href="/dam/mapa/x/precios_medios_nacionales_2026-s45.xlsx">s45</a>';
+  assert.equal(findXlsxLink(two, "https://www.mapa.gob.es/es/a/", 2026), "https://www.mapa.gob.es/dam/mapa/x/precios_medios_nacionales_2026-s45.xlsx");
 });
 
 test("los precios usan caché y aguantan si el MAPA falla", async () => {

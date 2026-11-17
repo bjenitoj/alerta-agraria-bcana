@@ -18,7 +18,7 @@ import {
   prefsSummary,
   sectorScope,
 } from "/mod/preferences.js";
-import { CCAA, PLACES_SOURCE, normalizePlace, provinceOf, comarcaOf, ccaaOf } from "/mod/places.js";
+import { CCAA, PLACES_SOURCE, normalizePlace, provinceOf, comarcaOf, ccaaOf, placeAllows } from "/mod/places.js";
 import { placeLabel } from "/mod/preferences.js";
 import { closesWithin, deadlineInfo, fmtDayKey, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
 
@@ -1185,7 +1185,7 @@ function digestData(date) {
   // v6.2: un día del desplegable sin resumen guardado (p. ej. el anterior al primero) es un resumen vacío, sin inventar nada.
   const current = digests.find((entry) => entry.date === date) || (date && digests.length ? { date, items: [], missing: true } : digests[0]);
   if (!current) return null;
-  const shown = (item) => hasSourceUrl(item) && !isClearedItem(item) && !isFavorite(item) && inSector(item) && shownByStatus(item);
+  const shown = (item) => hasSourceUrl(item) && inPlace(item) && !isClearedItem(item) && !isFavorite(item) && inSector(item) && shownByStatus(item);
   const aids = (current.items || []).filter(hasSourceUrl);
   const aidIds = new Set(aids.map((item) => item.id));
   const others = unseen(state.items || [], "alerta_ocultas")
@@ -1590,10 +1590,15 @@ function inSector(item, sectors = currentSectors()) {
   return list.some((id) => (item?.sectors || []).includes(id));
 }
 
+function inPlace(item) {
+  return placeAllows(item?.zone || "nacional", normalizePlace(prefs?.place));
+}
+
 function baseItems(options = {}) {
   const today = madridTodayKey();
   return unseen(state.items || [], "alerta_ocultas").filter((item) => {
     if (!hasSourceUrl(item)) return false;
+    if (!inPlace(item)) return false;
     // v6.5: lo borrado sale de todas las pestañas. v6.6: una favorita solo se ve en Favoritas.
     if (isClearedItem(item) || isFavorite(item)) return false;
     if (!inSector(item)) return false;
@@ -2113,7 +2118,7 @@ function closingSoonList(dateKey) {
   const list = [];
   for (const item of pool) {
     const key = itemKey(item);
-    if (seen.has(key) || isClearedItem(item) || isFavorite(item) || !inSector(item) || !hasSourceUrl(item)) continue;
+    if (seen.has(key) || isClearedItem(item) || isFavorite(item) || !inPlace(item) || !inSector(item) || !hasSourceUrl(item)) continue;
     seen.add(key);
     if (isLiveAid(item.aid, today) && closesWithin(item.aid, today, 15)) list.push(item);
   }

@@ -1,5 +1,13 @@
 # Cambios
 
+## v7.1 · 17/11/2026 · Boletines autonómicos y BDNS
+
+- Entran los boletines que responden con RSS o Atom: BOJA (Andalucía), DOG (Galicia), DOE (Extremadura, sección de otras resoluciones), BOCM (Madrid), BOPV (País Vasco), BOIB (Illes Balears, con un reintento) y BOC (Canarias, otras resoluciones). También las notas de prensa de la Generalitat, porque el DOGC no tiene RSS. Solo se guarda lo agrario, ganadero, pesquero, de desarrollo rural o de ayudas. Si uno falla, el resto sigue. La zona es la de esa comunidad, o la provincia si el texto la nombra.
+- Una fuente de una comunidad (Junta de Castilla y León, ITACyL y esos boletines) ya no sale como nacional. Si el texto no dice provincia, se queda en su comunidad. La lista de Inicio y de Ayudas solo enseña esa zona, la de encima y España.
+- La BDNS reparte las fichas entre comunidades. Antes el cupo se lo llevaban convocatorias viejas y cerradas de Salamanca y no se guardaba ninguna. Ahora se leen las abiertas o de los últimos 15 días que se pueden pedir, también en el resto de comunidades.
+- El Excel de precios del MAPA es el de la semana más alta del año que publica la página, no el primer enlace.
+- Caché `?v=72`.
+
 ## v7.0 · 11/11/2026 · Toda España
 
 - La zona de cada pieza puede ser España, una comunidad (`es-xx`) o una provincia (código INE). Siguen valiendo `cyl` y `salamanca`. Quien elige una provincia ve lo nacional, lo de su comunidad y lo de esa provincia; no ve las provincias hermanas.
