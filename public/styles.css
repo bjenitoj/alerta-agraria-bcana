@@ -1543,3 +1543,54 @@ body.marked-b .card.read .badge.read-badge,
 body.marked-b .np-news-item.read .badge.read-badge {
   color: #fff;
 }
+
+/* v7.2 · Opción A: dentro de la ficha marcada no queda verde ni otro color. El enlace de la fuente sigue funcionando. */
+body:not(.marked-b) .card.read .badge,
+body:not(.marked-b) .card.read .type,
+body:not(.marked-b) .card.read .days,
+body:not(.marked-b) .np-news-item.read .badge,
+body:not(.marked-b) .np-news-item.read .np-type,
+body:not(.marked-b) .np-news-item.read time {
+  background: #8A8A8A;
+  color: #fff;
+  border-color: #8A8A8A;
+}
+body:not(.marked-b) .card.read .official,
+body:not(.marked-b) .np-news-item.read .official {
+  background: #8A8A8A;
+  color: #fff;
+  border-color: #8A8A8A;
+}
+body:not(.marked-b) .card.read .block,
+body:not(.marked-b) .card.read .block.money,
+body:not(.marked-b) .card.read .block.source,
+body:not(.marked-b) .card.read .block.why {
+  background: #E2E2E2;
+  border-color: #C8C8C8;
+  border-left-color: #C8C8C8;
+}
+body:not(.marked-b) .card.read,
+body:not(.marked-b) .card.read h3,
+body:not(.marked-b) .card.read h4,
+body:not(.marked-b) .card.read p,
+body:not(.marked-b) .card.read a:not(.official),
+body:not(.marked-b) .card.read .amount,
+body:not(.marked-b) .np-news-item.read,
+body:not(.marked-b) .np-news-item.read a:not(.official) {
+  color: #2c2c2c;
+}
+body:not(.marked-b) .card.read .mark-unread,
+body:not(.marked-b) .card.read .act,
+body:not(.marked-b) .card.read .act.fav.on,
+body:not(.marked-b) .card.read .act.whatsapp,
+body:not(.marked-b) .np-news-item.read .mark-unread,
+body:not(.marked-b) .np-news-item.read .act,
+body:not(.marked-b) .np-news-item.read .act.fav.on {
+  background: transparent;
+  color: #5c5c5c;
+  border-color: #8A8A8A;
+}
+body:not(.marked-b) .card.read .block li.ok::before,
+body:not(.marked-b) .card.read .block li.warn::before {
+  color: #5c5c5c;
+}

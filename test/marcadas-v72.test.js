@@ -11,8 +11,11 @@ test("v7.2 la ficha marcada es gris por defecto y la opción B apaga el texto", 
   assert.match(css, /\.card\.read \.block,\s*\nbody\.marked-a \.card\.read \.block \{[^}]*background: #E2E2E2/);
   assert.match(css, /body\.marked-b \.card\.read h3,\s*\nbody\.marked-b \.card\.read h3 a,[\s\S]*color: #8a8a8a/);
   assert.match(css, /\.badge\.read-badge \{ background: #12704a/);
-  assert.match(html, /styles\.css\?v=74/);
-  assert.match(html, /app\.js\?v=74/);
+  assert.match(css, /body:not\(\.marked-b\) \.card\.read \.badge,\s*\nbody:not\(\.marked-b\) \.card\.read \.type[\s\S]*background: #8A8A8A/);
+  assert.match(css, /body:not\(\.marked-b\) \.card\.read \.official[\s\S]*background: #8A8A8A;\s*\n\s*color: #fff/);
+  assert.match(css, /body:not\(\.marked-b\) \.card\.read \.block\.money[\s\S]*border-left-color: #C8C8C8/);
+  assert.match(html, /styles\.css\?v=75/);
+  assert.match(html, /app\.js\?v=75/);
   const app = fs.readFileSync(new URL("../public/app.js", import.meta.url), "utf8");
   assert.match(app, /function currentSectionItems\(\)/);
   assert.match(app.slice(app.indexOf("function deletableReadCount"), app.indexOf("function currentSectionItems")), /currentSectionItems\(\)\.filter/);

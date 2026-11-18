@@ -31,12 +31,12 @@ test("v6.8 cabecera: compartir la app junto al nombre, icono de flecha y verde d
   assert.match(css, /\.brand-row \{[^}]*display: flex/);
 });
 
-test("v6.8 el compartir de cada ficha sigue igual y la caché es v=74", () => {
+test("v6.8 el compartir de cada ficha sigue igual y la caché es v=75", () => {
   assert.match(appJs, /data-share="\$\{escapeHtml\(item\.id\)\}"/);
   assert.match(appJs, /whatsappUrl\(item, today, appUrl\)/);
   assert.doesNotMatch(appJs, /shareApp|alerta-agraria-bcana\.onrender\.com/);
-  assert.match(html, /styles\.css\?v=74/);
-  assert.match(html, /app\.js\?v=74/);
+  assert.match(html, /styles\.css\?v=75/);
+  assert.match(html, /app\.js\?v=75/);
   const guide = html.slice(html.indexOf('id="acc-guia"'), html.indexOf("</dl>"));
   assert.match(guide, /<dt>Compartir la app<\/dt><dd>El botón verde junto al nombre abre WhatsApp/);
 });
