@@ -980,7 +980,26 @@ function readPool() {
 }
 
 function deletableReadCount() {
-  return readPool().filter((item) => isReadItem(item) && !isDeletedItem(item)).length;
+  return currentSectionItems().filter((item) => hasSourceUrl(item) && isReadItem(item) && !isDeletedItem(item)).length;
+}
+
+/** Fichas que pinta la sección abierta. El número de «Borrar marcadas» es el de estas que están marcadas. */
+function currentSectionItems() {
+  if (active === "ayudas") return ayudasView().items;
+  if (active === "nueva-pac") return visibleNuevaPacNews();
+  if (active === "resumen") return digestData(digestDate || undefined)?.visible || [];
+  if (active === "varios" && variosPane === "normativa") {
+    return byPublication(baseItems().filter((item) => inTab(item, "normativa")));
+  }
+  if (active === "varios" && variosPane === "alertas") return alertOnly(sortedItems(baseItems()));
+  if (active === "inicio") {
+    return sortedItems(baseItems()).filter((item) => {
+      if (item.aid?.status !== "sin_plazo") return false;
+      if (item.kind === "linea") return /2026|2027/.test(`${item.title} ${item.summary}`);
+      return (item.infoTypes || []).includes("ayudas");
+    }).slice(0, 8);
+  }
+  return baseItems().filter((item) => inTab(item, active));
 }
 
 const CLEAR_ICON = `<svg class="clear-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M9 7V5h6v2"/><path d="M7.5 7l.8 13h7.4l.8-13"/></svg>`;
@@ -1054,12 +1073,14 @@ function revealBelowBanner(selector) {
 }
 
 function clearRead() {
-  const keys = deleteReadItems(readPool());
+  const shown = currentSectionItems().filter((item) => hasSourceUrl(item) && isReadItem(item) && !isDeletedItem(item));
+  const keys = deleteReadItems(shown);
   const y = window.scrollY;
   render();
   window.scrollTo(0, y);
   if (!keys.length) return;
-  showToast(`${keys.length === 1 ? "Borrada 1 marcada" : `Borradas ${keys.length} marcadas`}`, () => {
+  const n = shown.length;
+  showToast(`${n === 1 ? "Borrada 1 marcada" : `Borradas ${n} marcadas`}`, () => {
     undeleteKeys(keys);
     const back = window.scrollY;
     render();

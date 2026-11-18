@@ -25,7 +25,7 @@ test("v6.9 Nueva PAC: tocar o abrir solo marca, con el mismo aspecto, y no la bo
   assert.match(view, /readBadge\(read\)/);
   assert.match(view, /data-unread="\$\{escapeHtml\(item\.id\)\}">Desmarcar/);
   assert.match(view, /data-fav="\$\{escapeHtml\(item\.id\)\}"/);
-  assert.match(css, /\.np-news-item\.read \{[^}]*inset 6px 0 0 #12704a/);
+  assert.match(css, /\.card\.read,\s*\n\.np-news-item\.read,\s*\nbody\.marked-a \.card\.read[\s\S]*background: #D6D6D6/);
   assert.match(css, /\.np-news-item:not\(\.read\) \.mark-unread \{ display: none; \}/);
   const click = appJs.slice(appJs.indexOf('appEl.addEventListener("click", async'));
   assert.match(click, /closest\("\.np-news-item a\[href\]"\)/);
@@ -45,6 +45,6 @@ test("v6.9 favorita de Nueva PAC: sale de la pestaña y en Favoritas se quita, b
   assert.match(fn("favoriteActions", "renderFavorites"), /data-fav-delete=/);
   assert.match(fn("favoriteActions", "renderFavorites"), /data-share=/);
   assert.doesNotMatch(fn("deleteReadItems", "undeleteKeys"), /FAV_KEY|delete favorites/);
-  assert.match(indexHtml, /app\.js\?v=72/);
-  assert.match(indexHtml, /styles\.css\?v=72/);
+  assert.match(indexHtml, /app\.js\?v=75/);
+  assert.match(indexHtml, /styles\.css\?v=75/);
 });

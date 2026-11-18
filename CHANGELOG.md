@@ -1,5 +1,13 @@
 # Cambios
 
+## v7.2 · 18/11/2026 · Fichas marcadas más claras
+
+- Una ficha marcada (la que luego quita «Borrar marcadas (n)») se distingue de las que no lo están. Por defecto, el fondo es gris `#D6D6D6` con borde `#B5B5B5`, y los recuadros de dentro son `#E2E2E2`. Dentro de esa ficha no queda verde ni otro color: el rótulo «✓ Marcada», el botón de la fuente, las etiquetas (PAC, Nueva…) y Desmarcar, Favorita y Compartir van en gris. El enlace de la fuente sigue abriendo la publicación. Las fichas sin marcar no cambian.
+- «Borrar marcadas (n)» cuenta las fichas marcadas que se ven en la sección abierta, no las historias distintas de toda la app. Varias líneas pueden compartir un enlace y verse todas marcadas: el número es el de esas fichas. Al pulsarlo se borran esas, y la misma historia sale del resto de pestañas.
+- Hay una segunda opción, solo para comparar: el texto (título, resumen y etiquetas) se vuelve gris y el fondo se queda igual. Se elige con la clase `marked-a` o `marked-b` en la página. La que queda puesta es la A.
+- Vale en Ayudas, Inicio, Resumen, Normativa reciente, Otras alertas y las noticias de Nueva PAC. El calendario PAC, los precios y Favoritas no se marcan así.
+- Caché `?v=75`.
+
 ## v7.1 · 17/11/2026 · Boletines autonómicos y BDNS
 
 - Entran los boletines que responden con RSS o Atom: BOJA (Andalucía), DOG (Galicia), DOE (Extremadura, sección de otras resoluciones), BOCM (Madrid), BOPV (País Vasco), BOIB (Illes Balears, con un reintento) y BOC (Canarias, otras resoluciones). También las notas de prensa de la Generalitat, porque el DOGC no tiene RSS. Solo se guarda lo agrario, ganadero, pesquero, de desarrollo rural o de ayudas. Si uno falla, el resto sigue. La zona es la de esa comunidad, o la provincia si el texto la nombra.
