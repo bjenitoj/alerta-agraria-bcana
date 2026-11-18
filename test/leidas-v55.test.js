@@ -105,7 +105,7 @@ test("v5.5 tarjeta: tocarla la marca, «✓ Leída», «Marcar como no leída» 
   assert.match(appJs, /<span class="badge read-badge">✓ Marcada<\/span>/);
   assert.match(appJs, />Desmarcar</);
   assert.doesNotMatch(css, /\.card\.read \{[^}]*opacity: 0\.5/);
-  assert.match(css, /\.card\.read,\s*\n\.np-news-item\.read,\s*\nbody\.marked-a \.card\.read[\s\S]*background: #ECECEC/);
+  assert.match(css, /\.card\.read,\s*\n\.np-news-item\.read,\s*\nbody\.marked-a \.card\.read[\s\S]*background: #D6D6D6/);
   assert.match(css, /body\.marked-b \.card\.read h3[\s\S]*color: #8a8a8a/);
   assert.match(css, /\.card:not\(\.read\) \.mark-unread \{ display: none; \}/);
   const click = appJs.slice(appJs.indexOf('appEl.addEventListener("click", async'));
@@ -150,7 +150,7 @@ test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias
   assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=73 (v6.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=73/);
+test("caché v=74 (v6.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=74/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });

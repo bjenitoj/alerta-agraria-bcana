@@ -2,10 +2,11 @@
 
 ## v7.2 · 18/11/2026 · Fichas marcadas más claras
 
-- Una ficha marcada (la que luego quita «Borrar marcadas (n)») se distingue de las que no lo están. Por defecto, el fondo pasa a gris claro (`#ECECEC`) con un borde gris. Sigue el rótulo «✓ Marcada».
+- Una ficha marcada (la que luego quita «Borrar marcadas (n)») se distingue de las que no lo están. Por defecto, el fondo es gris `#D6D6D6` con borde `#B5B5B5`, y los recuadros de dentro (qué ha salido, plazo, fuente) son `#E2E2E2`. El texto se lee igual. Sigue el rótulo «✓ Marcada».
+- «Borrar marcadas (n)» cuenta las fichas marcadas que se ven en la sección abierta, no las historias distintas de toda la app. Varias líneas pueden compartir un enlace y verse todas marcadas: el número es el de esas fichas. Al pulsarlo se borran esas, y la misma historia sale del resto de pestañas.
 - Hay una segunda opción, solo para comparar: el texto (título, resumen y etiquetas) se vuelve gris y el fondo se queda igual. Se elige con la clase `marked-a` o `marked-b` en la página. La que queda puesta es la A.
 - Vale en Ayudas, Inicio, Resumen, Normativa reciente, Otras alertas y las noticias de Nueva PAC. El calendario PAC, los precios y Favoritas no se marcan así.
-- Caché `?v=73`.
+- Caché `?v=74`.
 
 ## v7.1 · 17/11/2026 · Boletines autonómicos y BDNS
 
