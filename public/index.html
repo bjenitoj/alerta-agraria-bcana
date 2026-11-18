@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=72" />
+  <link rel="stylesheet" href="/styles.css?v=73" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -25,6 +25,7 @@
   <script>
     const path = location.pathname.replace(/\/$/, "") || "/";
     const quiet = ["/fuentes", "/quienes-somos", "/aviso-legal", "/privacidad", "/cookies", "/planes", "/herramientas"];
+    document.body.classList.add("marked-a");
     if (quiet.includes(path)) document.body.classList.add("public-page");
     if (path === "/admin") document.body.classList.add("locked");
   </script>
@@ -223,6 +224,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=72"></script>
+  <script type="module" src="/app.js?v=73"></script>
 </body>
 </html>

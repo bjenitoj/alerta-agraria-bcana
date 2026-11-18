@@ -17,8 +17,8 @@ test("v6.5 Ajustes en iPad y web: debajo de la cabecera y más grande", () => {
   assert.match(wide, /\.pref-sheet \.sheet-head \{[^}]*position: sticky/);
   assert.match(appJs, /--chrome-h/);
   assert.match(appJs, /top\.getBoundingClientRect\(\)\.bottom/);
-  assert.match(html, /styles\.css\?v=72/);
-  assert.match(html, /app\.js\?v=72/);
+  assert.match(html, /styles\.css\?v=73/);
+  assert.match(html, /app\.js\?v=73/);
 });
 
 test("v6.5 el asistente también baja en pantallas anchas; el móvil no usa ese top", () => {

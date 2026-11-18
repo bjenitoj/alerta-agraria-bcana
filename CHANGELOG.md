@@ -1,5 +1,12 @@
 # Cambios
 
+## v7.2 · 18/11/2026 · Fichas marcadas más claras
+
+- Una ficha marcada (la que luego quita «Borrar marcadas (n)») se distingue de las que no lo están. Por defecto, el fondo pasa a gris claro (`#ECECEC`) con un borde gris. Sigue el rótulo «✓ Marcada».
+- Hay una segunda opción, solo para comparar: el texto (título, resumen y etiquetas) se vuelve gris y el fondo se queda igual. Se elige con la clase `marked-a` o `marked-b` en la página. La que queda puesta es la A.
+- Vale en Ayudas, Inicio, Resumen, Normativa reciente, Otras alertas y las noticias de Nueva PAC. El calendario PAC, los precios y Favoritas no se marcan así.
+- Caché `?v=73`.
+
 ## v7.1 · 17/11/2026 · Boletines autonómicos y BDNS
 
 - Entran los boletines que responden con RSS o Atom: BOJA (Andalucía), DOG (Galicia), DOE (Extremadura, sección de otras resoluciones), BOCM (Madrid), BOPV (País Vasco), BOIB (Illes Balears, con un reintento) y BOC (Canarias, otras resoluciones). También las notas de prensa de la Generalitat, porque el DOGC no tiene RSS. Solo se guarda lo agrario, ganadero, pesquero, de desarrollo rural o de ayudas. Si uno falla, el resto sigue. La zona es la de esa comunidad, o la provincia si el texto la nombra.
