@@ -621,29 +621,19 @@ let readStore = loadReadStore();
 writeJson(READ_KEY, readStore);
 
 function readKeyOf(item) {
-  const url = canonicalUrl(item?.url);
-  return url ? `u:${url}` : item?.id ? `id:${item.id}` : "";
+  return cardKey(item);
 }
 
-/** Todas las claves de una misma historia (URL, id, título largo y documento oficial). */
-function markKeys(item) {
-  const keys = [];
+/** v7.3 · Cada tarjeta se marca y se borra sola. No se agrupa por el enlace oficial ni por el título. */
+function cardKey(item) {
+  if (item?.id) return `id:${item.id}`;
   const url = canonicalUrl(item?.url);
-  if (url) keys.push(`u:${url}`);
-  if (item?.id) keys.push(`id:${item.id}`);
-  const title = String(item?.title || "")
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
-  if (title.length >= 40) keys.push(`t:${title}`);
-  if (typeof documentKeys === "function") {
-    for (const key of documentKeys(item?.url, item?.title)) keys.push(key);
-  }
-  return [...new Set(keys.filter(Boolean))];
+  return url ? `u:${url}` : "";
+}
+
+function markKeys(item) {
+  const key = cardKey(item);
+  return key ? [key] : [];
 }
 
 function hasMark(bucket, item) {
@@ -917,6 +907,7 @@ function topActions(item) {
     <div class="top-actions">
       <button type="button" class="act mini fav ${fav ? "on" : ""}" data-fav="${escapeHtml(item.id)}" aria-pressed="${fav ? "true" : "false"}">${fav ? "★ En favoritas" : "★ Favorita"}</button>
       <button type="button" class="act mini share" data-share="${escapeHtml(item.id)}" data-wa="${escapeHtml(whatsappUrl(item, today, appUrl))}" aria-label="Compartir">${SHARE_ICON}<span class="share-text">Compartir</span></button>
+      <button type="button" class="act mini trash" data-trash="${escapeHtml(item.id)}" aria-label="Borrar">${TRASH_ICON}<span class="trash-text">Borrar</span></button>
     </div>`;
 }
 
@@ -944,6 +935,7 @@ const TAB_ICONS = {
   archivadas: tabIcon(`<rect x="3.5" y="4" width="17" height="4" rx="1"/><path d="M5 8v11h14V8M10 12h4"/>`),
 };
 const SHARE_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>`;
+const TRASH_ICON = `<svg class="trash-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14"/><path d="M9 7V5h6v2"/><path d="M7.5 7l.8 13h7.4l.8-13"/><path d="M10 11v6M14 11v6"/></svg>`;
 
 const WHATSAPP_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 19.5 5.6 16A8 8 0 1 1 8.4 18.6z"/><path d="M9.2 8.6c.3 2.6 2.3 4.9 5.2 5.6l1-1.2-1.7-.9-.8.8c-1-.4-1.9-1.3-2.3-2.3l.8-.8-.9-1.7z"/></svg>`;
 
@@ -1520,6 +1512,7 @@ function renderNuevaPac() {
         return `<li class="np-news-item${read ? " read" : ""}" data-id="${escapeHtml(item.id)}">
           <div class="np-news-top">${readBadge(read)}<span class="np-type t-${escapeHtml(type.toLowerCase())}">${escapeHtml(type)}</span>${item.date ? `<time datetime="${escapeHtml(item.date)}">${escapeHtml(fmtDay(item.date))}</time>` : ""}</div>
           <button type="button" class="act mini fav" data-fav="${escapeHtml(item.id)}" aria-pressed="false">★ Favorita</button>
+          <button type="button" class="act mini trash" data-trash="${escapeHtml(item.id)}" aria-label="Borrar">${TRASH_ICON}<span class="trash-text">Borrar</span></button>
           <a class="np-title" href="${escapeHtml(item.url)}" target="_blank" rel="noopener">${escapeHtml(item.title)}</a>
           ${sum}
           ${relatedHtml}
@@ -3088,7 +3081,23 @@ async function archiveById(id) {
   render();
 }
 
-/** Tocar la pieza solo la marca o la desmarca. No la borra: eso es «Borrar marcadas». `force` = true la deja marcada (al abrir el enlace). */
+/** Borra esa tarjeta ya, sin marcarla. Sale de todas las pestañas; en Favoritas no se toca. */
+function trashCard(id) {
+  const item = findItem(id);
+  if (!item || isFavorite(item)) return;
+  const keys = buryItem(item);
+  const y = window.scrollY;
+  render();
+  window.scrollTo(0, y);
+  if (!keys.length) return;
+  showToast("Borrada", () => {
+    undeleteKeys(keys);
+    const back = window.scrollY;
+    render();
+    window.scrollTo(0, back);
+  });
+}
+
 async function markCardRead(id, card, force = null) {
   const item = findItem(id);
   if (!item) return;
@@ -3286,6 +3295,13 @@ appEl.addEventListener("click", (event) => {
 });
 
 appEl.addEventListener("click", async (event) => {
+  const trash = event.target.closest("[data-trash]");
+  if (trash) {
+    event.preventDefault();
+    event.stopPropagation();
+    trashCard(trash.dataset.trash);
+    return;
+  }
   const unread = event.target.closest("[data-unread]");
   if (unread) {
     event.preventDefault();

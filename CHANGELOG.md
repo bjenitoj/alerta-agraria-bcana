@@ -1,5 +1,12 @@
 # Cambios
 
+## v7.3 · 21/11/2026 · Cada tarjeta se marca sola
+
+- Tocar una tarjeta marca solo esa. Ya no se marcan a la vez las que comparten el enlace oficial o un título parecido. «Borrar marcadas (n)» cuenta las tarjetas marcadas que se ven en la sección abierta.
+- Junto a Favorita y Compartir hay una papelera, «Borrar». Quita esa noticia al momento de todas las pestañas y la guarda en este dispositivo. En Favoritas no se toca. En una ficha marcada, la papelera también va en gris. El toque no marca la tarjeta.
+- En el móvil, «Última consulta» vuelve a la cabecera, a la derecha del nombre y del botón de compartir, en dos líneas.
+- Caché `?v=76`.
+
 ## v7.2 · 18/11/2026 · Fichas marcadas más claras
 
 - Una ficha marcada (la que luego quita «Borrar marcadas (n)») se distingue de las que no lo están. Por defecto, el fondo es gris `#D6D6D6` con borde `#B5B5B5`, y los recuadros de dentro son `#E2E2E2`. Dentro de esa ficha no queda verde ni otro color: el rótulo «✓ Marcada», el botón de la fuente, las etiquetas (PAC, Nueva…) y Desmarcar, Favorita y Compartir van en gris. El enlace de la fuente sigue abriendo la publicación. Las fichas sin marcar no cambian.
