@@ -1594,3 +1594,31 @@ body:not(.marked-b) .card.read .block li.ok::before,
 body:not(.marked-b) .card.read .block li.warn::before {
   color: #5c5c5c;
 }
+
+/* v7.3 · Papelera separada, y «Última consulta» visible en el móvil, a la derecha del nombre. */
+.act.mini.trash { min-width: 44px; min-height: 44px; margin-left: 8px; justify-content: center; padding: 0 10px; }
+.top-actions { align-items: center; }
+@media (max-width: 560px) {
+  .trash-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .act.mini.trash { width: 44px; }
+}
+@media (min-width: 901px) {
+  .brand-row { order: 1; }
+  .top-tools { order: 2; }
+  .stamp { order: 3; flex: none; }
+}
+@media (max-width: 900px) {
+  .top { flex-wrap: wrap; align-items: center; }
+  .brand-row { order: 1; flex: 1 1 auto; min-width: 0; }
+  .stamp {
+    display: block;
+    order: 2;
+    flex: none;
+    margin: 0 0 0 8px;
+    text-align: right;
+    font-size: 11px;
+    line-height: 1.15;
+    max-width: 9.2rem;
+  }
+  .top-tools { order: 3; flex: 1 1 100%; }
+}

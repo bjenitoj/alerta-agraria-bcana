@@ -35,7 +35,7 @@ test("v5.5 leídas: se guardan solo en este dispositivo (alerta_leidas_v1) y cad
   assert.equal(api.isReadItem(a), false);
   api.setRead(a, true);
   assert.equal(api.isReadItem(a), true);
-  assert.ok(JSON.parse(ls.alerta_leidas_v1).read["u:boe.es/diario/1"], "clave por URL oficial");
+  assert.ok(JSON.parse(ls.alerta_leidas_v1).read["id:a1"], "clave de esa tarjeta");
   api.setRead(a, false);
   assert.equal(api.isReadItem(a), false, "Marcar como no leída");
   const now = Date.parse("2026-10-23T10:00:00Z");
@@ -76,17 +76,17 @@ test("v6.5 marcar no oculta; borrar sí, en todas las pestañas, y Favoritas no 
   const inResumen = { id: "resumen-9", title, url: "https://agricultura.jcyl.es/web/otra-ficha" };
   api.setRead(inAyudas, true);
   assert.equal(api.isReadItem(inAyudas), true);
-  assert.equal(api.isReadItem(inResumen), true, "la misma historia queda marcada en Resumen");
+  assert.equal(api.isReadItem(inResumen), false, "v7.3: otra tarjeta, aunque el título se parezca, no se marca");
   assert.equal(api.isClearedItem(inAyudas), false, "marcar no la quita");
   assert.equal(api.isClearedItem(inResumen), false);
   api.setRead(inAyudas, false);
-  assert.equal(api.isReadItem(inResumen), false, "desmarcar vale para las dos");
+  assert.equal(api.isReadItem(inAyudas), false);
   api.setRead(inAyudas, true);
   const favorite = { id: "fav", title: "Ayuda favorita que no debe perderse nunca jamás del todo", url: "https://www.boe.es/diario/fav" };
   api.setRead(favorite, true);
   const removed = api.deleteReadItems([inAyudas, favorite]);
-  assert.deepEqual(removed, ["u:bocyl.jcyl.es/boletin/a", "u:boe.es/diario/fav"]);
-  assert.equal(api.isClearedItem(inResumen), true, "borrar quita la misma historia del Resumen");
+  assert.deepEqual(removed, ["id:ayudas-1", "id:fav"]);
+  assert.equal(api.isClearedItem(inResumen), false, "borrar una tarjeta no quita otra");
   assert.equal(api.isDeletedItem(favorite), true, "sale de las listas");
   const base = fn("baseItems", "filterRow");
   assert.match(base, /isClearedItem\(item\) \|\| isFavorite\(item\)/);
@@ -150,7 +150,7 @@ test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias
   assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=75 (v6.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=75/);
+test("caché v=76 (v6.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=76/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });
