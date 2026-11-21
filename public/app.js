@@ -21,6 +21,8 @@ import {
 import { CCAA, PLACES_SOURCE, normalizePlace, provinceOf, comarcaOf, ccaaOf, placeAllows } from "/mod/places.js";
 import { placeLabel } from "/mod/preferences.js";
 import { closesWithin, deadlineInfo, fmtDayKey, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
+import { createSyncCode, mergeSync, normalizeSyncCode } from "/mod/sync.js";
+import QRCode from "/vendor/qrcode.js";
 
 const tabsEl = document.getElementById("tabs");
 const appEl = document.getElementById("app");
@@ -307,13 +309,15 @@ function loadPrefs() {
   }
 }
 
-function savePrefs(next) {
-  prefs = normalizePrefs({ ...next, updatedAt: new Date().toISOString() });
+function savePrefs(next, options = {}) {
+  const updatedAt = options.keepTime && next?.updatedAt ? next.updatedAt : new Date().toISOString();
+  prefs = normalizePrefs({ ...next, updatedAt });
   try {
     localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs));
   } catch { /* se mantiene en memoria */ }
   askPersistentStorage();
   paintPrefsNote();
+  if (!options.silent) scheduleSync();
   return prefs;
 }
 
@@ -555,6 +559,7 @@ function togglePref(group, id) {
 }
 
 const FAV_KEY = "alerta_favoritas_v1";
+const FAV_REMOVED_KEY = "alerta_favoritas_bajas_v1";
 // v5.6: ya no se ocultan noticias. Se borra la lista antigua para que todo vuelva a verse.
 const OLD_HIDE_KEY = "alerta_ocultadas_v1";
 const OPEN_KEY = "alerta_solo_abiertas";
@@ -568,12 +573,20 @@ function readJson(key, fallback) {
   }
 }
 
-function writeJson(key, value) {
+let syncReady = false;
+let syncing = false;
+let syncTimer = null;
+let syncAvailable = null;
+
+function writeJson(key, value, options = {}) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* sin almacén local, queda en esta visita */ }
+  if (!options.silent && (key === FAV_KEY || key === READ_KEY || key === FAV_REMOVED_KEY)) scheduleSync();
 }
 
 let favorites = readJson(FAV_KEY, {});
 if (!favorites || typeof favorites !== "object" || Array.isArray(favorites)) favorites = {};
+let favoriteRemoved = readJson(FAV_REMOVED_KEY, {});
+if (!favoriteRemoved || typeof favoriteRemoved !== "object" || Array.isArray(favoriteRemoved)) favoriteRemoved = {};
 try { localStorage.removeItem(OLD_HIDE_KEY); } catch { /* sin almacén local */ }
 // ── Leídas y borradas (v5.5) ─────────────────────────────────────────────────────────────
 // Como en la app original: tocar una noticia la marca como leída (se ve más apagada) y «Borrar leídas»
@@ -787,9 +800,16 @@ function snapshot(item) {
 function toggleFavorite(id) {
   const item = findItem(id);
   const existing = Object.keys(favorites).find((key) => key === id || (item && favorites[key].key === itemKey(item)));
-  if (existing) delete favorites[existing];
-  else if (item) favorites[item.id] = snapshot(item);
+  const now = new Date().toISOString();
+  if (existing) {
+    delete favorites[existing];
+    favoriteRemoved[existing] = now;
+  } else if (item) {
+    favorites[item.id] = snapshot(item);
+    delete favoriteRemoved[item.id];
+  }
   writeJson(FAV_KEY, favorites);
+  writeJson(FAV_REMOVED_KEY, favoriteRemoved);
   paintFavBtn();
 }
 
@@ -3443,6 +3463,7 @@ async function boot() {
     return;
   }
   if (isAdmin() && !freshCollect(state.lastCollectAt)) await refresh();
+  await startSync();
 }
 
 const STATUS_TEXT = {
@@ -3600,6 +3621,147 @@ async function renderPublic() {
     appEl.innerHTML = `<p class="empty">No se ha podido cargar el listado de fuentes. ${escapeHtml(error.message || "")}</p>`;
   }
 }
+
+const SYNC_CODE_KEY = "alerta_sync_codigo_v1";
+
+function currentSyncCode() {
+  try { return normalizeSyncCode(localStorage.getItem(SYNC_CODE_KEY) || ""); } catch { return ""; }
+}
+function rememberSyncCode(code) {
+  try {
+    if (code) localStorage.setItem(SYNC_CODE_KEY, code);
+    else localStorage.removeItem(SYNC_CODE_KEY);
+  } catch { /* sigue en memoria */ }
+}
+function localSyncDoc() {
+  return { v: 1, read: readStore.read, deleted: readStore.deleted, favorites, favoriteRemoved, prefs };
+}
+function applySyncDoc(doc) {
+  const silent = { silent: true };
+  readStore.read = doc.read || {};
+  readStore.deleted = doc.deleted || {};
+  readStore = pruneReadStore(readStore);
+  writeJson(READ_KEY, readStore, silent);
+  favorites = doc.favorites && typeof doc.favorites === "object" ? doc.favorites : {};
+  favoriteRemoved = doc.favoriteRemoved && typeof doc.favoriteRemoved === "object" ? doc.favoriteRemoved : {};
+  writeJson(FAV_KEY, favorites, silent);
+  writeJson(FAV_REMOVED_KEY, favoriteRemoved, silent);
+  if (doc.prefs && Date.parse(doc.prefs.updatedAt) > Date.parse(prefs?.updatedAt || 0)) {
+    savePrefs(doc.prefs, { keepTime: true, silent: true });
+  }
+  paintFavBtn();
+  paintReadSettings();
+  if (!QUIET.has(PATH)) render();
+}
+function scheduleSync() {
+  if (!syncReady || !currentSyncCode()) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { pullPushSync().catch(() => {}); }, 1200);
+}
+async function pullPushSync() {
+  const code = currentSyncCode();
+  if (!syncReady || !code || syncing) return;
+  syncing = true;
+  try {
+    const res = await fetch(`/api/sync/${encodeURIComponent(code)}`, { cache: "no-store" });
+    if (res.status === 503) { syncAvailable = false; paintSyncPanel(); return; }
+    if (!res.ok) return;
+    const data = await res.json();
+    const remote = data.payload;
+    let merged = mergeSync(localSyncDoc(), remote || {});
+    applySyncDoc(merged);
+    const put = await fetch(`/api/sync/${encodeURIComponent(code)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payload: merged, baseUpdatedAt: remote?.updatedAt || "" }),
+    });
+    if (put.status === 409) {
+      const again = await put.json().catch(() => ({}));
+      merged = mergeSync(localSyncDoc(), again.payload || {});
+      applySyncDoc(merged);
+      await fetch(`/api/sync/${encodeURIComponent(code)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload: merged, baseUpdatedAt: again.payload?.updatedAt || "" }),
+      });
+    } else if (put.status === 503) {
+      syncAvailable = false;
+    } else if (put.ok) syncAvailable = true;
+    paintSyncPanel();
+  } catch {
+    paintSyncPanel();
+  } finally {
+    syncing = false;
+  }
+}
+async function paintQr(text) {
+  const box = document.getElementById("syncQr");
+  if (!box) return;
+  box.innerHTML = text ? await QRCode.toString(text, { type: "svg", margin: 1, errorCorrectionLevel: "M" }) : "";
+}
+function paintSyncPanel() {
+  const off = document.querySelector("[data-sync-off]");
+  const on = document.querySelector("[data-sync-on]");
+  if (!off || !on) return;
+  const unavailable = syncAvailable === false;
+  off.hidden = !unavailable;
+  on.hidden = unavailable;
+  const code = currentSyncCode();
+  const shown = document.querySelector("[data-sync-code]");
+  if (shown) shown.textContent = code;
+  const copy = document.querySelector("[data-sync-copy]");
+  const stop = document.querySelector("[data-sync-stop]");
+  if (copy) copy.hidden = !code;
+  if (stop) stop.hidden = !code;
+  paintQr(code).catch(() => {});
+}
+function syncMessage(text) {
+  const el = document.getElementById("syncMsg");
+  if (el) el.textContent = text || "";
+}
+async function startSync() {
+  syncReady = true;
+  try {
+    const status = await fetch("/api/sync/status", { cache: "no-store" });
+    syncAvailable = status.ok;
+  } catch {
+    syncAvailable = false;
+  }
+  paintSyncPanel();
+  if (currentSyncCode() && syncAvailable) await pullPushSync();
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") pullPushSync().catch(() => {});
+  });
+  setInterval(() => { pullPushSync().catch(() => {}); }, 45000);
+}
+document.getElementById("syncCreate")?.addEventListener("click", async () => {
+  if (syncAvailable === false) return;
+  rememberSyncCode(createSyncCode());
+  syncMessage("Código creado en este dispositivo. Escríbelo o escanéalo en los demás.");
+  paintSyncPanel();
+  await pullPushSync();
+});
+document.getElementById("syncCopy")?.addEventListener("click", async () => {
+  const code = currentSyncCode();
+  if (!code) return;
+  try { await navigator.clipboard.writeText(code); syncMessage("Código copiado."); }
+  catch { syncMessage(code); }
+});
+document.getElementById("syncStop")?.addEventListener("click", () => {
+  rememberSyncCode("");
+  syncMessage("Este dispositivo ya no se sincroniza. Los demás siguen con el código.");
+  paintSyncPanel();
+});
+document.getElementById("syncJoin")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const code = normalizeSyncCode(document.getElementById("syncCodeInput")?.value || "");
+  if (!code) { syncMessage("El código no es válido."); return; }
+  rememberSyncCode(code);
+  syncMessage("Uniendo este dispositivo…");
+  paintSyncPanel();
+  await pullPushSync();
+  syncMessage(syncAvailable === false ? "" : "Listo. Lo marcado, lo borrado y las favoritas quedan unidos.");
+});
 
 if (PATH === "/admin") {
   const aviso = new URLSearchParams(location.search).get("aviso");

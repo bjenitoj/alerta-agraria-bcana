@@ -49,8 +49,8 @@ test("v6.6 en Favoritas: Quitar de favoritas, Borrar (también del resto, con De
   assert.match(css, /\.fav-actions \{ display: grid/);
   assert.match(css, /\.fav-actions \.fav-delete/);
   assert.match(css, /\.fav-actions \.act\.share/);
-  assert.match(indexHtml, /app\.js\?v=76/);
-  assert.match(indexHtml, /styles\.css\?v=76/);
+  assert.match(indexHtml, /app\.js\?v=77/);
+  assert.match(indexHtml, /styles\.css\?v=77/);
 });
 
 test("v6.7 cabecera de Favoritas sin el párrafo largo; la explicación sigue en la guía", () => {

@@ -64,6 +64,35 @@ El certificado de la raíz FNMT que usa el Ministerio va en `certs/`. No se desa
 npm test
 ```
 
+## Sincronizar la tablet, el móvil y la web
+
+No hay usuarios ni contraseñas. En Ajustes, «Sincronizar dispositivos», un dispositivo crea un código y los demás lo escriben. Se comparten lo marcado, lo borrado, las favoritas y la zona. Nada más.
+
+La app sigue funcionando si no usas el código. Sin conexión, se queda en el aparato.
+
+Hace falta una base PostgreSQL. La variable `DATABASE_URL` se pone en Render, no en el repositorio.
+
+**Recomendado: [Neon](https://neon.com/pricing).** El plan Free es de 0 €, no pide tarjeta y no caduca: los datos se quedan. Cuando no se usa, el servidor se apaga y vuelve a arrancar al sincronizar. Cabe de sobra un JSON pequeño de preferencias.
+
+El Postgres gratis de Render **caduca a los 30 días** (documentación de Render, noviembre de 2026). Después hay 14 días para pasarlo a un plan de pago; si no, Render borra la base. No lo uses para esto.
+
+### Crear la base en Neon
+
+1. Entra en https://neon.com y crea una cuenta (plan Free).
+2. Crea un proyecto. El nombre puede ser `alerta-agraria`.
+3. Pulsa **Connect** y copia la cadena de conexión. Debe empezar por `postgresql://` y llevar `sslmode=require`.
+4. Esa cadena es un secreto. No la pegues en el chat ni en git.
+
+### Ponerla en Render
+
+1. Abre el servicio de Alerta Agraria en el panel de Render.
+2. **Environment** → **Add Environment Variable**.
+3. Nombre: `DATABASE_URL`. Valor: la cadena copiada de Neon.
+4. Guarda. Render vuelve a arrancar el servicio.
+5. La tabla `alerta_sync` se crea sola la primera vez que alguien sincroniza.
+
+Si `DATABASE_URL` no está, Ajustes muestra «Sincronización no disponible todavía». El resto de la app no cambia.
+
 ## Llevar esta versión al PC
 
 En la carpeta donde ya está Alerta Agraria:

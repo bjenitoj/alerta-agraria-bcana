@@ -1622,3 +1622,7 @@ body:not(.marked-b) .card.read .block li.warn::before {
   }
   .top-tools { order: 3; flex: 1 1 100%; }
 }
+.sync-code { font: 800 22px/1.3 ui-monospace, monospace; letter-spacing: 0.04em; margin: 8px 0; }
+.sync-qr svg { width: 180px; height: 180px; background: #fff; }
+.sync-join { display: grid; gap: 8px; margin-top: 12px; }
+.sync-join input { min-height: 44px; font: inherit; padding: 8px 10px; }

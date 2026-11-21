@@ -1,5 +1,12 @@
 # Cambios
 
+## v7.4 · 21/11/2026 · Sincronizar dispositivos
+
+- En Ajustes, «Sincronizar dispositivos»: un código `XXXX-XXXX-XXXX` (sin cuenta ni contraseña) une la tablet, el móvil y la web. Se comparten lo marcado, lo borrado, las favoritas y la zona. Quitar una favorita también se propaga.
+- Sincroniza al abrir, al volver a la app, tras cada cambio y cada 45 segundos. Sin conexión, todo sigue en este aparato.
+- Hace falta una base PostgreSQL en `DATABASE_URL`. Si no está, Ajustes dice «Sincronización no disponible todavía» y la app no se rompe.
+- Caché `?v=77`.
+
 ## v7.3 · 21/11/2026 · Cada tarjeta se marca sola
 
 - Tocar una tarjeta marca solo esa. Ya no se marcan a la vez las que comparten el enlace oficial o un título parecido. «Borrar marcadas (n)» cuenta las tarjetas marcadas que se ven en la sección abierta.
