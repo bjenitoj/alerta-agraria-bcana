@@ -15,13 +15,15 @@ const fn = (from, to) => appJs.slice(appJs.indexOf(`function ${from}`), appJs.in
 const chunk = appJs.slice(appJs.indexOf('const READ_KEY = "alerta_leidas_v1"'), appJs.indexOf("// ── fin leídas y borradas ──"));
 function load(initial = {}, favs = new Set()) {
   const ls = { ...initial };
-  const api = new Function("readJson", "writeJson", "canonicalUrl", "isFavorite", "documentKeys", `${chunk}
+  const api = new Function("readJson", "writeJson", "canonicalUrl", "isFavorite", "documentKeys", `const forgetFavorite = () => false;
+    ${chunk}
     return { READ_KEY, READ_TTL_DAYS, pruneReadStore, loadReadStore, readKeyOf, markKeys, isReadItem, isDeletedItem, isClearedItem, setRead, deleteReadItems, undeleteKeys, restoreAllDeleted, store: () => readStore };`)(
     (key, fallback) => (key in ls ? JSON.parse(ls[key]) : fallback),
     (key, value) => { ls[key] = JSON.stringify(value); },
     (url) => (url ? String(url).replace(/^https?:\/\/(www\.)?/, "").replace(/[#?].*$/, "").replace(/\/$/, "") : ""),
     (item) => favs.has(item.id),
-    () => []);
+    () => [],
+  );
   return { api, ls };
 }
 const item = (n) => ({ id: `a${n}`, title: `Pieza oficial ${n}`, url: `https://www.boe.es/diario/${n}` });
@@ -150,7 +152,7 @@ test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias
   assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=78 (v6.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=78/);
+test("caché v=79 (v6.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=79/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });

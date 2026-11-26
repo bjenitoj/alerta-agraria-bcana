@@ -21,7 +21,7 @@ import {
 import { CCAA, PLACES_SOURCE, normalizePlace, provinceOf, comarcaOf, ccaaOf, placeAllows } from "/mod/places.js";
 import { placeLabel } from "/mod/preferences.js";
 import { closesWithin, deadlineInfo, fmtDayKey, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
-import { createSyncCode, mergeSync, normalizeSyncCode, syncAgeText } from "/mod/sync.js";
+import { createSyncCode, mergeSync, normalizeFavorite, normalizeSyncCode, syncAgeText } from "/mod/sync.js";
 import QRCode from "/vendor/qrcode.js";
 
 const tabsEl = document.getElementById("tabs");
@@ -583,8 +583,20 @@ function writeJson(key, value, options = {}) {
   if (!options.silent && (key === FAV_KEY || key === READ_KEY || key === FAV_REMOVED_KEY)) scheduleSync();
 }
 
-let favorites = readJson(FAV_KEY, {});
+function storedFavorites(raw) {
+  const out = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  for (const [id, value] of Object.entries(raw)) {
+    const fav = normalizeFavorite(id, value);
+    if (fav) out[fav.id || id] = fav;
+  }
+  return out;
+}
+let favorites = storedFavorites(readJson(FAV_KEY, {}));
 if (!favorites || typeof favorites !== "object" || Array.isArray(favorites)) favorites = {};
+try {
+  if (JSON.stringify(favorites) !== localStorage.getItem(FAV_KEY)) writeJson(FAV_KEY, favorites, { silent: true });
+} catch { /* sin almacén local */ }
 let favoriteRemoved = readJson(FAV_REMOVED_KEY, {});
 if (!favoriteRemoved || typeof favoriteRemoved !== "object" || Array.isArray(favoriteRemoved)) favoriteRemoved = {};
 try { localStorage.removeItem(OLD_HIDE_KEY); } catch { /* sin almacén local */ }
@@ -684,7 +696,7 @@ function setRead(item, on) {
   writeJson(READ_KEY, readStore);
 }
 
-/** Borra (oculta 15 días) las marcadas. No toca el registro de Favoritas: allí siguen hasta que se quiten. */
+/** Borra (oculta 15 días) las marcadas. Si alguna es favorita, la baja también se guarda para que no vuelva al sincronizar. */
 function deleteReadItems(items) {
   const now = new Date().toISOString();
   const keys = [];
@@ -696,6 +708,7 @@ function deleteReadItems(items) {
     readStore.deleted[key] = now;
     for (const alias of markKeys(item)) if (alias !== key) readStore.aliases[alias] = key;
     keys.push(key);
+    if (isFavorite(item)) forgetFavorite(item.id, item, now);
   }
   writeJson(READ_KEY, readStore);
   return keys;
@@ -797,19 +810,53 @@ function snapshot(item) {
   };
 }
 
-function toggleFavorite(id) {
-  const item = findItem(id);
-  const existing = Object.keys(favorites).find((key) => key === id || (item && favorites[key].key === itemKey(item)));
-  const now = new Date().toISOString();
-  if (existing) {
-    delete favorites[existing];
-    favoriteRemoved[existing] = now;
-  } else if (item) {
-    favorites[item.id] = snapshot(item);
-    delete favoriteRemoved[item.id];
+function favoriteMarks(id, item, fav) {
+  return [...new Set([id, item?.id, item ? itemKey(item) : "", fav?.id, fav?.key].filter(Boolean).map(String))];
+}
+
+function matchingFavoriteKeys(id, item) {
+  const want = new Set(favoriteMarks(id, item));
+  return Object.keys(favorites).filter((key) => {
+    const fav = favorites[key];
+    return want.has(String(key)) || want.has(fav?.id) || want.has(fav?.key);
+  });
+}
+
+/** Quita la favorita y deja la fecha de la baja, para que el otro aparato no la restaure. */
+function forgetFavorite(id, item, now = new Date().toISOString()) {
+  const keys = matchingFavoriteKeys(id, item);
+  const marks = new Set(favoriteMarks(id, item));
+  for (const key of keys) {
+    for (const mark of favoriteMarks(key, item, favorites[key])) marks.add(mark);
+    delete favorites[key];
   }
+  for (const mark of marks) favoriteRemoved[mark] = now;
   writeJson(FAV_KEY, favorites);
   writeJson(FAV_REMOVED_KEY, favoriteRemoved);
+  return keys.length > 0;
+}
+
+function restoreFavorite(snap) {
+  if (!snap) return;
+  const now = new Date().toISOString();
+  const id = snap.id || snap.key;
+  if (!id) return;
+  favorites[id] = { ...snap, id, savedAt: now };
+  for (const mark of favoriteMarks(id, snap, snap)) delete favoriteRemoved[mark];
+  writeJson(FAV_KEY, favorites);
+  writeJson(FAV_REMOVED_KEY, favoriteRemoved);
+}
+
+function toggleFavorite(id) {
+  const item = findItem(id);
+  const now = new Date().toISOString();
+  if (matchingFavoriteKeys(id, item).length) forgetFavorite(id, item, now);
+  else if (item) {
+    favorites[item.id] = snapshot(item);
+    for (const mark of favoriteMarks(item.id, item, favorites[item.id])) delete favoriteRemoved[mark];
+    writeJson(FAV_KEY, favorites);
+    writeJson(FAV_REMOVED_KEY, favoriteRemoved);
+  }
   paintFavBtn();
 }
 
@@ -1086,6 +1133,7 @@ function revealBelowBanner(selector) {
 
 function clearRead() {
   const shown = currentSectionItems().filter((item) => hasSourceUrl(item) && isReadItem(item) && !isDeletedItem(item));
+  const snaps = shown.flatMap((item) => matchingFavoriteKeys(item.id, item).map((key) => favorites[key]).filter(Boolean));
   const keys = deleteReadItems(shown);
   const y = window.scrollY;
   render();
@@ -1094,6 +1142,7 @@ function clearRead() {
   const n = shown.length;
   showToast(`${n === 1 ? "Borrada 1 marcada" : `Borradas ${n} marcadas`}`, () => {
     undeleteKeys(keys);
+    for (const snap of snaps) restoreFavorite(snap);
     const back = window.scrollY;
     render();
     window.scrollTo(0, back);
@@ -3101,17 +3150,20 @@ async function archiveById(id) {
   render();
 }
 
-/** Borra esa tarjeta ya, sin marcarla. Sale de todas las pestañas; en Favoritas no se toca. */
+/** Borra esa tarjeta ya. Si era favorita, la baja también se sincroniza y no vuelve desde el otro aparato. */
 function trashCard(id) {
   const item = findItem(id);
-  if (!item || isFavorite(item)) return;
+  if (!item) return;
+  const snaps = matchingFavoriteKeys(id, item).map((key) => favorites[key]).filter(Boolean);
+  if (snaps.length) forgetFavorite(id, item);
   const keys = buryItem(item);
   const y = window.scrollY;
   render();
   window.scrollTo(0, y);
-  if (!keys.length) return;
+  if (!keys.length && !snaps.length) return;
   showToast("Borrada", () => {
     undeleteKeys(keys);
+    for (const snap of snaps) restoreFavorite(snap);
     const back = window.scrollY;
     render();
     window.scrollTo(0, back);
@@ -3201,9 +3253,8 @@ appEl.addEventListener("click", (event) => {
     render();
     window.scrollTo(0, y);
     showToast(was ? "Quitada de Favoritas" : "Guardada en Favoritas", () => {
-      if (was && snap?.id && !findItem(snap.id)) favorites[snap.id] = snap;
+      if (was && snap?.id && !findItem(snap.id)) restoreFavorite(snap);
       else toggleFavorite(id);
-      writeJson(FAV_KEY, favorites);
       paintFavBtn();
       const back = window.scrollY;
       render();
@@ -3218,16 +3269,15 @@ appEl.addEventListener("click", (event) => {
     const item = findItem(id);
     const existing = Object.keys(favorites).find((key) => key === id || (item && favorites[key]?.key === itemKey(item)));
     const snap = existing ? { ...favorites[existing] } : null;
-    if (existing) delete favorites[existing];
-    writeJson(FAV_KEY, favorites);
+    const snaps = existing ? [favorites[existing]].filter(Boolean) : [];
+    if (snaps.length || (item && isFavorite(item))) forgetFavorite(id, item);
     const keys = buryItem(item || snap);
     paintFavBtn();
     const y = window.scrollY;
     render();
     window.scrollTo(0, y);
     showToast("Borrada", () => {
-      if (snap?.id) favorites[snap.id] = snap;
-      writeJson(FAV_KEY, favorites);
+      for (const saved of snaps) restoreFavorite(saved);
       undeleteKeys(keys);
       paintFavBtn();
       const back = window.scrollY;
