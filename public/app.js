@@ -661,8 +661,31 @@ function markKeys(item) {
   return key ? [key] : [];
 }
 
+/** La baja de una tarjeta va con su id. No usa el enlace ni el título: otra tarjeta que los comparta no se borra. */
+function deletionKeys(item) {
+  const keys = new Set();
+  if (item?.id) {
+    keys.add(`id:${item.id}`);
+    keys.add(String(item.id));
+    return [...keys];
+  }
+  const url = canonicalUrl(item?.url);
+  const title = String(item?.title || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  if (url) keys.add(`u:${url}`);
+  if (title.length >= 40) keys.add(`t:${title}`);
+  for (const key of documentKeys(item?.url, item?.title)) keys.add(key);
+  return [...keys];
+}
+
 function hasMark(bucket, item) {
-  const keys = markKeys(item);
+  const keys = bucket === "deleted" ? deletionKeys(item) : markKeys(item);
   if (bucket !== "deleted") return keys.some((key) => readStore[bucket]?.[key]);
   const aliases = readStore.aliases || {};
   return keys.some((key) => readStore.deleted[key] || (aliases[key] && readStore.deleted[aliases[key]]));
@@ -706,7 +729,10 @@ function deleteReadItems(items) {
     const key = readKeyOf(item);
     if (!key || keys.includes(key)) continue;
     readStore.deleted[key] = now;
-    for (const alias of markKeys(item)) if (alias !== key) readStore.aliases[alias] = key;
+    for (const alias of deletionKeys(item)) if (alias !== key) {
+      readStore.deleted[alias] = now;
+      readStore.aliases[alias] = key;
+    }
     keys.push(key);
     if (isFavorite(item)) forgetFavorite(item.id, item, now);
   }
@@ -715,17 +741,25 @@ function deleteReadItems(items) {
 }
 
 function undeleteKeys(keys) {
+  const aliases = { ...(readStore.aliases || {}) };
   for (const key of keys || []) {
     delete readStore.deleted[key];
-    for (const [alias, primary] of Object.entries(readStore.aliases || {})) {
-      if (primary === key) delete readStore.aliases[alias];
+    for (const [alias, primary] of Object.entries(aliases)) {
+      if (primary !== key) continue;
+      delete readStore.deleted[alias];
+      delete readStore.aliases[alias];
     }
   }
   writeJson(READ_KEY, readStore);
 }
 
+function deletedStoryCount() {
+  const aliases = new Set(Object.keys(readStore.aliases || {}));
+  return Object.keys(readStore.deleted).filter((key) => !aliases.has(key)).length;
+}
+
 function restoreAllDeleted() {
-  const n = Object.keys(readStore.deleted).length;
+  const n = deletedStoryCount();
   readStore.deleted = {};
   readStore.aliases = {};
   writeJson(READ_KEY, readStore);
@@ -741,7 +775,10 @@ function buryItem(item) {
   const now = new Date().toISOString();
   readStore.aliases = readStore.aliases || {};
   readStore.deleted[key] = now;
-  for (const alias of markKeys(item)) if (alias !== key) readStore.aliases[alias] = key;
+  for (const alias of deletionKeys(item)) if (alias !== key) {
+    readStore.deleted[alias] = now;
+    readStore.aliases[alias] = key;
+  }
   writeJson(READ_KEY, readStore);
   return [key];
 }
@@ -1078,7 +1115,7 @@ function paintReadTools() {
 function paintReadSettings() {
   const restore = document.getElementById("restoreDeleted");
   if (restore) {
-    const n = Object.keys(readStore.deleted).length;
+    const n = deletedStoryCount();
     restore.textContent = `Recuperar borradas (${n})`;
     restore.disabled = !n;
   }
@@ -3684,12 +3721,13 @@ function rememberSyncCode(code) {
   } catch { /* sigue en memoria */ }
 }
 function localSyncDoc() {
-  return { v: 1, read: readStore.read, deleted: readStore.deleted, favorites, favoriteRemoved, prefs };
+  return { v: 1, read: readStore.read, deleted: readStore.deleted, aliases: readStore.aliases, favorites, favoriteRemoved, prefs };
 }
 function applySyncDoc(doc) {
   const silent = { silent: true };
   readStore.read = doc.read || {};
   readStore.deleted = doc.deleted || {};
+  readStore.aliases = doc.aliases && typeof doc.aliases === "object" ? doc.aliases : {};
   readStore = pruneReadStore(readStore);
   writeJson(READ_KEY, readStore, silent);
   favorites = doc.favorites && typeof doc.favorites === "object" ? doc.favorites : {};
@@ -3707,6 +3745,7 @@ let syncState = "";
 let syncLastOk = 0;
 let syncArmed = false;
 let syncWakeTimer = null;
+let syncQueued = false;
 
 function scheduleSync() {
   if (!syncReady || !currentSyncCode()) return;
@@ -3755,7 +3794,8 @@ async function wakeSync() {
 }
 async function pullPushSync() {
   const code = currentSyncCode();
-  if (!syncReady || !code || syncing || syncAvailable === false) return;
+  if (!syncReady || !code || syncAvailable === false) return;
+  if (syncing) { syncQueued = true; return; }
   syncing = true;
   syncState = "busy";
   paintSyncPanel();
@@ -3766,6 +3806,8 @@ async function pullPushSync() {
     const data = await res.json();
     const remote = data.payload;
     let merged = mergeSync(localSyncDoc(), remote || {});
+    // Un borrado durante la petición tiene que entrar en lo que se guarda.
+    merged = mergeSync(localSyncDoc(), merged);
     applySyncDoc(merged);
     const put = await syncFetch(`/api/sync/${encodeURIComponent(code)}`, {
       method: "PUT",
@@ -3798,6 +3840,10 @@ async function pullPushSync() {
   } finally {
     syncing = false;
     paintSyncPanel();
+    if (syncQueued) {
+      syncQueued = false;
+      pullPushSync().catch(() => {});
+    }
   }
 }
 async function paintQr(text) {
