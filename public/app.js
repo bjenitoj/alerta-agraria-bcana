@@ -21,7 +21,7 @@ import {
 import { CCAA, PLACES_SOURCE, normalizePlace, provinceOf, comarcaOf, ccaaOf, placeAllows } from "/mod/places.js";
 import { placeLabel } from "/mod/preferences.js";
 import { closesWithin, deadlineInfo, fmtDayKey, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
-import { createSyncCode, mergeSync, normalizeSyncCode } from "/mod/sync.js";
+import { createSyncCode, mergeSync, normalizeSyncCode, syncAgeText } from "/mod/sync.js";
 import QRCode from "/vendor/qrcode.js";
 
 const tabsEl = document.getElementById("tabs");
@@ -3653,24 +3653,71 @@ function applySyncDoc(doc) {
   paintReadSettings();
   if (!QUIET.has(PATH)) render();
 }
+let syncState = "";
+let syncLastOk = 0;
+let syncArmed = false;
+let syncWakeTimer = null;
+
 function scheduleSync() {
   if (!syncReady || !currentSyncCode()) return;
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => { pullPushSync().catch(() => {}); }, 1200);
 }
+function syncFetch(url, options = {}) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 12000);
+  const method = String(options.method || "GET").toUpperCase();
+  const target = method === "GET" ? `${url}${url.includes("?") ? "&" : "?"}t=${Date.now()}` : url;
+  return fetch(target, { ...options, cache: "no-store", signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+async function refreshSyncStatus() {
+  try {
+    const res = await syncFetch("/api/sync/status");
+    if (res.status === 503) { syncAvailable = false; return; }
+    if (!res.ok) { syncState = "error"; return; }
+    syncAvailable = true;
+  } catch {
+    // Un corte no apaga la sección: solo un 503 real la deja en «no disponible».
+    syncState = "error";
+  }
+}
+function armSyncWake() {
+  if (syncArmed) return;
+  syncArmed = true;
+  const wake = () => {
+    clearTimeout(syncWakeTimer);
+    syncWakeTimer = setTimeout(() => { wakeSync().catch(() => {}); }, 400);
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") wake();
+  });
+  // Safari y la PWA del iPhone/iPad no disparan visibilitychange al volver a la app.
+  window.addEventListener("pageshow", wake);
+  window.addEventListener("focus", wake);
+  document.addEventListener("resume", wake);
+  setInterval(() => { wakeSync().catch(() => {}); }, 45000);
+  setInterval(() => paintSyncPanel(), 30000);
+}
+async function wakeSync() {
+  if (syncAvailable !== true) await refreshSyncStatus();
+  if (syncAvailable === false) { paintSyncPanel(); return; }
+  await pullPushSync();
+}
 async function pullPushSync() {
   const code = currentSyncCode();
-  if (!syncReady || !code || syncing) return;
+  if (!syncReady || !code || syncing || syncAvailable === false) return;
   syncing = true;
+  syncState = "busy";
+  paintSyncPanel();
   try {
-    const res = await fetch(`/api/sync/${encodeURIComponent(code)}`, { cache: "no-store" });
-    if (res.status === 503) { syncAvailable = false; paintSyncPanel(); return; }
-    if (!res.ok) return;
+    const res = await syncFetch(`/api/sync/${encodeURIComponent(code)}`);
+    if (res.status === 503) { syncAvailable = false; syncState = ""; return; }
+    if (!res.ok) { syncState = "error"; return; }
     const data = await res.json();
     const remote = data.payload;
     let merged = mergeSync(localSyncDoc(), remote || {});
     applySyncDoc(merged);
-    const put = await fetch(`/api/sync/${encodeURIComponent(code)}`, {
+    const put = await syncFetch(`/api/sync/${encodeURIComponent(code)}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ payload: merged, baseUpdatedAt: remote?.updatedAt || "" }),
@@ -3679,19 +3726,28 @@ async function pullPushSync() {
       const again = await put.json().catch(() => ({}));
       merged = mergeSync(localSyncDoc(), again.payload || {});
       applySyncDoc(merged);
-      await fetch(`/api/sync/${encodeURIComponent(code)}`, {
+      const retry = await syncFetch(`/api/sync/${encodeURIComponent(code)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ payload: merged, baseUpdatedAt: again.payload?.updatedAt || "" }),
       });
+      if (!retry.ok) { syncState = "error"; return; }
     } else if (put.status === 503) {
       syncAvailable = false;
-    } else if (put.ok) syncAvailable = true;
-    paintSyncPanel();
+      syncState = "";
+      return;
+    } else if (!put.ok) {
+      syncState = "error";
+      return;
+    }
+    syncAvailable = true;
+    syncState = "ok";
+    syncLastOk = Date.now();
   } catch {
-    paintSyncPanel();
+    syncState = "error";
   } finally {
     syncing = false;
+    paintSyncPanel();
   }
 }
 async function paintQr(text) {
@@ -3699,12 +3755,19 @@ async function paintQr(text) {
   if (!box) return;
   box.innerHTML = text ? await QRCode.toString(text, { type: "svg", margin: 1, errorCorrectionLevel: "M" }) : "";
 }
+function syncStateLabel() {
+  if (syncState === "error") return "Error al sincronizar";
+  if (syncState === "busy") return "Sincronizando…";
+  if (syncLastOk) return syncAgeText(syncLastOk, Date.now());
+  if (currentSyncCode()) return "Aún no se ha sincronizado";
+  return "";
+}
 function paintSyncPanel() {
-  const off = document.querySelector("[data-sync-off]");
+  const off = document.querySelectorAll("[data-sync-off]");
   const on = document.querySelector("[data-sync-on]");
-  if (!off || !on) return;
+  if (!off.length || !on) return;
   const unavailable = syncAvailable === false;
-  off.hidden = !unavailable;
+  off.forEach((el) => { el.hidden = !unavailable; });
   on.hidden = unavailable;
   const code = currentSyncCode();
   const shown = document.querySelector("[data-sync-code]");
@@ -3713,29 +3776,30 @@ function paintSyncPanel() {
   const stop = document.querySelector("[data-sync-stop]");
   if (copy) copy.hidden = !code;
   if (stop) stop.hidden = !code;
-  paintQr(code).catch(() => {});
+  const stateEl = document.getElementById("syncState");
+  if (stateEl) stateEl.textContent = syncStateLabel();
+  paintQr(unavailable ? "" : code).catch(() => {});
 }
 function syncMessage(text) {
   const el = document.getElementById("syncMsg");
   if (el) el.textContent = text || "";
 }
+async function syncNow() {
+  await refreshSyncStatus();
+  paintSyncPanel();
+  if (syncAvailable === false) return;
+  if (!currentSyncCode()) { syncMessage("Crea o introduce un código."); return; }
+  await pullPushSync();
+}
 async function startSync() {
   syncReady = true;
-  try {
-    const status = await fetch("/api/sync/status", { cache: "no-store" });
-    syncAvailable = status.ok;
-  } catch {
-    syncAvailable = false;
-  }
+  armSyncWake();
+  await refreshSyncStatus();
   paintSyncPanel();
-  if (currentSyncCode() && syncAvailable) await pullPushSync();
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") pullPushSync().catch(() => {});
-  });
-  setInterval(() => { pullPushSync().catch(() => {}); }, 45000);
+  if (currentSyncCode() && syncAvailable !== false) await pullPushSync();
 }
 document.getElementById("syncCreate")?.addEventListener("click", async () => {
-  if (syncAvailable === false) return;
+  if (syncAvailable === false) { await refreshSyncStatus(); paintSyncPanel(); if (syncAvailable === false) return; }
   rememberSyncCode(createSyncCode());
   syncMessage("Código creado en este dispositivo. Escríbelo o escanéalo en los demás.");
   paintSyncPanel();
@@ -3760,8 +3824,12 @@ document.getElementById("syncJoin")?.addEventListener("submit", async (event) =>
   syncMessage("Uniendo este dispositivo…");
   paintSyncPanel();
   await pullPushSync();
-  syncMessage(syncAvailable === false ? "" : "Listo. Lo marcado, lo borrado y las favoritas quedan unidos.");
+  if (syncState === "error") syncMessage("Error al sincronizar");
+  else if (syncAvailable !== false) syncMessage("Listo. Lo marcado, lo borrado y las favoritas quedan unidos.");
 });
+for (const id of ["syncNow", "syncRetry"]) {
+  document.getElementById(id)?.addEventListener("click", () => { syncNow().catch(() => {}); });
+}
 
 if (PATH === "/admin") {
   const aviso = new URLSearchParams(location.search).get("aviso");

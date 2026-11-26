@@ -1,5 +1,12 @@
 # Cambios
 
+## v7.4 · 26/11/2026 · La sincronización al volver a la app
+
+- En el iPhone y el iPad, cerrar y abrir la app no avisaba a la página. La sincronización solo escuchaba `visibilitychange`, así que el otro aparato no se enteraba. Ahora también escucha el foco, `pageshow` y `resume`, y hay un botón «Sincronizar ahora».
+- Ajustes dice «Sincronizado hace…» o «Error al sincronizar». Un corte de red ya no deja la sección en «no disponible»: eso solo sale si el servidor responde 503.
+- `/api/sync` no se guarda en caché. Si la base falla, el servidor anota el motivo sin el código ni la cadena de conexión.
+- Caché `?v=78`.
+
 ## v7.4 · 21/11/2026 · Sincronizar dispositivos
 
 - En Ajustes, «Sincronizar dispositivos»: un código `XXXX-XXXX-XXXX` (sin cuenta ni contraseña) une la tablet, el móvil y la web. Se comparten lo marcado, lo borrado, las favoritas y la zona. Quitar una favorita también se propaga.

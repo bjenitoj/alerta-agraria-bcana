@@ -1626,3 +1626,5 @@ body:not(.marked-b) .card.read .block li.warn::before {
 .sync-qr svg { width: 180px; height: 180px; background: #fff; }
 .sync-join { display: grid; gap: 8px; margin-top: 12px; }
 .sync-join input { min-height: 44px; font: inherit; padding: 8px 10px; }
+.sync-state { font-weight: 700; min-height: 1.2em; }
+#syncNow, #syncRetry { min-height: 44px; }
