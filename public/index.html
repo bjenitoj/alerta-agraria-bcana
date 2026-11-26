@@ -13,7 +13,7 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=76" />
+  <link rel="stylesheet" href="/styles.css?v=77" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
@@ -145,6 +145,27 @@
           </div>
         </div>
       </section>
+      <section class="acc settings-sync">
+        <button type="button" class="acc-btn" id="syncTitle" data-acc="sync" aria-expanded="false" aria-controls="acc-sync"><span class="acc-text"><span class="acc-title">Sincronizar dispositivos</span><span class="acc-note">El mismo código en la tablet, el móvil y la web</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="acc-panel" id="acc-sync" role="region" aria-labelledby="syncTitle" hidden>
+          <p data-sync-off hidden>Sincronización no disponible todavía</p>
+          <div data-sync-on>
+            <p class="hint">Sin cuenta ni contraseña. El código solo guarda lo marcado, lo borrado, las favoritas y la zona. Si no hay conexión, la app sigue igual en este aparato.</p>
+            <p class="sync-code" data-sync-code></p>
+            <div id="syncQr" class="sync-qr"></div>
+            <div class="settings-read-actions">
+              <button type="button" id="syncCreate">Crear código</button>
+              <button type="button" id="syncCopy" data-sync-copy hidden>Copiar</button>
+              <button type="button" id="syncStop" data-sync-stop hidden>Dejar de sincronizar</button>
+            </div>
+            <form id="syncJoin" class="sync-join">
+              <label>Introducir código <input id="syncCodeInput" autocomplete="off" spellcheck="false" inputmode="text" placeholder="XXXX-XXXX-XXXX" /></label>
+              <button type="submit">Unir este dispositivo</button>
+            </form>
+            <p id="syncMsg" class="hint"></p>
+          </div>
+        </div>
+      </section>
       <!-- v6.0: 4) Guía de usuario, breve: qué sale al tocar cada pestaña o botón. -->
       <section class="acc settings-guide">
         <button type="button" class="acc-btn" id="guideTitle" data-acc="guia" aria-expanded="false" aria-controls="acc-guia"><span class="acc-text"><span class="acc-title">Guía de usuario</span><span class="acc-note">Qué sale al tocar cada botón</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -224,6 +245,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=76"></script>
+  <script type="module" src="/app.js?v=77"></script>
 </body>
 </html>

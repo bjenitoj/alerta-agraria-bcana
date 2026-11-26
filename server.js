@@ -20,6 +20,8 @@ import { getLeonPrices, LONJA_LEON } from "./lib/lonja-leon.js";
 import { getAlerts, ALERT_SOURCES } from "./lib/alerts.js";
 import { getNuevaPac } from "./lib/nueva-pac.js";
 import { getNormativaVigente, NORMATIVA } from "./lib/normativa.js";
+import { mountSyncRoutes } from "./lib/sync-http.js";
+import { allowSyncRequest, openSyncStore } from "./lib/sync-store.js";
 import {
   getStore,
   upsertItems,
@@ -42,7 +44,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Módulos compartidos con el navegador (sin datos ni secretos).
-const SHARED_MODULES = new Set(["preferences.js", "aid-view.js", "pac-calendar.js", "places.js"]);
+const SHARED_MODULES = new Set(["preferences.js", "aid-view.js", "pac-calendar.js", "places.js", "sync.js"]);
 
 function readConfig(name) {
   return JSON.parse(fs.readFileSync(path.join(__dirname, "config", name), "utf8"));
@@ -151,6 +153,11 @@ function sendIndex(_req, res) {
 app.get(["/", "/index.html"], sendIndex);
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: false }));
+const databaseUrl = options.databaseUrl !== undefined ? options.databaseUrl : process.env.DATABASE_URL;
+mountSyncRoutes(app, {
+  store: options.syncStore || openSyncStore(databaseUrl),
+  allow: options.allowSync || allowSyncRequest,
+});
 app.get(/^\/mod\/([a-z-]+\.js)$/, (req, res) => {
   const name = req.params[0];
   if (!SHARED_MODULES.has(name)) {
