@@ -271,6 +271,15 @@ function remember(item, bucket) {
   writeSet(bucket, set);
 }
 
+function forgetHideSets(keys) {
+  for (const name of ["alerta_ocultas", "alerta_suprimidas"]) {
+    const set = readSet(name);
+    let changed = false;
+    for (const key of keys || []) if (set.delete(String(key))) changed = true;
+    if (changed) writeSet(name, set);
+  }
+}
+
 function suppress(item) {
   remember(item, "alerta_suprimidas");
 }
@@ -610,14 +619,14 @@ const READ_TTL_DAYS = 15;
 const READ_MAX = 3000;
 
 function emptyReadStore() {
-  return { v: 1, read: {}, deleted: {}, aliases: {} };
+  return { v: 1, read: {}, deleted: {}, restored: {}, aliases: {} };
 }
 
 /** Quita lo que tenga más de 15 días y lo que no tenga una fecha válida. */
 function pruneReadStore(store, nowMs = Date.now()) {
   const out = emptyReadStore();
   const limit = nowMs - READ_TTL_DAYS * 86400000;
-  for (const bucket of ["read", "deleted"]) {
+  for (const bucket of ["read", "deleted", "restored"]) {
     const entries = Object.entries((store && typeof store[bucket] === "object" && store[bucket]) || {})
       .filter(([key, when]) => key && Number.isFinite(Date.parse(when)) && Date.parse(when) >= limit)
       .sort((a, b) => Date.parse(a[1]) - Date.parse(b[1]))
@@ -727,6 +736,9 @@ function deleteReadItems(items) {
     if (!isReadItem(item) || isDeletedItem(item)) continue;
     const key = readKeyOf(item);
     if (!key || keys.includes(key)) continue;
+    readStore.restored = readStore.restored || {};
+    delete readStore.restored[key];
+    for (const alias of deletionKeys(item)) delete readStore.restored[alias];
     readStore.deleted[key] = now;
     for (const alias of deletionKeys(item)) if (alias !== key) {
       readStore.deleted[alias] = now;
@@ -740,15 +752,23 @@ function deleteReadItems(items) {
 }
 
 function undeleteKeys(keys) {
+  const now = new Date().toISOString();
+  readStore.restored = readStore.restored || {};
   const aliases = { ...(readStore.aliases || {}) };
+  const dropped = [];
   for (const key of keys || []) {
+    dropped.push(key);
     delete readStore.deleted[key];
+    readStore.restored[key] = now;
     for (const [alias, primary] of Object.entries(aliases)) {
       if (primary !== key) continue;
+      dropped.push(alias);
       delete readStore.deleted[alias];
       delete readStore.aliases[alias];
+      readStore.restored[alias] = now;
     }
   }
+  if (typeof forgetHideSets === "function") forgetHideSets(dropped);
   writeJson(READ_KEY, readStore);
 }
 
@@ -758,7 +778,12 @@ function deletedStoryCount() {
 }
 
 function restoreAllDeleted() {
+  const now = new Date().toISOString();
+  readStore.restored = readStore.restored || {};
+  const keys = Object.keys(readStore.deleted);
   const n = deletedStoryCount();
+  for (const key of keys) readStore.restored[key] = now;
+  if (typeof forgetHideSets === "function") forgetHideSets(keys);
   readStore.deleted = {};
   readStore.aliases = {};
   writeJson(READ_KEY, readStore);
@@ -773,6 +798,9 @@ function buryItem(item) {
   if (!key) return [];
   const now = new Date().toISOString();
   readStore.aliases = readStore.aliases || {};
+  readStore.restored = readStore.restored || {};
+  delete readStore.restored[key];
+  for (const alias of deletionKeys(item)) delete readStore.restored[alias];
   readStore.deleted[key] = now;
   for (const alias of deletionKeys(item)) if (alias !== key) {
     readStore.deleted[alias] = now;
@@ -807,6 +835,7 @@ function currentSectors() {
 function saveChosenSectors(next) {
   chosenSectors = next;
   try { localStorage.setItem(SECTOR_CHIPS_KEY, JSON.stringify(next)); } catch { /* queda en esta visita */ }
+  touchView();
 }
 
 function itemKey(item) {
@@ -995,6 +1024,7 @@ function currentAidStatus() {
 function saveAidStatus(next) {
   aidStatusChip = AID_STATUS_CHIPS.some((chip) => chip.id === next) ? next : "abierta";
   try { localStorage.setItem(AID_STATUS_KEY, aidStatusChip); } catch { /* queda en esta visita */ }
+  touchView();
 }
 function isPacAid(item) {
   return item.category === "pac_pagos" || (item.infoTypes || []).includes("pac") || item.sourceId === "pac_lineas" || isPacLine(item);
@@ -2032,6 +2062,7 @@ function currentAidGroup() {
 function saveAidGroup(next) {
   aidGroup = AID_GROUPS.some((group) => group.id === next) ? next : "pac";
   try { localStorage.setItem(AID_GROUP_KEY, aidGroup); } catch { /* queda en esta visita */ }
+  touchView();
 }
 
 /**
@@ -3239,6 +3270,7 @@ appEl.addEventListener("change", (event) => {
   priceSourceChoice = PRICE_SOURCES.some((source) => source.id === event.target.value) ? event.target.value : "mapa";
   priceSource = effectivePriceSource();
   try { localStorage.setItem(PRICE_SOURCE_KEY, priceSourceChoice); } catch { /* queda en esta visita */ }
+  touchView();
   render();
 });
 
@@ -3732,15 +3764,18 @@ function knownSyncItems() {
 function migrateLocalHides() {
   const keys = [];
   for (const name of ["alerta_ocultas", "alerta_suprimidas"]) {
-    for (const key of readSet(name)) keys.push(key);
+    for (const key of readSet(name)) {
+      if (readStore.restored?.[key]) continue;
+      keys.push(key);
+    }
   }
   for (const item of knownSyncItems()) {
     const marks = deletionKeys(item);
-    const hidden = marks.some((key) => readStore.deleted[key]
+    const hidden = marks.some((key) => !readStore.restored?.[key] && (readStore.deleted[key]
       || (readStore.aliases?.[key] && readStore.deleted[readStore.aliases[key]])
       || readSet("alerta_ocultas").has(key)
-      || readSet("alerta_suprimidas").has(key));
-    if (hidden) keys.push(...marks);
+      || readSet("alerta_suprimidas").has(key)));
+    if (hidden) keys.push(...marks.filter((key) => !readStore.restored?.[key]));
   }
   const next = absorbHideKeys(readStore.deleted, keys);
   if (JSON.stringify(next) !== JSON.stringify(readStore.deleted)) {
@@ -3749,14 +3784,68 @@ function migrateLocalHides() {
   }
 }
 
+const VIEW_KEY = "alerta_vista_v1";
+let viewStamp = "";
+try { viewStamp = localStorage.getItem(VIEW_KEY) || ""; } catch { /* sin almacén */ }
+
+function touchView() {
+  viewStamp = new Date().toISOString();
+  try { localStorage.setItem(VIEW_KEY, viewStamp); } catch { /* queda en esta visita */ }
+  scheduleSync();
+}
+
+function localView() {
+  return {
+    sectors: currentSectors(),
+    aidGroup: currentAidGroup(),
+    aidStatus: currentAidStatus(),
+    priceSource: priceSourceChoice || "",
+    updatedAt: viewStamp || "",
+  };
+}
+
+function applyView(view) {
+  if (!view || typeof view !== "object") return;
+  if (Array.isArray(view.sectors)) {
+    chosenSectors = view.sectors.filter((id) => CHIP_SECTORS.some((sector) => sector.id === id));
+    try { localStorage.setItem(SECTOR_CHIPS_KEY, JSON.stringify(chosenSectors)); } catch { /* sigue en memoria */ }
+  }
+  if (view.aidGroup === "pac" || view.aidGroup === "otras") {
+    aidGroup = view.aidGroup;
+    try { localStorage.setItem(AID_GROUP_KEY, aidGroup); } catch { /* sigue en memoria */ }
+  }
+  if (AID_STATUS_CHIPS.some((chip) => chip.id === view.aidStatus)) {
+    aidStatusChip = view.aidStatus;
+    try { localStorage.setItem(AID_STATUS_KEY, aidStatusChip); } catch { /* sigue en memoria */ }
+  }
+  if (typeof view.priceSource === "string") {
+    priceSourceChoice = view.priceSource;
+    try { localStorage.setItem(PRICE_SOURCE_KEY, priceSourceChoice); } catch { /* sigue en memoria */ }
+    if (typeof priceSource !== "undefined") priceSource = effectivePriceSource();
+  }
+  viewStamp = view.updatedAt || viewStamp;
+  try { localStorage.setItem(VIEW_KEY, viewStamp); } catch { /* sigue en memoria */ }
+}
+
 function localSyncDoc() {
   migrateLocalHides();
-  return { v: 1, read: readStore.read, deleted: readStore.deleted, aliases: readStore.aliases, favorites, favoriteRemoved, prefs };
+  return {
+    v: 1,
+    read: readStore.read,
+    deleted: readStore.deleted,
+    restored: readStore.restored,
+    aliases: readStore.aliases,
+    favorites,
+    favoriteRemoved,
+    prefs,
+    view: localView(),
+  };
 }
 function applySyncDoc(doc) {
   const silent = { silent: true };
   readStore.read = doc.read || {};
   readStore.deleted = doc.deleted || {};
+  readStore.restored = doc.restored && typeof doc.restored === "object" ? doc.restored : {};
   readStore.aliases = doc.aliases && typeof doc.aliases === "object" ? doc.aliases : {};
   readStore = pruneReadStore(readStore);
   writeJson(READ_KEY, readStore, silent);
@@ -3767,6 +3856,7 @@ function applySyncDoc(doc) {
   if (doc.prefs && Date.parse(doc.prefs.updatedAt) > Date.parse(prefs?.updatedAt || 0)) {
     savePrefs(doc.prefs, { keepTime: true, silent: true });
   }
+  if (doc.view && Date.parse(doc.view.updatedAt) > Date.parse(viewStamp || 0)) applyView(doc.view);
   paintFavBtn();
   paintReadSettings();
   if (!QUIET.has(PATH)) render();

@@ -99,5 +99,5 @@ test("v7.8 el cliente vuelve a sincronizar al reabrir y enseña el estado", () =
   assert.match(indexHtml, /id="syncNow"/);
   assert.match(indexHtml, /id="syncState"/);
   assert.match(indexHtml, /id="syncRetry"/);
-  assert.match(indexHtml, /app\.js\?v=80/);
+  assert.match(indexHtml, /app\.js\?v=81/);
 });

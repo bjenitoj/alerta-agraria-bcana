@@ -50,6 +50,6 @@ test("v7.3 papelera junto a Favorita y Compartir, y el toque no marca la tarjeta
   assert.match(click, /event\.stopPropagation\(\)/);
   assert.doesNotMatch(appJs.slice(appJs.indexOf("function favoriteActions"), appJs.indexOf("function milestoneRow")), /data-trash/);
   assert.match(css, /\.act\.mini\.trash \{[^}]*min-width: 44px/);
-  assert.match(indexHtml, /styles\.css\?v=80/);
+  assert.match(indexHtml, /styles\.css\?v=81/);
   assert.match(css, /@media \(max-width: 900px\) \{[\s\S]*\.stamp \{\s*display: block;/);
 });
