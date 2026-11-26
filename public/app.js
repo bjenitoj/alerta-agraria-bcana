@@ -21,7 +21,7 @@ import {
 import { CCAA, PLACES_SOURCE, normalizePlace, provinceOf, comarcaOf, ccaaOf, placeAllows } from "/mod/places.js";
 import { placeLabel } from "/mod/preferences.js";
 import { closesWithin, deadlineInfo, fmtDayKey, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
-import { createSyncCode, mergeSync, normalizeFavorite, normalizeSyncCode, syncAgeText } from "/mod/sync.js";
+import { absorbHideKeys, createSyncCode, mergeSync, normalizeFavorite, normalizeSyncCode, syncAgeText } from "/mod/sync.js";
 import QRCode from "/vendor/qrcode.js";
 
 const tabsEl = document.getElementById("tabs");
@@ -661,13 +661,12 @@ function markKeys(item) {
   return key ? [key] : [];
 }
 
-/** La baja de una tarjeta va con su id. No usa el enlace ni el título: otra tarjeta que los comparta no se borra. */
+/** La baja viaja con el id y con las claves antiguas (enlace, título, documento). Así una ayuda borrada en el iPad no reaparece en el iPhone. */
 function deletionKeys(item) {
   const keys = new Set();
   if (item?.id) {
     keys.add(`id:${item.id}`);
     keys.add(String(item.id));
-    return [...keys];
   }
   const url = canonicalUrl(item?.url);
   const title = String(item?.title || "")
@@ -679,7 +678,7 @@ function deletionKeys(item) {
     .trim()
     .slice(0, 160);
   if (url) keys.add(`u:${url}`);
-  if (title.length >= 40) keys.add(`t:${title}`);
+  if (item?.kind === "linea" && url && title) keys.add(`t:${url}|${title}`);
   for (const key of documentKeys(item?.url, item?.title)) keys.add(key);
   return [...keys];
 }
@@ -3720,7 +3719,38 @@ function rememberSyncCode(code) {
     else localStorage.removeItem(SYNC_CODE_KEY);
   } catch { /* sigue en memoria */ }
 }
+function knownSyncItems() {
+  return [
+    ...(state?.items || []),
+    ...((state?.digests || []).flatMap((entry) => entry.items || [])),
+    ...(nuevaPacData?.news || []),
+    ...((alertsData?.groups || []).flatMap((group) => group.items || [])),
+  ];
+}
+
+/** Mete en el borrado sincronizado las bajas de todas las pestañas, también las guardadas con la clave antigua. */
+function migrateLocalHides() {
+  const keys = [];
+  for (const name of ["alerta_ocultas", "alerta_suprimidas"]) {
+    for (const key of readSet(name)) keys.push(key);
+  }
+  for (const item of knownSyncItems()) {
+    const marks = deletionKeys(item);
+    const hidden = marks.some((key) => readStore.deleted[key]
+      || (readStore.aliases?.[key] && readStore.deleted[readStore.aliases[key]])
+      || readSet("alerta_ocultas").has(key)
+      || readSet("alerta_suprimidas").has(key));
+    if (hidden) keys.push(...marks);
+  }
+  const next = absorbHideKeys(readStore.deleted, keys);
+  if (JSON.stringify(next) !== JSON.stringify(readStore.deleted)) {
+    readStore.deleted = next;
+    writeJson(READ_KEY, readStore, { silent: true });
+  }
+}
+
 function localSyncDoc() {
+  migrateLocalHides();
   return { v: 1, read: readStore.read, deleted: readStore.deleted, aliases: readStore.aliases, favorites, favoriteRemoved, prefs };
 }
 function applySyncDoc(doc) {

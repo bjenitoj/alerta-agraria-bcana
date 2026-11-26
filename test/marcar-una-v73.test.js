@@ -18,7 +18,7 @@ function load() {
     (key, value) => { ls[key] = JSON.stringify(value); },
     (url) => String(url || ""),
     () => false,
-    () => ["d:bocyl-d-1"]
+    (url) => (String(url || "").includes("ayudas-asociadas") ? ["d:pac-comun"] : [])
   );
   return api;
 }
@@ -34,7 +34,9 @@ test("v7.3 tocar una tarjeta no marca las que comparten enlace o título", () =>
   assert.equal(api.isReadItem(b), false);
   api.deleteReadItems([a]);
   assert.equal(api.isDeletedItem(a), true);
-  assert.equal(api.isDeletedItem(b), false);
+  assert.equal(api.isDeletedItem(b), true, "v7.4.3: la baja del enlace oficial oculta las fichas de esa página");
+  const other = { id: "linea-3", title: "Ayuda distinta de ganadería publicada en el BOE para León", url: "https://www.boe.es/diario/otra" };
+  assert.equal(api.isDeletedItem(other), false);
 });
 
 test("v7.3 papelera junto a Favorita y Compartir, y el toque no marca la tarjeta", () => {
@@ -48,6 +50,6 @@ test("v7.3 papelera junto a Favorita y Compartir, y el toque no marca la tarjeta
   assert.match(click, /event\.stopPropagation\(\)/);
   assert.doesNotMatch(appJs.slice(appJs.indexOf("function favoriteActions"), appJs.indexOf("function milestoneRow")), /data-trash/);
   assert.match(css, /\.act\.mini\.trash \{[^}]*min-width: 44px/);
-  assert.match(indexHtml, /styles\.css\?v=79/);
+  assert.match(indexHtml, /styles\.css\?v=80/);
   assert.match(css, /@media \(max-width: 900px\) \{[\s\S]*\.stamp \{\s*display: block;/);
 });
