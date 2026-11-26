@@ -40,17 +40,17 @@ test("v6.6 en Favoritas: Quitar de favoritas, Borrar (también del resto, con De
   assert.match(bury, /isDeletedItem\(item\)\) return \[\]/);
   assert.match(bury, /readStore\.deleted\[key\] = now/);
   const click = appJs.slice(appJs.indexOf('const favDelete = event.target.closest("[data-fav-delete]")'), appJs.indexOf('const share = event.target.closest("[data-share]")'));
-  assert.match(click, /delete favorites\[existing\]/);
+  assert.match(click, /forgetFavorite\(id, item\)/);
   assert.match(click, /buryItem\(item \|\| snap\)/);
   assert.match(click, /showToast\("Borrada"/);
-  assert.match(click, /favorites\[snap\.id\] = snap/);
+  assert.match(click, /restoreFavorite\(saved\)/);
   assert.match(click, /undeleteKeys\(keys\)/);
-  assert.doesNotMatch(fn("deleteReadItems", "undeleteKeys"), /FAV_KEY|delete favorites/);
+  assert.match(fn("deleteReadItems", "undeleteKeys"), /forgetFavorite\(/);
   assert.match(css, /\.fav-actions \{ display: grid/);
   assert.match(css, /\.fav-actions \.fav-delete/);
   assert.match(css, /\.fav-actions \.act\.share/);
-  assert.match(indexHtml, /app\.js\?v=78/);
-  assert.match(indexHtml, /styles\.css\?v=78/);
+  assert.match(indexHtml, /app\.js\?v=79/);
+  assert.match(indexHtml, /styles\.css\?v=79/);
 });
 
 test("v6.7 cabecera de Favoritas sin el párrafo largo; la explicación sigue en la guía", () => {

@@ -1,5 +1,13 @@
 # Cambios
 
+## v7.4.2 · 26/11/2026 · Quitar una favorita también en el otro aparato
+
+- Al quitar una favorita, o al borrarla con la papelera o con «Borrar marcadas», se guarda la fecha de la baja. El otro aparato ya no la vuelve a poner.
+- Si se vuelve a marcar una favorita después, esa marca gana. Una noticia borrada no reaparece solo porque el otro aparato la tuviera en favoritas.
+- Borrar una noticia en Resumen también viaja con la clave de esa tarjeta. Si un sync estaba a medias, el borrado no se pierde. El otro aparato la quita de la lista sin recargar, y otra tarjeta que solo comparta el enlace no se borra.
+- Las favoritas antiguas guardadas como `true` o sin fecha pasan a tener una fecha para poder compararlas.
+- Caché `?v=79`.
+
 ## v7.4 · 26/11/2026 · La sincronización al volver a la app
 
 - En el iPhone y el iPad, cerrar y abrir la app no avisaba a la página. La sincronización solo escuchaba `visibilitychange`, así que el otro aparato no se enteraba. Ahora también escucha el foco, `pageshow` y `resume`, y hay un botón «Sincronizar ahora».
