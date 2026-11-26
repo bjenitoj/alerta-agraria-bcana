@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { createServer } from "node:http";
-import { createSyncCode, mergeSync } from "../lib/sync.js";
+import { absorbHideKeys, createSyncCode, mergeSync } from "../lib/sync.js";
 import { memorySyncStore } from "../lib/sync-store.js";
 import { createApp } from "../server.js";
 
@@ -17,18 +17,20 @@ function readApi() {
     (key, value) => { ls[key] = JSON.stringify(value); },
     (url) => String(url || "").replace(/^https?:\/\/(www\.)?/, "").replace(/[#?].*$/, "").replace(/\/$/, ""),
     () => false,
-    () => ["d:compartido"]
+    () => []
   );
 }
 
-test("v7.4.2 el borrado de una tarjeta no se lleva la que solo comparte enlace", () => {
+test("v7.4.3 borrar en Ayudas oculta la ficha y la que sale de la misma página oficial", () => {
   const api = readApi();
   const url = "https://pac.jcyl.es/web/es/regimenes-ayuda/ayudas-asociadas-agricultores.html";
   const a = { id: "alerta-1", read: true, title: "Alerta de viento en Salamanca para explotaciones de secano", url };
   const b = { id: "alerta-2", title: "Alerta de lluvia en Salamanca para explotaciones de secano", url };
+  const other = { id: "alerta-3", title: "Convocatoria distinta publicada solo en el BOE para León", url: "https://www.boe.es/diario/otra" };
   api.deleteReadItems([a]);
   assert.equal(api.isDeletedItem(a), true);
-  assert.equal(api.isDeletedItem(b), false, "otra tarjeta, aunque el enlace coincida, sigue");
+  assert.equal(api.isDeletedItem(b), true);
+  assert.equal(api.isDeletedItem(other), false);
 });
 
 test("v7.4.2 una baja guardada solo con el id pelado también oculta la tarjeta", () => {
@@ -82,10 +84,29 @@ test("v7.4.2 el endpoint guarda el borrado y el otro cliente no lo borra", async
   server.close();
 });
 
-test("v7.4.2 un sync en curso no se traga el borrado siguiente", () => {
+test("v7.4.3 las bajas antiguas sin fecha entran en el borrado sincronizado", () => {
+  const stamp = "2026-11-26T22:00:00.000Z";
+  const migrated = absorbHideKeys(
+    { "id:vieja": "2026-11-26T07:01:00.000Z" },
+    ["u:pac.jcyl.es/web/es/regimenes-ayuda/ayudas-asociadas-agricultores.html", "r:no-es-baja", "t:ayuda pac"],
+    stamp
+  );
+  assert.equal(migrated["id:vieja"], "2026-11-26T07:01:00.000Z");
+  assert.equal(migrated["u:pac.jcyl.es/web/es/regimenes-ayuda/ayudas-asociadas-agricultores.html"], stamp);
+  assert.equal(migrated["t:ayuda pac"], stamp);
+  assert.equal(migrated["r:no-es-baja"], undefined);
+  const api = readApi();
+  api.plant(migrated);
+  const card = { id: "pac-9", title: "Ayuda asociada a los frutos secos en Castilla y León para 2026", url: "https://pac.jcyl.es/web/es/regimenes-ayuda/ayudas-asociadas-agricultores.html" };
+  assert.equal(api.isDeletedItem(card), true);
+});
+
+test("v7.4.3 cada sync junta las bajas locales de todas las pestañas", () => {
   const pull = appJs.slice(appJs.indexOf("async function pullPushSync"), appJs.indexOf("async function paintQr"));
   assert.match(pull, /syncQueued = true/);
   assert.match(pull, /mergeSync\(localSyncDoc\(\), merged\)/);
   assert.match(appJs.slice(appJs.indexOf("function applySyncDoc"), appJs.indexOf("function scheduleSync")), /render\(\)/);
-  assert.match(appJs.slice(appJs.indexOf("function deletionKeys"), appJs.indexOf("function hasMark")), /id:\$\{item\.id\}/);
+  assert.match(appJs.slice(appJs.indexOf("function localSyncDoc"), appJs.indexOf("function applySyncDoc")), /migrateLocalHides\(\)/);
+  assert.match(appJs, /alerta_ocultas/);
+  assert.match(appJs, /alerta_suprimidas/);
 });

@@ -1,5 +1,12 @@
 # Cambios
 
+## v7.4.3 · 26/11/2026 · Las ayudas borradas también en el otro aparato
+
+- Las 9 ayudas PAC seguían en el iPhone porque la baja estaba guardada con la clave del enlace (`u:`) y la app nueva solo miraba el id. En cada sincronización se juntan todas las bajas locales (Ayudas, Resumen, Nueva PAC, Varios) con las del servidor, también las antiguas de `alerta_ocultas`, y se sube el resultado.
+- Borrar una ficha en Ayudas la oculta en el otro aparato sin recargar, incluida la que sale de la misma página oficial.
+- Caché `?v=80`.
+
+
 ## v7.4.2 · 26/11/2026 · Quitar una favorita también en el otro aparato
 
 - Al quitar una favorita, o al borrarla con la papelera o con «Borrar marcadas», se guarda la fecha de la baja. El otro aparato ya no la vuelve a poner.
