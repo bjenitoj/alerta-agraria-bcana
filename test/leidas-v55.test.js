@@ -150,7 +150,7 @@ test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias
   assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=77 (v6.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=77/);
+test("caché v=78 (v6.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=78/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });
