@@ -21,7 +21,7 @@ import {
 import { CCAA, PLACES_SOURCE, normalizePlace, provinceOf, comarcaOf, ccaaOf, placeAllows } from "/mod/places.js";
 import { placeLabel } from "/mod/preferences.js";
 import { closesWithin, deadlineInfo, fmtDayKey, hasSourceUrl, icsHref, icsLink, itemDetails, whatsappUrl, whyForYou } from "/mod/aid-view.js";
-import { absorbHideKeys, createSyncCode, mergeSync, normalizeFavorite, normalizeSyncCode, syncAgeText } from "/mod/sync.js";
+import { absorbHideKeys, buildDeletedRows, createSyncCode, mergeSync, normalizeFavorite, normalizeSyncCode, syncAgeText } from "/mod/sync.js";
 import QRCode from "/vendor/qrcode.js";
 
 const tabsEl = document.getElementById("tabs");
@@ -1186,31 +1186,90 @@ function paintReadTools() {
   paintReadSettings();
 }
 
+function catalogItems() {
+  const lists = [
+    ...(state?.items || []),
+    ...((state?.digests || []).flatMap((entry) => entry.items || [])),
+    ...(state?.archive || []),
+    ...(nuevaPacData?.news || []),
+    ...(nuevaPacData?.docs || []),
+    ...((alertsData?.groups || []).flatMap((group) => group.items || [])),
+    ...(normativaData?.items || []),
+    ...(pacData?.hitos || []),
+    ...(archiveHints || []),
+  ];
+  return lists.filter((item) => item && (item.title || item.titulo));
+}
+
+function itemTitle(item) {
+  return String(item?.title || item?.titulo || "").trim();
+}
+
+function itemSource(item) {
+  return String(item?.sourceName || item?.source || item?.fuente || item?.departamento || "").trim();
+}
+
+function deletedGroups() {
+  const groups = [];
+  for (const item of catalogItems()) {
+    const marks = deletionKeys(item).filter((key) => readStore.deleted?.[key]);
+    if (!marks.length) continue;
+    groups.push({ marks, title: itemTitle(item), source: itemSource(item) });
+  }
+  return groups;
+}
+
+function rememberDeletedFacts() {
+  const groups = deletedGroups();
+  let changed = false;
+  for (const group of groups) {
+    let oldest = "";
+    for (const key of group.marks) {
+      const when = readStore.deleted?.[key];
+      if (when && (!oldest || String(when) < oldest)) oldest = when;
+    }
+    for (const key of group.marks) {
+      if (!readStore.deletedInfo?.[key]?.title && oldest && readStore.deleted[key] !== oldest) {
+        readStore.deleted[key] = oldest;
+        changed = true;
+      }
+    }
+    const primary = group.marks.find((key) => key.startsWith("id:")) || group.marks[0];
+    if (group.title && !readStore.deletedInfo?.[primary]?.title) {
+      readStore.deletedInfo = readStore.deletedInfo || {};
+      readStore.deletedInfo[primary] = { title: group.title, source: group.source, at: oldest || readStore.deleted[primary] };
+      changed = true;
+    }
+  }
+  if (changed) {
+    writeJson(READ_KEY, readStore, { silent: true });
+    scheduleSync();
+  }
+  return groups;
+}
+
 function recentDeleted() {
-  const aliases = new Set(Object.keys(readStore.aliases || {}));
-  const limit = Date.now() - READ_TTL_DAYS * 86400000;
-  return Object.entries(readStore.deleted || {})
-    .filter(([key, when]) => !aliases.has(key) && Date.parse(when) >= limit)
-    .map(([key, when]) => {
-      const info = readStore.deletedInfo?.[key] || {};
-      const id = key.startsWith("id:") ? key.slice(3) : "";
-      const item = id ? findItem(id) : null;
-      const at = Date.parse(when);
-      const whenLabel = Number.isFinite(at)
-        ? new Date(at).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
-        : "";
-      return {
-        key,
-        title: info.title || item?.title || "Noticia borrada",
-        source: info.source || item?.sourceName || "",
-        when: whenLabel,
-        at: when,
-      };
-    })
-    .sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const groups = rememberDeletedFacts();
+  return buildDeletedRows({
+    deleted: readStore.deleted,
+    aliases: readStore.aliases,
+    info: readStore.deletedInfo,
+    groups,
+  }).map((row) => {
+    const at = Date.parse(row.at);
+    const when = Number.isFinite(at)
+      ? new Date(at).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+      : "";
+    return { ...row, when };
+  });
 }
 
 function paintReadSettings() {
+  ensureArchiveHints();
+  if (typeof ensureNuevaPac === "function") ensureNuevaPac();
+  if (typeof loadNormativa === "function") loadNormativa();
+  if (typeof ensurePac === "function") ensurePac();
+  if (typeof ensureAlerts === "function") ensureAlerts();
   const restore = document.getElementById("restoreDeleted");
   const list = document.getElementById("deletedList");
   const summaryCount = document.getElementById("deletedFoldCount");
@@ -3838,13 +3897,32 @@ function rememberSyncCode(code) {
     else localStorage.removeItem(SYNC_CODE_KEY);
   } catch { /* sigue en memoria */ }
 }
+let archiveHints = null;
+function ensureArchiveHints() {
+  if (archiveHints || archiveHints === false) return;
+  archiveHints = false;
+  fetch("/api/archive", { cache: "no-store" })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      archiveHints = data ? (data.archive || data.items || []) : [];
+      if (archiveHints.length) paintReadSettings();
+    })
+    .catch(() => { archiveHints = []; });
+}
+
 function knownSyncItems() {
-  return [
-    ...(state?.items || []),
-    ...((state?.digests || []).flatMap((entry) => entry.items || [])),
-    ...(nuevaPacData?.news || []),
-    ...((alertsData?.groups || []).flatMap((group) => group.items || [])),
-  ];
+  return catalogItems();
+}
+
+function earliestDeleted(marks) {
+  let best = "";
+  for (const key of marks) {
+    const via = readStore.aliases?.[key];
+    for (const candidate of [readStore.deleted?.[key], via && readStore.deleted?.[via]]) {
+      if (candidate && Number.isFinite(Date.parse(candidate)) && (!best || String(candidate) < best)) best = candidate;
+    }
+  }
+  return best;
 }
 
 /** Mete en el borrado sincronizado las bajas de todas las pestañas, también las guardadas con la clave antigua. */
@@ -3862,7 +3940,13 @@ function migrateLocalHides() {
       || (readStore.aliases?.[key] && readStore.deleted[readStore.aliases[key]])
       || readSet("alerta_ocultas").has(key)
       || readSet("alerta_suprimidas").has(key)));
-    if (hidden) keys.push(...marks.filter((key) => !readStore.restored?.[key] && !readStore.gone?.[key]));
+    if (hidden) {
+      const at = earliestDeleted(marks);
+      for (const key of marks) {
+        if (readStore.restored?.[key] || readStore.gone?.[key]) continue;
+        keys.push(at ? { key, at } : key);
+      }
+    }
   }
   const next = absorbHideKeys(readStore.deleted, keys);
   if (JSON.stringify(next) !== JSON.stringify(readStore.deleted)) {

@@ -1,5 +1,13 @@
 # Cambios
 
+## v7.5.1 · 28/11/2026 · Título y fecha real de lo borrado
+
+- En Ajustes, cada borrada muestra el título y, debajo, la fuente y la fecha en que se borró. Si hace falta, se busca en las noticias ya cargadas y se guarda para sincronizarlo.
+- La fecha no se cambia al migrar: se conserva la que ya tenía la baja. Varias claves de la misma noticia (id y enlace) salen en una sola fila.
+- Si la noticia ya no está en ninguna fuente, se lee el texto de la clave. Si tampoco se puede leer, no se lista.
+- Caché `?v=83`.
+
+
 ## v7.5 · 28/11/2026 · Borradas 15 días y desmarcar de verdad
 
 - En Ajustes, «Leídas y borradas» lista las borradas de los últimos 15 días (título, fuente y fecha) con «Recuperar» en cada una, y «Recuperar todas (N)». Pasado ese plazo dejan de listarse. Se guarda una marca breve, sin título, para que la noticia no vuelva si la fuente aún la tiene. Esa marca se sincroniza.
