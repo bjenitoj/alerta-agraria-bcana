@@ -13,12 +13,19 @@
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <link rel="stylesheet" href="/styles.css?v=84" />
+  <link rel="stylesheet" href="/styles.css?v=85" />
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
-      if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
-    } catch { /* el tema sigue el del sistema */ }
+      const choice = saved === "dark" || saved === "auto" || saved === "light" ? saved : "light";
+      if (choice !== "auto") document.documentElement.dataset.theme = choice;
+      const dark = choice === "dark" || (choice === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+      if (dark) document.documentElement.classList.add("theme-dark");
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.content = dark ? "#101812" : "#1b4332";
+      const bar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (bar) bar.content = dark ? "black" : "default";
+    } catch { /* el tema claro sigue */ }
   </script>
 </head>
 <body>
@@ -140,13 +147,11 @@
         <button type="button" class="acc-btn" id="readTitle" data-acc="leidas" aria-expanded="false" aria-controls="acc-leidas"><span class="acc-text"><span class="acc-title">Leídas y borradas</span><span class="acc-note">15 días. Se sincronizan si hay código</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="acc-panel" id="acc-leidas" role="region" aria-labelledby="readTitle" hidden>
           <p class="hint">Toca una pieza para marcarla. «Borrar marcadas» la quita de las listas. Si tienes un código, lo marcado y lo borrado se sincronizan con tus otros aparatos. Pasados 15 días la borrada deja de listarse, pero no vuelve a salir.</p>
-          <details class="deleted-fold">
-            <summary>Borradas de los últimos 15 días (<span id="deletedFoldCount">0</span>)</summary>
-            <ul id="deletedList" class="deleted-list"></ul>
-          </details>
           <div class="settings-read-actions">
+            <button type="button" id="reviewDeleted" class="ghost" aria-expanded="false" aria-controls="deletedList">Revisar borradas (0)</button>
             <button type="button" id="restoreDeleted" class="ghost" disabled>Recuperar todas (0)</button>
           </div>
+          <ul id="deletedList" class="deleted-list" hidden></ul>
         </div>
       </section>
       <section class="acc settings-sync">
@@ -254,6 +259,6 @@
       </div>
     </form>
   </div>
-  <script type="module" src="/app.js?v=84"></script>
+  <script type="module" src="/app.js?v=85"></script>
 </body>
 </html>

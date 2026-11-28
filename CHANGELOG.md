@@ -1,5 +1,12 @@
 # Cambios
 
+## v7.5.3 · 28/11/2026 · Compartir en Favoritas y revisar borradas
+
+- En Favoritas, cada ficha tiene el mismo botón Compartir que en Resumen y Ayudas, junto a Favorita. En el móvil y en el iPad abre el menú del sistema; si no lo hay, WhatsApp con el título y el enlace oficial. En Favoritas no aparece la papelera de las otras pestañas.
+- En Ajustes, «Revisar borradas (N)» es un botón del mismo estilo que «Recuperar todas (N)». Al tocarlo se abre o se cierra la lista.
+- El tema vuelve a funcionar. Por defecto es claro. Oscuro aplica el mismo estilo con fondos oscuros y texto claro, sin recargar. Automático sigue el modo del sistema. La elección se guarda y viaja con el código. En el iPhone y el iPad, la barra de estado y el color del marco acompañan al tema.
+- Caché `?v=85`.
+
 ## v7.5.2 · 28/11/2026 · Solo borradas con título
 
 - La lista de borradas ya no enseña claves ni rutas. Solo sale una fila si hay título: el guardado al borrar o el de la noticia encontrada.

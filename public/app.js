@@ -982,6 +982,7 @@ function findItem(id) {
     || (state.digests || []).flatMap((entry) => entry.items || []).find((item) => item.id === id)
     || catalog.find((item) => item.id === id)
     || favorites[id]
+    || Object.values(favorites).find((fav) => fav && (fav.id === id || fav.key === id))
     || null;
 }
 
@@ -1080,15 +1081,19 @@ function isPacAid(item) {
 
 // v5.6: «★ Favorita» y «Compartir» arriba a la derecha de la ficha. Compartir usa el menú del sistema
 // (navigator.share, iPhone/iPad) y, si no lo hay, WhatsApp.
-function topActions(item) {
+function topActions(item, options = {}) {
   const today = madridTodayKey();
   const appUrl = location.origin && /^https?:/.test(location.origin) ? `${location.origin}/` : "";
   const fav = isFavorite(item);
+  // En Favoritas no hay papelera: quitar y borrar siguen en la fila de abajo.
+  const trash = options.trash === false
+    ? ""
+    : `<button type="button" class="act mini trash" data-trash="${escapeHtml(item.id)}" aria-label="Borrar">${TRASH_ICON}<span class="trash-text">Borrar</span></button>`;
   return `
     <div class="top-actions">
       <button type="button" class="act mini fav ${fav ? "on" : ""}" data-fav="${escapeHtml(item.id)}" aria-pressed="${fav ? "true" : "false"}">${fav ? "★ En favoritas" : "★ Favorita"}</button>
       <button type="button" class="act mini share" data-share="${escapeHtml(item.id)}" data-wa="${escapeHtml(whatsappUrl(item, today, appUrl))}" aria-label="Compartir">${SHARE_ICON}<span class="share-text">Compartir</span></button>
-      <button type="button" class="act mini trash" data-trash="${escapeHtml(item.id)}" aria-label="Borrar">${TRASH_ICON}<span class="trash-text">Borrar</span></button>
+      ${trash}
     </div>`;
 }
 
@@ -1276,14 +1281,14 @@ function paintReadSettings() {
   if (typeof ensurePac === "function") ensurePac();
   if (typeof ensureAlerts === "function") ensureAlerts();
   const restore = document.getElementById("restoreDeleted");
+  const review = document.getElementById("reviewDeleted");
   const list = document.getElementById("deletedList");
-  const summaryCount = document.getElementById("deletedFoldCount");
   const rows = recentDeleted();
   if (restore) {
     restore.textContent = `Recuperar todas (${rows.length})`;
     restore.disabled = !rows.length;
   }
-  if (summaryCount) summaryCount.textContent = String(rows.length);
+  if (review) review.textContent = `Revisar borradas (${rows.length})`;
   if (!list) return;
   list.innerHTML = rows.length
     ? rows.map((row, index) => `<li>
@@ -1357,18 +1362,28 @@ function clearRead() {
   });
 }
 
-/** Compartir una ficha: menú del sistema si existe (iPhone/iPad); si no, WhatsApp. */
-async function shareItem(button) {
+/** Compartir una ficha: menú del sistema si existe (iPhone/iPad, también en la PWA); si no, WhatsApp. */
+function shareItem(button) {
   const item = findItem(button.dataset.share);
-  if (item && navigator.share) {
+  const title = String(item?.title || "Alerta Agraria");
+  const url = String(item?.url || "");
+  const openWhatsapp = () => window.open(button.dataset.wa, "_blank", "noopener");
+  // navigator.share tiene que llamarse en el mismo toque. Si la función es async, iOS (y la PWA) pierde el gesto y no abre el menú.
+  if (item && typeof navigator.share === "function") {
+    let pending;
     try {
-      await navigator.share({ title: item.title || "Alerta Agraria", text: item.title || "", url: item.url });
-      return;
+      pending = navigator.share({ title: title, text: title, url: /^https?:/i.test(url) ? url : undefined });
     } catch (error) {
-      if (error?.name === "AbortError") return;
+      if (error?.name !== "AbortError") openWhatsapp();
+      return;
     }
+    Promise.resolve(pending).catch((error) => {
+      if (error?.name === "AbortError") return;
+      openWhatsapp();
+    });
+    return;
   }
-  window.open(button.dataset.wa, "_blank", "noopener");
+  openWhatsapp();
 }
 
 function aidCard(item, options = {}) {
@@ -1441,7 +1456,7 @@ function aidCard(item, options = {}) {
           ${readBadge(read)}
           ${typeRow(item)}
         </div>
-        <div class="top-right">${daysBadge(aid)}${options.inFavorites ? "" : topActions(item)}</div>
+        <div class="top-right">${daysBadge(aid)}${topActions(item, { trash: !options.inFavorites })}</div>
       </div>
       <h3>${escapeHtml(item.title || "Sin título")}</h3>
       ${ghost}
@@ -3261,6 +3276,14 @@ favBtn?.addEventListener("click", (event) => {
   window.scrollTo(0, 0);
 });
 document.getElementById("closeSheet")?.addEventListener("click", () => setSheet(false));
+document.getElementById("reviewDeleted")?.addEventListener("click", () => {
+  const list = document.getElementById("deletedList");
+  const button = document.getElementById("reviewDeleted");
+  if (!list || !button) return;
+  const open = list.hidden;
+  list.hidden = !open;
+  button.setAttribute("aria-expanded", open ? "true" : "false");
+});
 document.getElementById("restoreDeleted")?.addEventListener("click", () => {
   const n = restoreAllDeleted();
   paintReadSettings();
@@ -3326,8 +3349,9 @@ function effectiveTheme() {
 function savedTheme() {
   try {
     const saved = localStorage.getItem("alerta_theme");
-    return saved === "light" || saved === "dark" ? saved : "auto";
-  } catch { return "auto"; }
+    if (saved === "light" || saved === "dark" || saved === "auto") return saved;
+  } catch { /* sin almacén: claro */ }
+  return "light";
 }
 
 function paintThemeChoice(choice = savedTheme()) {
@@ -3338,24 +3362,38 @@ function paintThemeChoice(choice = savedTheme()) {
   });
 }
 
-function paintTheme(theme) {
-  if (theme === "light" || theme === "dark") {
-    document.documentElement.dataset.theme = theme;
-    try { localStorage.setItem("alerta_theme", theme); } catch { /* el tema queda en esta visita */ }
-  } else {
-    delete document.documentElement.dataset.theme;
-    try { localStorage.removeItem("alerta_theme"); } catch { /* sigue el sistema */ }
-  }
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = effectiveTheme() === "dark" ? "#101812" : "#1b4332";
-  paintThemeChoice(theme === "light" || theme === "dark" ? theme : "auto");
+function systemDark() {
+  try { return window.matchMedia("(prefers-color-scheme: dark)").matches; }
+  catch { return false; }
 }
+
+function paintTheme(theme, options = {}) {
+  if (theme !== "light" && theme !== "dark" && theme !== "auto") theme = "light";
+  const root = document.documentElement;
+  if (theme === "auto") delete root.dataset.theme;
+  else root.dataset.theme = theme;
+  const dark = theme === "dark" || (theme === "auto" && systemDark());
+  root.classList.toggle("theme-dark", dark);
+  try { localStorage.setItem("alerta_theme", theme); } catch { /* el tema queda en esta visita */ }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = dark ? "#101812" : "#1b4332";
+  const bar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (bar) bar.content = dark ? "black" : "default";
+  paintThemeChoice(theme);
+  if (!options.silent) touchView();
+}
+
+try {
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (savedTheme() === "auto") paintTheme("auto", { silent: true });
+  });
+} catch { /* sin aviso del sistema */ }
 
 document.querySelector(".settings-theme")?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-theme-choice]");
   if (button) paintTheme(button.dataset.themeChoice);
 });
-paintThemeChoice();
+paintTheme(savedTheme(), { silent: true });
 
 async function archiveById(id) {
   if (!isAdmin()) return;
@@ -3978,6 +4016,7 @@ function localView() {
     aidGroup: currentAidGroup(),
     aidStatus: currentAidStatus(),
     priceSource: priceSourceChoice || "",
+    theme: savedTheme(),
     updatedAt: viewStamp || "",
   };
 }
@@ -4001,6 +4040,7 @@ function applyView(view) {
     try { localStorage.setItem(PRICE_SOURCE_KEY, priceSourceChoice); } catch { /* sigue en memoria */ }
     if (typeof priceSource !== "undefined") priceSource = effectivePriceSource();
   }
+  if (view.theme === "light" || view.theme === "dark" || view.theme === "auto") paintTheme(view.theme, { silent: true });
   viewStamp = view.updatedAt || viewStamp;
   try { localStorage.setItem(VIEW_KEY, viewStamp); } catch { /* sigue en memoria */ }
 }

@@ -14,14 +14,17 @@ test("v6.2 estilo «Con color» es el diseño por defecto, sin interruptor ?esti
   assert.match(css, /\.tab\.active, \.chip\.on[^{]*\{[^}]*linear-gradient\(135deg, #12704a, #1f9a62\)/);
   assert.match(css, /\.top \{ position: sticky; top: var\(--rb-h, 0px\)/);
   assert.match(appJs, /function measureReviewBanner/);
-  assert.match(html, /styles\.css\?v=84/);
-  assert.match(html, /app\.js\?v=84/);
+  assert.match(html, /styles\.css\?v=85/);
+  assert.match(html, /app\.js\?v=85/);
 });
 
-test("v6.2 estilo: siempre en claro, también con el sistema en oscuro", () => {
+test("v7.5.3 el claro es el de por defecto y el oscuro cambia los colores", () => {
   const force = css.slice(css.lastIndexOf(":root:root:root {"));
   assert.match(force, /color-scheme: light/);
-  assert.match(css, /:root\[data-theme="dark"\] \.review-banner \{ background: linear-gradient\(90deg, #fbeec8, #f6e3ad\)/);
+  assert.match(css, /html\.theme-dark:root:root \{[^}]*color-scheme: dark/);
+  assert.match(css, /html\.theme-dark:root:root \{[^}]*--bg: #101812/);
+  assert.match(css, /html\.theme-dark:root:root \{[^}]*--ink: #f3f6f1/);
+  assert.doesNotMatch(css, /data-theme="dark"\] \.review-banner \{ background: linear-gradient\(90deg, #fbeec8/);
 });
 
 test("v6.2 estilo: iconos con borde fino en chips, barra, Herramientas, Alertas y Normativa", () => {

@@ -999,7 +999,8 @@ button.stat[aria-expanded="true"] .chev { transform: rotate(180deg); }
 @media (max-width: 560px) {
   .card-top { flex-wrap: wrap; }
   .share-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .act.share { width: 40px; justify-content: center; padding: 0; }
+  .top-actions .act.share { width: 40px; justify-content: center; padding: 0; }
+  .fav-actions .act.share { width: auto; padding: 8px 12px; }
 }
 
 /* v5.6: pestañas, chips de sector y cuadros de Inicio más compactos (caben más en iPad y móvil) */
@@ -1336,11 +1337,8 @@ details > :not(summary) { animation: estilo-abrir .22s ease; }
 @keyframes estilo-abrir { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { details > :not(summary) { animation: none; } }
 
-/* Siempre en claro: el estilo nuevo está pensado para fondo claro; así en un iPhone/iPad en modo oscuro nada queda ilegible. */
+/* Por defecto, claro. El oscuro se aplica con html.theme-dark, más abajo, sin pisar estos colores. */
 :root:root:root { color-scheme: light; --btn-ink: #ffffff; --earth: #8c4a32; --next: #1d4e89; --quiet: #5c5346; --dock: #fffdf8; }
-:root[data-theme="dark"] .act.whatsapp { color: inherit; }
-:root[data-theme="dark"] .review-banner { background: linear-gradient(90deg, #fbeec8, #f6e3ad); color: #5a3b06; border-bottom-color: #e3c776; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .review-banner { background: linear-gradient(90deg, #fbeec8, #f6e3ad); color: #5a3b06; border-bottom-color: #e3c776; } }
 
 /* Iconos con borde fino: cada icono va en un cuadrado redondeado de fondo claro con un borde de 1px en un tono más oscuro de su color. */
 .tab-icon, .chip svg, .dock svg, .tool-icon, .norma-ico, .head-btn svg, .sector-ico {
@@ -1627,10 +1625,133 @@ body:not(.marked-b) .card.read .block li.warn::before {
 .sync-join { display: grid; gap: 8px; margin-top: 12px; }
 .sync-join input { min-height: 44px; font: inherit; padding: 8px 10px; }
 .sync-state { font-weight: 700; min-height: 1.2em; }
-.deleted-fold { margin: 8px 0 12px; }
-.deleted-fold summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
-.deleted-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.deleted-list { list-style: none; margin: 8px 0 12px; padding: 0; display: grid; gap: 8px; }
+.deleted-list[hidden] { display: none; }
 .deleted-list li { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
 .deleted-copy { display: grid; gap: 2px; min-width: 0; }
 .deleted-copy small { color: #5c5c5c; }
 .deleted-list button { min-height: 44px; flex: none; }
+
+/* v7.5.3 · Oscuro: el mismo estilo 2, con fondos oscuros y texto claro. */
+html.theme-dark { background: #101812; }
+html.theme-dark:root:root {
+  color-scheme: dark;
+  --bg: #101812;
+  --bg-2: #16241c;
+  --card: #1c2b22;
+  --line: #3a5244;
+  --ink: #f3f6f1;
+  --muted: #c9d6cc;
+  --green: #8fdbc0;
+  --green-2: #7dcea8;
+  --btn: #12704a;
+  --btn-ink: #ffffff;
+  --link: #9ee0bf;
+  --wheat: #f0a63a;
+  --earth: #e7b39a;
+  --open: #3dd68c;
+  --soon: #ffb088;
+  --next: #9ec1f0;
+  --quiet: #d5cbbd;
+  --dock: #121c16;
+  --shadow: 0 2px 4px rgba(0, 0, 0, .35), 0 10px 26px rgba(0, 0, 0, .45);
+}
+html.theme-dark body {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(240, 166, 58, .14), transparent 28%),
+    radial-gradient(circle at 0% 30%, rgba(31, 154, 98, .18), transparent 36%),
+    var(--bg);
+}
+html.theme-dark .top {
+  background: linear-gradient(100deg, rgba(31, 154, 98, .34), rgba(16, 24, 18, .94) 50%, rgba(12, 20, 16, .96));
+  border-bottom-color: rgba(143, 219, 192, .22);
+}
+html.theme-dark .dock {
+  background: rgba(18, 28, 22, .94);
+  border-top: 1px solid rgba(143, 219, 192, .18);
+}
+html.theme-dark .review-banner {
+  background: #3a2e12;
+  color: #f6e3ad;
+  border-bottom-color: #5c4a1a;
+}
+html.theme-dark .card,
+html.theme-dark .np-news li,
+html.theme-dark .np-docs li,
+html.theme-dark .np-stage,
+html.theme-dark .strip-card,
+html.theme-dark .prio-row,
+html.theme-dark .stat,
+html.theme-dark .tool-link {
+  background: linear-gradient(135deg, rgba(31, 154, 98, .14), var(--card) 58%);
+}
+html.theme-dark .digest { background: linear-gradient(180deg, rgba(240, 166, 58, .2), var(--card) 90px); }
+html.theme-dark .tab,
+html.theme-dark .chip { background: rgba(143, 219, 192, .12); color: var(--green); }
+html.theme-dark .search input { border-color: rgba(143, 219, 192, .28); }
+html.theme-dark .tab-icon,
+html.theme-dark .chip svg,
+html.theme-dark .dock svg,
+html.theme-dark .tool-icon,
+html.theme-dark .norma-ico,
+html.theme-dark .head-btn svg,
+html.theme-dark .sector-ico {
+  background: color-mix(in srgb, currentColor 16%, #1c2b22);
+  border-color: color-mix(in srgb, currentColor 50%, #8fdbc0);
+}
+html.theme-dark .card.read,
+html.theme-dark .np-news-item.read,
+html.theme-dark body.marked-a .card.read,
+html.theme-dark body.marked-a .np-news-item.read {
+  background: #2a332e;
+  border: 1px solid #3e4943;
+  color: #e8e8e8;
+}
+html.theme-dark .card.read .block,
+html.theme-dark body.marked-a .card.read .block,
+html.theme-dark body:not(.marked-b) .card.read .block,
+html.theme-dark body:not(.marked-b) .card.read .block.money,
+html.theme-dark body:not(.marked-b) .card.read .block.source,
+html.theme-dark body:not(.marked-b) .card.read .block.why {
+  background: #343e38;
+  border-color: #4a5550;
+  border-left-color: #4a5550;
+}
+html.theme-dark body:not(.marked-b) .card.read,
+html.theme-dark body:not(.marked-b) .card.read h3,
+html.theme-dark body:not(.marked-b) .card.read h4,
+html.theme-dark body:not(.marked-b) .card.read p,
+html.theme-dark body:not(.marked-b) .card.read a:not(.official),
+html.theme-dark body:not(.marked-b) .np-news-item.read,
+html.theme-dark body:not(.marked-b) .np-news-item.read a:not(.official) {
+  color: #e8e8e8;
+}
+html.theme-dark body:not(.marked-b) .card.read .badge,
+html.theme-dark body:not(.marked-b) .card.read .type,
+html.theme-dark body:not(.marked-b) .card.read .days,
+html.theme-dark body:not(.marked-b) .np-news-item.read .badge,
+html.theme-dark body:not(.marked-b) .np-news-item.read .np-type,
+html.theme-dark body:not(.marked-b) .card.read .official,
+html.theme-dark body:not(.marked-b) .np-news-item.read .official {
+  background: #5c6560;
+  color: #f3f6f1;
+  border-color: #5c6560;
+}
+html.theme-dark body:not(.marked-b) .card.read .mark-unread,
+html.theme-dark body:not(.marked-b) .card.read .act,
+html.theme-dark body:not(.marked-b) .card.read .act.fav.on,
+html.theme-dark body:not(.marked-b) .np-news-item.read .mark-unread,
+html.theme-dark body:not(.marked-b) .np-news-item.read .act {
+  background: transparent;
+  color: #e4e4e4;
+  border-color: #8a938e;
+}
+html.theme-dark .deleted-copy small { color: #c8c8c8; }
+html.theme-dark .sync-qr,
+html.theme-dark .sync-qr svg { background: #fff; color: #111; }
+html.theme-dark .fav-actions .fav-delete { background: #3a2420; color: #ffb088; }
+html.theme-dark .alert-guide,
+html.theme-dark .alert-hint-text { background: #3a2e12; color: #f6e3ad; border-color: #5c4a1a; }
+html.theme-dark .tool-pop { background: #1c2b22; color: #f3f6f1; }
+html.theme-dark .tool-pop-close { color: #f3f6f1; }
+html.theme-dark .read-tools .clear-read[disabled] { background: #2a332e; color: #c9d6cc; }
