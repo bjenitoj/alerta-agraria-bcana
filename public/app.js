@@ -802,11 +802,14 @@ function undeleteKeys(keys) {
     dropped.push(key);
     delete readStore.deleted[key];
     if (readStore.deletedInfo) delete readStore.deletedInfo[key];
+    if (readStore.gone) delete readStore.gone[key];
     readStore.restored[key] = now;
     for (const [alias, primary] of Object.entries(aliases)) {
       if (primary !== key) continue;
       dropped.push(alias);
       delete readStore.deleted[alias];
+      if (readStore.deletedInfo) delete readStore.deletedInfo[alias];
+      if (readStore.gone) delete readStore.gone[alias];
       delete readStore.aliases[alias];
       readStore.restored[alias] = now;
     }
@@ -1248,20 +1251,22 @@ function rememberDeletedFacts() {
   return groups;
 }
 
+let listedDeleted = [];
 function recentDeleted() {
   const groups = rememberDeletedFacts();
-  return buildDeletedRows({
+  listedDeleted = buildDeletedRows({
     deleted: readStore.deleted,
     aliases: readStore.aliases,
     info: readStore.deletedInfo,
     groups,
   }).map((row) => {
     const at = Date.parse(row.at);
-    const when = Number.isFinite(at)
-      ? new Date(at).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
-      : "";
+    const when = row.approximate
+      ? "antes del 28 nov"
+      : (Number.isFinite(at) ? new Date(at).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "");
     return { ...row, when };
   });
+  return listedDeleted;
 }
 
 function paintReadSettings() {
@@ -1281,9 +1286,9 @@ function paintReadSettings() {
   if (summaryCount) summaryCount.textContent = String(rows.length);
   if (!list) return;
   list.innerHTML = rows.length
-    ? rows.map((row) => `<li>
+    ? rows.map((row, index) => `<li>
         <span class="deleted-copy"><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.source)}${row.source ? " · " : ""}${escapeHtml(row.when)}</small></span>
-        <button type="button" data-restore-one="${escapeHtml(row.key)}">Recuperar</button>
+        <button type="button" data-restore-index="${index}">Recuperar</button>
       </li>`).join("")
     : `<li class="empty">No hay noticias borradas en los últimos 15 días.</li>`;
 }
@@ -3263,10 +3268,12 @@ document.getElementById("restoreDeleted")?.addEventListener("click", () => {
   if (n) showToast(n === 1 ? "Recuperada 1 noticia" : `Recuperadas ${n} noticias`);
 });
 document.getElementById("acc-leidas")?.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-restore-one]");
+  const button = event.target.closest("[data-restore-index]");
   if (!button) return;
   event.preventDefault();
-  undeleteKeys([button.dataset.restoreOne]);
+  const row = listedDeleted[Number(button.dataset.restoreIndex)];
+  if (!row) return;
+  undeleteKeys(row.keys || [row.key]);
   render();
   showToast("Recuperada");
 });
