@@ -1,5 +1,13 @@
 # Cambios
 
+## v7.4.4 · 26/11/2026 · Recuperar borradas y la misma vista en los dos aparatos
+
+- Recuperar una borrada no se quedaba: al sincronizar, la baja del otro aparato la volvía a ocultar. Ahora la recuperación tiene fecha y gana a esa baja.
+- Agricultura, Ganadería y Pesca, Ayudas PAC u Otras, Abiertas o Cierran pronto, y la fuente de Precios viajan con el código. Así el (n) de Resumen y el de Ayudas coinciden.
+- Última consulta no se sincroniza: es la hora en que el servidor miró las fuentes, igual para quien abre la app. El tema y el código de sincronización se quedan en cada aparato.
+- Caché `?v=81`.
+
+
 ## v7.4.3 · 26/11/2026 · Las ayudas borradas también en el otro aparato
 
 - Las 9 ayudas PAC seguían en el iPhone porque la baja estaba guardada con la clave del enlace (`u:`) y la app nueva solo miraba el id. En cada sincronización se juntan todas las bajas locales (Ayudas, Resumen, Nueva PAC, Varios) con las del servidor, también las antiguas de `alerta_ocultas`, y se sube el resultado.
