@@ -18,10 +18,13 @@ test("v6.2 estilo «Con color» es el diseño por defecto, sin interruptor ?esti
   assert.match(html, /app\.js\?v=85/);
 });
 
-test("v6.2 estilo: siempre en claro, también con el sistema en oscuro", () => {
+test("v7.5.3 el claro es el de por defecto y el oscuro cambia los colores", () => {
   const force = css.slice(css.lastIndexOf(":root:root:root {"));
   assert.match(force, /color-scheme: light/);
-  assert.match(css, /:root\[data-theme="dark"\] \.review-banner \{ background: linear-gradient\(90deg, #fbeec8, #f6e3ad\)/);
+  assert.match(css, /html\.theme-dark:root:root \{[^}]*color-scheme: dark/);
+  assert.match(css, /html\.theme-dark:root:root \{[^}]*--bg: #101812/);
+  assert.match(css, /html\.theme-dark:root:root \{[^}]*--ink: #f3f6f1/);
+  assert.doesNotMatch(css, /data-theme="dark"\] \.review-banner \{ background: linear-gradient\(90deg, #fbeec8/);
 });
 
 test("v6.2 estilo: iconos con borde fino en chips, barra, Herramientas, Alertas y Normativa", () => {

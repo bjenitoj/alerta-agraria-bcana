@@ -53,7 +53,8 @@ test("v5.4 Ajustes: tema Claro/Oscuro/Automático con la misma persistencia y «
   assert.ok(sheet.indexOf("prefsSection") < sheet.indexOf("settings-theme") && sheet.indexOf("settings-theme") < sheet.indexOf("settings-read"), "v5.8: preferencias, tema, leídas");
   const theme = appJs.slice(appJs.indexOf("function savedTheme"), appJs.indexOf("async function archiveById"));
   assert.match(theme, /localStorage\.setItem\("alerta_theme", theme\)/);
-  assert.match(theme, /localStorage\.removeItem\("alerta_theme"\)/, "Automático vuelve a seguir el sistema");
+  assert.match(theme, /return "light"/, "sin elección previa, el tema es claro");
+  assert.match(theme, /theme === "auto" && systemDark\(\)/, "Automático sigue el sistema");
   assert.match(theme, /aria-checked/);
   assert.match(appJs, /settingsBtn\?\.addEventListener\("click", \(\) => setSheet\(Boolean\(prefSheet\?\.hidden\)/);
   // el panel se puede abrir también en las páginas sueltas (solo el tema; las preferencias son .private)

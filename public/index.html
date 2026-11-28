@@ -17,8 +17,15 @@
   <script>
     try {
       const saved = localStorage.getItem("alerta_theme");
-      if (saved === "light" || saved === "dark") document.documentElement.dataset.theme = saved;
-    } catch { /* el tema sigue el del sistema */ }
+      const choice = saved === "dark" || saved === "auto" || saved === "light" ? saved : "light";
+      if (choice !== "auto") document.documentElement.dataset.theme = choice;
+      const dark = choice === "dark" || (choice === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+      if (dark) document.documentElement.classList.add("theme-dark");
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.content = dark ? "#101812" : "#1b4332";
+      const bar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (bar) bar.content = dark ? "black" : "default";
+    } catch { /* el tema claro sigue */ }
   </script>
 </head>
 <body>

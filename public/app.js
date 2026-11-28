@@ -3349,8 +3349,9 @@ function effectiveTheme() {
 function savedTheme() {
   try {
     const saved = localStorage.getItem("alerta_theme");
-    return saved === "light" || saved === "dark" ? saved : "auto";
-  } catch { return "auto"; }
+    if (saved === "light" || saved === "dark" || saved === "auto") return saved;
+  } catch { /* sin almacén: claro */ }
+  return "light";
 }
 
 function paintThemeChoice(choice = savedTheme()) {
@@ -3361,24 +3362,38 @@ function paintThemeChoice(choice = savedTheme()) {
   });
 }
 
-function paintTheme(theme) {
-  if (theme === "light" || theme === "dark") {
-    document.documentElement.dataset.theme = theme;
-    try { localStorage.setItem("alerta_theme", theme); } catch { /* el tema queda en esta visita */ }
-  } else {
-    delete document.documentElement.dataset.theme;
-    try { localStorage.removeItem("alerta_theme"); } catch { /* sigue el sistema */ }
-  }
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = effectiveTheme() === "dark" ? "#101812" : "#1b4332";
-  paintThemeChoice(theme === "light" || theme === "dark" ? theme : "auto");
+function systemDark() {
+  try { return window.matchMedia("(prefers-color-scheme: dark)").matches; }
+  catch { return false; }
 }
+
+function paintTheme(theme, options = {}) {
+  if (theme !== "light" && theme !== "dark" && theme !== "auto") theme = "light";
+  const root = document.documentElement;
+  if (theme === "auto") delete root.dataset.theme;
+  else root.dataset.theme = theme;
+  const dark = theme === "dark" || (theme === "auto" && systemDark());
+  root.classList.toggle("theme-dark", dark);
+  try { localStorage.setItem("alerta_theme", theme); } catch { /* el tema queda en esta visita */ }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = dark ? "#101812" : "#1b4332";
+  const bar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (bar) bar.content = dark ? "black" : "default";
+  paintThemeChoice(theme);
+  if (!options.silent) touchView();
+}
+
+try {
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (savedTheme() === "auto") paintTheme("auto", { silent: true });
+  });
+} catch { /* sin aviso del sistema */ }
 
 document.querySelector(".settings-theme")?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-theme-choice]");
   if (button) paintTheme(button.dataset.themeChoice);
 });
-paintThemeChoice();
+paintTheme(savedTheme(), { silent: true });
 
 async function archiveById(id) {
   if (!isAdmin()) return;
@@ -4001,6 +4016,7 @@ function localView() {
     aidGroup: currentAidGroup(),
     aidStatus: currentAidStatus(),
     priceSource: priceSourceChoice || "",
+    theme: savedTheme(),
     updatedAt: viewStamp || "",
   };
 }
@@ -4024,6 +4040,7 @@ function applyView(view) {
     try { localStorage.setItem(PRICE_SOURCE_KEY, priceSourceChoice); } catch { /* sigue en memoria */ }
     if (typeof priceSource !== "undefined") priceSource = effectivePriceSource();
   }
+  if (view.theme === "light" || view.theme === "dark" || view.theme === "auto") paintTheme(view.theme, { silent: true });
   viewStamp = view.updatedAt || viewStamp;
   try { localStorage.setItem(VIEW_KEY, viewStamp); } catch { /* sigue en memoria */ }
 }
