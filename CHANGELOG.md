@@ -1,5 +1,11 @@
 # Cambios
 
+## v7.5.3 · 28/11/2026 · Compartir en Favoritas y revisar borradas
+
+- En Favoritas, cada ficha tiene el mismo botón Compartir que en Resumen y Ayudas, junto a Favorita. En el móvil y en el iPad abre el menú del sistema; si no lo hay, WhatsApp con el título y el enlace oficial. En Favoritas no aparece la papelera de las otras pestañas.
+- En Ajustes, «Revisar borradas (N)» es un botón del mismo estilo que «Recuperar todas (N)». Al tocarlo se abre o se cierra la lista.
+- Caché `?v=85`.
+
 ## v7.5.2 · 28/11/2026 · Solo borradas con título
 
 - La lista de borradas ya no enseña claves ni rutas. Solo sale una fila si hay título: el guardado al borrar o el de la noticia encontrada.
