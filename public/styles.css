@@ -1627,4 +1627,10 @@ body:not(.marked-b) .card.read .block li.warn::before {
 .sync-join { display: grid; gap: 8px; margin-top: 12px; }
 .sync-join input { min-height: 44px; font: inherit; padding: 8px 10px; }
 .sync-state { font-weight: 700; min-height: 1.2em; }
-#syncNow, #syncRetry { min-height: 44px; }
+.deleted-fold { margin: 8px 0 12px; }
+.deleted-fold summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.deleted-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.deleted-list li { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.deleted-copy { display: grid; gap: 2px; min-width: 0; }
+.deleted-copy small { color: #5c5c5c; }
+.deleted-list button { min-height: 44px; flex: none; }

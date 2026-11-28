@@ -137,10 +137,10 @@ test("v6.5 «Borrar marcadas (n)» grande, con icono, en listas y Resumen, con �
 
 test("v5.5 Ajustes: «Recuperar borradas (N)» (v5.6: sin «ocultas»)", () => {
   const sheet = indexHtml.slice(indexHtml.indexOf('<div id="prefSheet"'), indexHtml.indexOf('<nav class="dock'));
-  assert.match(sheet, /<button type="button" id="restoreDeleted" class="ghost" disabled>Recuperar borradas \(0\)<\/button>/);
+  assert.match(sheet, /id="restoreDeleted"[^>]*>Recuperar todas \(0\)<\/button>/);
   assert.doesNotMatch(sheet, /id="restoreHidden"/);
-  assert.match(sheet, /solo en este dispositivo/);
-  assert.match(appJs, /Recuperar borradas \(\$\{n\}\)/);
+  assert.match(sheet, /se sincronizan con tus otros aparatos/);
+  assert.match(appJs, /Recuperar todas \(\$\{rows\.length\}\)/);
   assert.match(appJs, /restoreAllDeleted\(\)/);
 });
 
@@ -152,7 +152,7 @@ test("v5.8 cabecera sin «Preferencias»: se llega desde Ajustes; /#preferencias
   assert.doesNotMatch(indexHtml, /Ir a Mis preferencias/);
 });
 
-test("caché v=81 (v6.6)", () => {
-  assert.match(indexHtml, /\/app\.js\?v=81/);
+test("caché v=82 (v6.6)", () => {
+  assert.match(indexHtml, /\/app\.js\?v=82/);
   assert.doesNotMatch(indexHtml, /\?v=32/);
 });

@@ -48,19 +48,19 @@ test("v5.8 Ajustes: desplegables Mis preferencias, Tema, Leídas y borradas; sin
   const keys = [...sheet.matchAll(/data-acc="(\w+)"/g)].map((m) => m[1]);
   assert.deepEqual(keys, ["prefs", "tema", "leidas", "sync", "guia"]);
   assert.equal((sheet.match(/class="acc-panel"[^>]* hidden>/g) || []).length, 5, "cerrados al abrir");
-  assert.match(sheet, /<span class="acc-title">Leídas y borradas<\/span><span class="acc-note">Se guardan 15 días/);
-  assert.match(sheet, /Recuperar borradas/);
+  assert.match(sheet, /<span class="acc-title">Leídas y borradas<\/span><span class="acc-note">15 días/);
+  assert.match(sheet, /Recuperar todas/);
   assert.doesNotMatch(sheet, /Ir a Mis preferencias/);
   assert.match(css, /\.acc-text \{ display: flex; flex-wrap: wrap;/);
   assert.match(appJs, /sectorChoices\.innerHTML = choiceButtons\(CHIP_SECTORS, currentSectors\(\), "sector"\)/);
   assert.doesNotMatch(appJs, /choiceButtons\(SECTORS,/);
 });
 
-test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=81", () => {
+test("v5.8 /fuentes incluye el BOE (legislación consolidada) y caché v=82", () => {
   const boe = referenceSources().find((s) => s.url === "https://www.boe.es/datosabiertos/api/legislacion-consolidada");
   assert.ok(boe);
   assert.match(boe.usedIn, /Normativa en vigor/);
-  assert.match(indexHtml, /app\.js\?v=81/);
+  assert.match(indexHtml, /app\.js\?v=82/);
 });
 
 test("v5.8 móvil: Resumen (con número), Herramientas y Ajustes en la barra de abajo; la cabecera los oculta solo ≤ 900 px", () => {

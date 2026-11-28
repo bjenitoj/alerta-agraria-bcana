@@ -619,23 +619,46 @@ const READ_TTL_DAYS = 15;
 const READ_MAX = 3000;
 
 function emptyReadStore() {
-  return { v: 1, read: {}, deleted: {}, restored: {}, aliases: {} };
+  return { v: 1, read: {}, unread: {}, deleted: {}, deletedInfo: {}, gone: {}, restored: {}, aliases: {} };
 }
 
-/** Quita lo que tenga más de 15 días y lo que no tenga una fecha válida. */
+/** Quita de la lista lo borrado hace más de 15 días. La clave se queda en `gone` para que no vuelva a salir. */
 function pruneReadStore(store, nowMs = Date.now()) {
   const out = emptyReadStore();
   const limit = nowMs - READ_TTL_DAYS * 86400000;
-  for (const bucket of ["read", "deleted", "restored"]) {
+  for (const bucket of ["read", "unread", "restored"]) {
     const entries = Object.entries((store && typeof store[bucket] === "object" && store[bucket]) || {})
       .filter(([key, when]) => key && Number.isFinite(Date.parse(when)) && Date.parse(when) >= limit)
       .sort((a, b) => Date.parse(a[1]) - Date.parse(b[1]))
       .slice(-READ_MAX);
     out[bucket] = Object.fromEntries(entries);
   }
-  const alive = new Set(Object.keys(out.deleted));
+  const gone = { ...(store?.gone || {}) };
+  const info = store?.deletedInfo || {};
+  const deletedEntries = Object.entries((store && typeof store.deleted === "object" && store.deleted) || {})
+    .filter(([key, when]) => key && Number.isFinite(Date.parse(when)));
+  for (const [key, when] of deletedEntries) {
+    if (Date.parse(when) < limit) gone[key] = 1;
+  }
+  const recent = deletedEntries
+    .filter(([, when]) => Date.parse(when) >= limit)
+    .sort((a, b) => Date.parse(a[1]) - Date.parse(b[1]))
+    .slice(-READ_MAX);
+  out.deleted = Object.fromEntries(recent);
+  out.gone = Object.fromEntries(Object.entries(gone).slice(-READ_MAX));
+  for (const key of Object.keys(out.deleted)) {
+    const row = info[key];
+    if (row && typeof row === "object") {
+      out.deletedInfo[key] = {
+        title: String(row.title || "").slice(0, 350),
+        source: String(row.source || "").slice(0, 120),
+        at: row.at || out.deleted[key],
+      };
+    }
+  }
+  const alive = new Set([...Object.keys(out.deleted), ...Object.keys(out.gone)]);
   for (const [alias, primary] of Object.entries(store?.aliases || {})) {
-    if (alive.has(primary)) out.aliases[alias] = primary;
+    if (alive.has(primary) || alive.has(alias)) out.aliases[alias] = primary;
   }
   return out;
 }
@@ -700,11 +723,25 @@ function hasMark(bucket, item) {
 }
 
 function isReadItem(item) {
-  return Boolean(item?.read) || hasMark("read", item);
+  const keys = markKeys(item);
+  const unread = readStore.unread || {};
+  let markedAt = 0;
+  let clearedAt = 0;
+  for (const key of keys) {
+    const marked = Date.parse(readStore.read?.[key]);
+    const cleared = Date.parse(unread[key]);
+    if (Number.isFinite(marked) && marked > markedAt) markedAt = marked;
+    if (Number.isFinite(cleared) && cleared > clearedAt) clearedAt = cleared;
+  }
+  if (clearedAt && clearedAt >= markedAt) return false;
+  if (markedAt) return true;
+  return Boolean(item?.read);
 }
 
 function isDeletedItem(item) {
-  return hasMark("deleted", item);
+  if (hasMark("deleted", item)) return true;
+  const gone = readStore.gone || {};
+  return deletionKeys(item).some((key) => gone[key]);
 }
 
 /** Borrada con el botón: la misma historia sale de todas las pestañas, menos de Favoritas. Marcarla no la quita. */
@@ -712,18 +749,21 @@ function isClearedItem(item) {
   return isDeletedItem(item);
 }
 
-function writeMarks(bucket, item, on) {
-  const now = new Date().toISOString();
-  for (const key of markKeys(item)) {
-    if (on) readStore[bucket][key] = now;
-    else delete readStore[bucket][key];
-  }
-}
-
 function setRead(item, on) {
-  if (!markKeys(item).length) return;
-  writeMarks("read", item, on);
-  if (!on && item) item.read = false;
+  const keys = markKeys(item);
+  if (!keys.length) return;
+  const now = new Date().toISOString();
+  readStore.unread = readStore.unread || {};
+  for (const key of keys) {
+    if (on) {
+      readStore.read[key] = now;
+      delete readStore.unread[key];
+    } else {
+      delete readStore.read[key];
+      readStore.unread[key] = now;
+    }
+  }
+  if (item) item.read = Boolean(on);
   writeJson(READ_KEY, readStore);
 }
 
@@ -740,6 +780,8 @@ function deleteReadItems(items) {
     delete readStore.restored[key];
     for (const alias of deletionKeys(item)) delete readStore.restored[alias];
     readStore.deleted[key] = now;
+    readStore.deletedInfo = readStore.deletedInfo || {};
+    readStore.deletedInfo[key] = { title: item.title || "", source: item.sourceName || "", at: now };
     for (const alias of deletionKeys(item)) if (alias !== key) {
       readStore.deleted[alias] = now;
       readStore.aliases[alias] = key;
@@ -759,6 +801,7 @@ function undeleteKeys(keys) {
   for (const key of keys || []) {
     dropped.push(key);
     delete readStore.deleted[key];
+    if (readStore.deletedInfo) delete readStore.deletedInfo[key];
     readStore.restored[key] = now;
     for (const [alias, primary] of Object.entries(aliases)) {
       if (primary !== key) continue;
@@ -802,6 +845,8 @@ function buryItem(item) {
   delete readStore.restored[key];
   for (const alias of deletionKeys(item)) delete readStore.restored[alias];
   readStore.deleted[key] = now;
+  readStore.deletedInfo = readStore.deletedInfo || {};
+  readStore.deletedInfo[key] = { title: item.title || "", source: item.sourceName || "", at: now };
   for (const alias of deletionKeys(item)) if (alias !== key) {
     readStore.deleted[alias] = now;
     readStore.aliases[alias] = key;
@@ -1141,14 +1186,47 @@ function paintReadTools() {
   paintReadSettings();
 }
 
+function recentDeleted() {
+  const aliases = new Set(Object.keys(readStore.aliases || {}));
+  const limit = Date.now() - READ_TTL_DAYS * 86400000;
+  return Object.entries(readStore.deleted || {})
+    .filter(([key, when]) => !aliases.has(key) && Date.parse(when) >= limit)
+    .map(([key, when]) => {
+      const info = readStore.deletedInfo?.[key] || {};
+      const id = key.startsWith("id:") ? key.slice(3) : "";
+      const item = id ? findItem(id) : null;
+      const at = Date.parse(when);
+      const whenLabel = Number.isFinite(at)
+        ? new Date(at).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+        : "";
+      return {
+        key,
+        title: info.title || item?.title || "Noticia borrada",
+        source: info.source || item?.sourceName || "",
+        when: whenLabel,
+        at: when,
+      };
+    })
+    .sort((a, b) => String(b.at).localeCompare(String(a.at)));
+}
+
 function paintReadSettings() {
   const restore = document.getElementById("restoreDeleted");
+  const list = document.getElementById("deletedList");
+  const summaryCount = document.getElementById("deletedFoldCount");
+  const rows = recentDeleted();
   if (restore) {
-    const n = deletedStoryCount();
-    restore.textContent = `Recuperar borradas (${n})`;
-    restore.disabled = !n;
+    restore.textContent = `Recuperar todas (${rows.length})`;
+    restore.disabled = !rows.length;
   }
-  // v5.6: sin «Volver a mostrar ocultas» (ya no se oculta ninguna noticia).
+  if (summaryCount) summaryCount.textContent = String(rows.length);
+  if (!list) return;
+  list.innerHTML = rows.length
+    ? rows.map((row) => `<li>
+        <span class="deleted-copy"><strong>${escapeHtml(row.title)}</strong><small>${escapeHtml(row.source)}${row.source ? " · " : ""}${escapeHtml(row.when)}</small></span>
+        <button type="button" data-restore-one="${escapeHtml(row.key)}">Recuperar</button>
+      </li>`).join("")
+    : `<li class="empty">No hay noticias borradas en los últimos 15 días.</li>`;
 }
 
 function paintCardRead(id, read) {
@@ -3125,6 +3203,14 @@ document.getElementById("restoreDeleted")?.addEventListener("click", () => {
   render();
   if (n) showToast(n === 1 ? "Recuperada 1 noticia" : `Recuperadas ${n} noticias`);
 });
+document.getElementById("acc-leidas")?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-restore-one]");
+  if (!button) return;
+  event.preventDefault();
+  undeleteKeys([button.dataset.restoreOne]);
+  render();
+  showToast("Recuperada");
+});
 prefSheet?.addEventListener("click", (event) => {
   if (event.target === prefSheet) setSheet(false);
 });
@@ -3443,6 +3529,7 @@ appEl.addEventListener("click", async (event) => {
   const unread = event.target.closest("[data-unread]");
   if (unread) {
     event.preventDefault();
+    event.stopPropagation();
     await markCardRead(unread.dataset.unread, null, false);
     return;
   }
@@ -3765,17 +3852,17 @@ function migrateLocalHides() {
   const keys = [];
   for (const name of ["alerta_ocultas", "alerta_suprimidas"]) {
     for (const key of readSet(name)) {
-      if (readStore.restored?.[key]) continue;
+      if (readStore.restored?.[key] || readStore.gone?.[key]) continue;
       keys.push(key);
     }
   }
   for (const item of knownSyncItems()) {
     const marks = deletionKeys(item);
-    const hidden = marks.some((key) => !readStore.restored?.[key] && (readStore.deleted[key]
+    const hidden = marks.some((key) => !readStore.restored?.[key] && !readStore.gone?.[key] && (readStore.deleted[key]
       || (readStore.aliases?.[key] && readStore.deleted[readStore.aliases[key]])
       || readSet("alerta_ocultas").has(key)
       || readSet("alerta_suprimidas").has(key)));
-    if (hidden) keys.push(...marks.filter((key) => !readStore.restored?.[key]));
+    if (hidden) keys.push(...marks.filter((key) => !readStore.restored?.[key] && !readStore.gone?.[key]));
   }
   const next = absorbHideKeys(readStore.deleted, keys);
   if (JSON.stringify(next) !== JSON.stringify(readStore.deleted)) {
@@ -3828,11 +3915,15 @@ function applyView(view) {
 }
 
 function localSyncDoc() {
+  readStore = pruneReadStore(readStore);
   migrateLocalHides();
   return {
     v: 1,
     read: readStore.read,
+    unread: readStore.unread,
     deleted: readStore.deleted,
+    deletedInfo: readStore.deletedInfo,
+    gone: readStore.gone,
     restored: readStore.restored,
     aliases: readStore.aliases,
     favorites,
@@ -3844,7 +3935,10 @@ function localSyncDoc() {
 function applySyncDoc(doc) {
   const silent = { silent: true };
   readStore.read = doc.read || {};
+  readStore.unread = doc.unread && typeof doc.unread === "object" ? doc.unread : {};
   readStore.deleted = doc.deleted || {};
+  readStore.deletedInfo = doc.deletedInfo && typeof doc.deletedInfo === "object" ? doc.deletedInfo : {};
+  readStore.gone = doc.gone && typeof doc.gone === "object" ? doc.gone : {};
   readStore.restored = doc.restored && typeof doc.restored === "object" ? doc.restored : {};
   readStore.aliases = doc.aliases && typeof doc.aliases === "object" ? doc.aliases : {};
   readStore = pruneReadStore(readStore);
