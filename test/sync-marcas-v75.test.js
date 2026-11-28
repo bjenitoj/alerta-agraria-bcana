@@ -69,13 +69,11 @@ test("v7.5.1 la migración no pisa la fecha real y una noticia sale en una sola 
   assert.equal(rows[0].at, real);
   const titled = labelFromDeletedKey("t:ayuda al mantenimiento de la forestacion");
   assert.match(titled.title, /Ayuda al mantenimiento/);
-  const url = labelFromDeletedKey("u:pac.jcyl.es/web/es/regimenes-ayuda/ayudas-asociadas-agricultores.html");
-  assert.equal(url.source, "pac.jcyl.es");
-  const hidden = buildDeletedRows({
-    deleted: { "id:abc123abc123abc123abc123abc123abc123abcd": "2026-11-26T10:00:00.000Z" },
+  const rowsFromKey = buildDeletedRows({
+    deleted: { "t:ayuda al mantenimiento de la forestacion": real, "d:boe.es:doue-l-2026-81593": "2026-11-28T10:37:47.169Z" },
     now: Date.parse("2026-11-28T12:00:00.000Z"),
   });
-  assert.equal(hidden.length, 0);
+  assert.equal(rowsFromKey.length, 0, "una clave cruda no es un título");
 });
 
 test("v7.5 una baja de más de 15 días deja de listarse pero no reaparece", () => {
@@ -96,4 +94,34 @@ test("v7.5 una baja de más de 15 días deja de listarse pero no reaparece", () 
   assert.equal(store.deletedInfo["id:vieja"], undefined);
   box.load(store);
   assert.equal(box.isDeletedItem({ id: "vieja", url: "https://www.boe.es/vieja" }), true);
+});
+
+test("v7.5.2 la ayuda del cereal se agrupa y una baja solo de la migración no se lista sin título", () => {
+  const real = "2026-11-26T07:01:26.211Z";
+  const mig = "2026-11-28T10:37:47.169Z";
+  const id = "07d0fa9e5bd536bcdc4a71457204bcb4141336bb";
+  const rows = buildDeletedRows({
+    deleted: {
+      [`id:${id}`]: real,
+      [id]: mig,
+      "d:boe.es:doue-l-2026-81593": mig,
+      "u:fega.gob.es/es/noticias/node-16971": mig,
+    },
+    info: {
+      [`id:${id}`]: { title: "Subvención al cereal por la crisis de Oriente Próximo", source: "BDNS / infosubvenciones", at: real },
+    },
+    now: Date.parse("2026-11-28T12:00:00.000Z"),
+  });
+  assert.equal(rows.length, 1);
+  assert.match(rows[0].title, /cereal/);
+  assert.equal(rows[0].at, real);
+  assert.ok(rows[0].keys.includes(`id:${id}`) && rows[0].keys.includes(id));
+  const inherited = buildDeletedRows({
+    deleted: { "u:pac.jcyl.es/web/es/ayuda": mig },
+    groups: [{ marks: ["u:pac.jcyl.es/web/es/ayuda"], title: "Ayuda encontrada", source: "Junta" }],
+    now: Date.parse("2026-11-28T12:00:00.000Z"),
+  });
+  assert.equal(inherited.length, 1);
+  assert.equal(inherited[0].approximate, true);
+  assert.equal(inherited[0].title, "Ayuda encontrada");
 });

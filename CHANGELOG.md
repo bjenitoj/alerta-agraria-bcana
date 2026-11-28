@@ -1,5 +1,13 @@
 # Cambios
 
+## v7.5.2 · 28/11/2026 · Solo borradas con título
+
+- La lista de borradas ya no enseña claves ni rutas. Solo sale una fila si hay título: el guardado al borrar o el de la noticia encontrada.
+- Las bajas copiadas el 28 nov a las 11:37 sin título no se listan. Siguen ocultando la noticia. Si se reconoce la noticia, se muestra su título y la fecha real, o «antes del 28 nov» si no hay otra.
+- Varias claves de la misma noticia son una fila. Recuperar las quita todas.
+- Caché `?v=84`.
+
+
 ## v7.5.1 · 28/11/2026 · Título y fecha real de lo borrado
 
 - En Ajustes, cada borrada muestra el título y, debajo, la fuente y la fecha en que se borró. Si hace falta, se busca en las noticias ya cargadas y se guarda para sincronizarlo.
