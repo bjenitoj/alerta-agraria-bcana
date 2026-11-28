@@ -1,5 +1,13 @@
 # Cambios
 
+## v7.5 · 28/11/2026 · Borradas 15 días y desmarcar de verdad
+
+- En Ajustes, «Leídas y borradas» lista las borradas de los últimos 15 días (título, fuente y fecha) con «Recuperar» en cada una, y «Recuperar todas (N)». Pasado ese plazo dejan de listarse. Se guarda una marca breve, sin título, para que la noticia no vuelva si la fuente aún la tiene. Esa marca se sincroniza.
+- El texto ya no dice que solo se guarda en este aparato: si hay código, lo marcado y lo borrado se sincronizan.
+- Desmarcar una ficha en Resumen ya no se vuelve a marcar sola. La baja de la marca tiene fecha y gana a la marca anterior. Si se vuelve a marcar después, gana esa marca.
+- Caché `?v=82`.
+
+
 ## v7.4.4 · 26/11/2026 · Recuperar borradas y la misma vista en los dos aparatos
 
 - Recuperar una borrada no se quedaba: al sincronizar, la baja del otro aparato la volvía a ocultar. Ahora la recuperación tiene fecha y gana a esa baja.
